@@ -1,6 +1,7 @@
 # RRULE for PHP
 
-Lightweight and fast implementation of recurrence rules for PHP (RFC 5545).
+Lightweight and fast implementation of recurrence rules for PHP (RFC 5545), to easily work with recurring dates and events (such as in a calendar).
+This library is heavily based on [python-dateutil](https://labix.org/python-dateutil).
 
 [![Build Status](https://travis-ci.org/rlanvin/php-rrule.svg?branch=master)](https://travis-ci.org/rlanvin/php-rrule)
 
@@ -38,7 +39,7 @@ Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wik
 ## Installation
 
 This is still a work in progress, use at your own risk!
-In particular, HOURLY, MINUTELY and SECONDELY frequencies are not implemented.
+In particular, HOURLY, MINUTELY and SECONDLY frequencies are not implemented.
 
 The recommended way is to install the lib [through Composer](http://getcomposer.org/).
 
@@ -63,7 +64,8 @@ require 'vendor/autoload.php';
 
 ### Alternative method
 
-You can download `src/RRule.php` and require it.
+Since it's a no-nonsense implementation, there is only one class.
+So you can just download `src/RRule.php` and require it.
 
 ## Note
 
@@ -71,12 +73,12 @@ I started this library because I wasn't happy with the existing implementations
 in PHP. The ones I tested were slow and/or had a very awkward/verbose API that
 I didn't like to use. They were also all missing a generator/iterator, which I
 think is key. So I thought it would be a good learning project to port the
-Python dateutil/rrule.py class into PHP.
+python-dateutil rrule implementation into PHP.
 
-The Python lib was a bit difficult to understand at first. The algorithms
-used are very smart (and fast), but they not commented and the variables are
-very opaque (I'm looking at you `lno1wkst`). I tried to comment and
-explain most of the algorithm in this PHP port, so feel free to check the code.
+The Python lib was a bit difficult to understand because the algorithms (very smart by the way),
+are not commented and the variables are very opaque (I'm looking at
+you `lno1wkst`). I tried to comment and explain as much of the algorithm as possible
+in this PHP port, so feel free to check the code if you're interested.
 
 The lib differs from the python version in various aspects, notably in the 
 respect of the RFC. This version is strictier and will not accept many

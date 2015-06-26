@@ -1,25 +1,19 @@
 <?php
 
 /**
- * Implementation of RRULE as defined by RFC 5545.
+ * Licensed under the MIT license.
  *
- * Heavily based on dateutil/rrule.py
+ * For the full copyright and license information, please view the LICENSE file.
  *
- * Some useful terms to understand the algorithms and variables naming:
- *
- * yearday = day of the year, from 0 to 365 (on leap years) - date('z')
- * weekday = day of the week (ISO-8601), from 1 (MO) to 7 (SU) - date('N')
- * monthday = day of the month, from 1 to 31
- * wkst = week start, the weekday (1 to 7) which is the first day of week.
- *        Default is Monday (1). In some countries it's Sunday (7).
- * weekno = number of the week in the year (ISO-8601)
- *
- * CAREFUL with that bug: https://bugs.php.net/bug.php?id=62476
+ * @author Rémi Lanvin <remi@cloudconnected.fr>
+ * @link https://github.com/rlanvin/php-rrule
  */
 
 namespace RRule;
 
 /**
+ * Check that a variable is not empty. 0 and '0' are considered NOT empty
+ *
  * @return bool
  */
 function not_empty($var)
@@ -54,6 +48,7 @@ function pymod($a, $b)
 }
 
 /**
+ * Check is a year is a leap year.
  * @return bool
  */
 function is_leap_year($year)
@@ -71,7 +66,22 @@ function is_leap_year($year)
 }
 
 /**
- * Main class.
+ * Implementation of RRULE as defined by RFC 5545.
+ * Heavily based on python-dateutil/rrule
+ *
+ * Some useful terms to understand the algorithms and variables naming:
+ *
+ * yearday = day of the year, from 0 to 365 (on leap years) - date('z')
+ * weekday = day of the week (ISO-8601), from 1 (MO) to 7 (SU) - date('N')
+ * monthday = day of the month, from 1 to 31
+ * wkst = week start, the weekday (1 to 7) which is the first day of week.
+ *        Default is Monday (1). In some countries it's Sunday (7).
+ * weekno = number of the week in the year (ISO-8601)
+ *
+ * CAREFUL with this bug: https://bugs.php.net/bug.php?id=62476
+ *
+ * @see https://tools.ietf.org/html/rfc5545
+ * @see https://labix.org/python-dateutil
  */
 class RRule implements \Iterator, \ArrayAccess
 {
@@ -950,7 +960,7 @@ class RRule implements \Iterator, \ArrayAccess
 	}
 
 	/**
-	 * This is the main method, where all of the logic happens.
+	 * This is the main method, where all of the magic happens.
 	 *
 	 * This method is a generator that works for PHP 5.3/5.4 (using static variables)
 	 */
@@ -1125,10 +1135,8 @@ class RRule implements \Iterator, \ArrayAccess
 			// at the same time, we check the end condition and return null if
 			// we need to stop
 			while ( ($yearday = current($current_set)) !== false ) {
-				// $occurrence = date('Y-m-d', mktime(0, 0, 0, 1, ($yearday + 1), $year));
-// echo "\t occurrence (mktime) = ", $occurrence,"\n";
 				$occurrence = \DateTime::createFromFormat('Y z', "$year $yearday");
-// echo "\t occurrence (before time) =", $occurrence->format('r'),"\n";
+
 				while ( ($time = current($timeset)) !== false ) {
 					$occurrence->setTime($time[0], $time[1], $time[2]);
 					// consider end conditions
@@ -1169,13 +1177,11 @@ class RRule implements \Iterator, \ArrayAccess
 					}
 					break;
 				case self::WEEKLY:
-					// here we take a little shortcut from the Python version, by using date/time methods
-					// list($year,$month,$day) = explode('-',date('Y-m-d',strtotime('+'.($this->interval*7).'day', mktime(0,0,0,$month,$day,$year))));
+					// here we take a little shortcut from the Python version, by using DateTime
 					list($year,$month,$day) = explode('-',(new \DateTime("$year-$month-$day"))->modify('+'.($this->interval*7).'day')->format('Y-n-j'));
 					break;
 				case self::DAILY:
-					// here we take a little shortcut from the Python version, by using date/time methods
-					// list($year,$month,$day) = explode('-',date('Y-m-d',strtotime('+'.$this->interval.'day', mktime(0,0,0,$month,$day,$year))));
+					// here we take a little shortcut from the Python version, by using DateTime
 					list($year,$month,$day) = explode('-',(new \DateTime("$year-$month-$day"))->modify('+'.$this->interval.'day')->format('Y-n-j'));
 					break;
 				case self::HOURLY:
