@@ -134,7 +134,7 @@ class RRule implements \Iterator, \ArrayAccess
 	protected $byminute = null;
 	protected $byhour = null;
 	protected $byweekday = null;
-	protected $byweekday_relative = null;
+	protected $byweekday_nth = null;
 	protected $bymonthday = null;
 	protected $bymonthday_negative = null;
 	protected $byyearday = null;
@@ -147,7 +147,10 @@ class RRule implements \Iterator, \ArrayAccess
 // Public interface
 
 	/**
-	 * Constructor
+	 * The constructor needs the entire rule at once.
+	 * There is no setter after the class has been instanciated,
+	 * because in order to validate some BYXXX parts, we need to know
+	 * the value of some other parts (FREQ or other BXXX parts).
 	 */
 	public function __construct(array $parts)
 	{
@@ -273,7 +276,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYDAY'] = explode(',',$parts['BYDAY']);
 			}
 			$this->byweekday = [];
-			$this->byweekday_relative = [];
+			$this->byweekday_nth = [];
 			foreach ( $parts['BYDAY'] as $value ) {
 				$value = trim($value);
 				$valid = preg_match('/^([+-]?[0-9]+)?([A-Z]{2})$/', $value, $matches);
@@ -282,14 +285,14 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 
 				if ( $matches[1] ) {
-					$this->byweekday_relative[] = [self::$week_days[$matches[2]], (int)$matches[1]];
+					$this->byweekday_nth[] = [self::$week_days[$matches[2]], (int)$matches[1]];
 				}
 				else {
 					$this->byweekday[] = self::$week_days[$matches[2]];
 				}
 			}
 
-			if ( ! empty($this->byweekday_relative) ) {
+			if ( ! empty($this->byweekday_nth) ) {
 				if ( ! ($this->freq === self::MONTHLY || $this->freq === self::YEARLY) ) {
 					throw new \InvalidArgumentException('The BYDAY rule part MUST NOT be specified with a numeric value when the FREQ rule part is not set to MONTHLY or YEARLY.');
 				}
@@ -470,7 +473,7 @@ class RRule implements \Iterator, \ArrayAccess
 		if ( $this->freq < self::HOURLY ) {
 			// for frequencies DAILY, WEEKLY, MONTHLY AND YEARLY, we build
 			// an array of every time of the day at which there should be an
-			// occurence - default, if no BYHOUR/BYMINUTE/BYSECOND are provided
+			// occurrence - default, if no BYHOUR/BYMINUTE/BYSECOND are provided
 			// is only one time, and it's the DTSTART time.
 			$this->timeset = array();
 			foreach ( $this->byhour as $hour ) {
@@ -485,14 +488,17 @@ class RRule implements \Iterator, \ArrayAccess
 		}
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getOccurrences()
 	{
 		if ( ! $this->count && ! $this->until ) {
-			throw new \LogicException('Cannot get all occurences of an infinite recurrence rule.');
+			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
 		$res = [];
-		foreach ( $this as $occurence ) {
-			$res[] = $occurence;
+		foreach ( $this as $occurrence ) {
+			$res[] = $occurrence;
 		}
 		return $res;
 	}
@@ -503,24 +509,190 @@ class RRule implements \Iterator, \ArrayAccess
 	public function getOccurrencesBetween($begin, $end)
 	{
 		$res = [];
-		foreach ( $this as $occurence ) {
-			if ( $occurence < $begin ) {
+		foreach ( $this as $occurrence ) {
+			if ( $occurrence < $begin ) {
 				continue;
 			}
-			if ( $occurence > $end ) {
+			if ( $occurrence > $end ) {
 				break;
 			}
-			$res[] = $occurence;
+			$res[] = $occurrence;
 		}
 		return $res;
 	}
 
 	/**
-	 * @return bool
+	 * Alias of occursAt
+	 * Because I think both are correct in English, aren't they?
 	 */
 	public function occursOn($date)
 	{
+		return $this->occursAt($date);
+	}
 
+	/**
+	 * Return true if $date is an occurrence of the rule.
+	 *
+	 * This method will attempt to determine the result programmatically.
+	 * However depending on the BYXXX rule parts that have been set, it might
+	 * not always be possible. As a last resort, this method will loop
+	 * through all occurrences until $date. This will incurr some performance
+	 * penalty.
+	 *
+	 * @return bool
+	 */
+	public function occursAt($date)
+	{
+		if ( ! $date instanceof \DateTime ) {
+			try {
+				if ( is_integer($date) ) {
+					$date = \DateTime::createFromFormat('U',$date);
+				}
+				else {
+					$date = new \DateTime($date);
+				}
+			} catch ( \Exception $e ) {
+				throw new \InvalidArgumentException('Failed to parse the date');
+			}
+		}
+
+		// let's start with the obvious
+		if ( $date < $this->dtstart || ($this->until && $date > $this->until) ) {
+			return false;
+		}
+
+		// now the BYXXX rules (expect BYSETPOS)
+		if ( $this->byhour && ! in_array($date->format('G'), $this->byhour) ) {
+			return false;
+		}
+		if ( $this->byminute && ! in_array((int) $date->format('i'), $this->byminute) ) {
+			return false;
+		}
+		if ( $this->bysecond && ! in_array((int) $date->format('s'), $this->byhour) ) {
+			return false;
+		}
+
+		// we need some more variables before we continue
+		list($year, $month, $day, $yearday, $weekday) = explode(' ',$date->format('Y n j z N'));
+		$masks = array();
+		$masks['weekday_of_1st_yearday'] = date('N', mktime(0,0,0,1,1,$year));
+		$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
+		if ( is_leap_year($year) ) {
+			$masks['year_len'] = 366;
+			$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH_366;
+		}
+		else {
+			$masks['year_len'] = 365;
+			$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH;
+		}
+		$month_len = $masks['last_day_of_month'][$month] - $masks['last_day_of_month'][$month-1];
+
+		if ( $this->bymonth && ! in_array($month, $this->bymonth) ) {
+			return false;
+		}
+
+		if ( $this->byweekday && ! in_array($weekday, $this->byweekday) ) {
+			return false;
+		}
+
+		if ( $this->bymonthday || $this->bymonthday_negative ) {
+			$monthday_negative = -1 * ($month_len - $day - 1);
+
+			if ( ! in_array($day, $this->bymonthday) && ! in_array($monthday_negative, $this->bymonthday_negative) ) {
+				return false;
+			}
+		}
+
+		if ( $this->byyearday ) {
+			// caution here, yearday starts from 0 !
+			$yearday_negative = -1*($masks['year_len'] - $yearday);
+
+			if ( ! in_array($yearday+1, $this->byyearday) && ! in_array($yearday_negative, $this->byyearday) ) {
+				return false;
+			}
+		}
+
+		if ( $this->byweekday_nth ) {
+			// we need to summon some magic here
+			$this->buildNthWeekdayMask($year, $month, $day, $masks);
+			if ( ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
+				return false;
+			}
+		}
+
+		if ( $this->byweekno ) {
+			// more magic
+			$this->buildWeeknoMask($year, $month, $day, $masks);
+			if ( ! isset($masks['yearday_is_in_weekno'][$yearday]) ) {
+				return false;
+			}
+		}
+
+		// so now we have exhausted all the BYXXX rules (exept bysetpos),
+		// we still need to consider frequency and interval
+		list ($start_year, $start_month, $start_day) = explode('-',$this->dtstart->format('Y-m-d'));
+		switch ( $this->freq ) {
+			case self::YEARLY:
+				if ( ($year - $start_year) % $this->interval !== 0 ) {
+					return false;
+				}
+				break;
+			case self::MONTHLY:
+				// we need to count the number of months elapsed
+				$nb_months = (12 - $start_month) + 12*($year - $start_year - 1) + $month;
+
+				if ( ($nb_months % $this->interval) !== 0 ) {
+					return false;
+				}
+				break;
+			case self::WEEKLY:
+				// count nb of days and divide by 7 to get number of weeks
+				$nb_days = $date->diff($this->dtstart)->format('%a');
+				$nb_weeks = (int) ($nb_days/7);
+				if ( $nb_weeks % $this->interval !== 0 ) {
+					return false;
+				}
+				break;
+			case self::DAILY:
+				// count nb of days
+				$nb_days = $date->diff($this->dtstart)->format('%a');
+				if ( $nb_days % $this->interval !== 0 ) {
+					return false;
+				}
+				break;
+			case self::HOURLY:
+			case self::MINUTELY:
+			case self::SECONDLY:
+				throw new \Exception('Unimplemented frequency');
+		}
+
+		// now we are left with 2 rules BYSETPOS and COUNT
+		//
+		// - I think BYSETPOS *could* be determined without loooping by considering
+		// the current set, calculating all the occurrences of the current set
+		// and determining the position of $date in the result set.
+		// However I'm not convinced it's worth it.
+		//
+		// - I don't see any way to determine COUNT programmatically, because occurrences
+		// might sometimes be dropped (e.g. a 29 Feb on a normal year, or during
+		// the switch to DST) and not counted in the final set
+
+		if ( ! $this->count && ! $this->bysetpos ) {
+			return true;
+		}
+
+		// so... as a fallback we have to loop
+		foreach ( $this as $occurrence ) {
+			if ( $occurrence == $date ) {
+				return true; // lucky you!
+			}
+			if ( $occurrence > $date ) {
+				break;
+			}
+		}
+
+		// we ended the loop without finding
+		return false; 
 	}
 
 // Iterator interface
@@ -610,11 +782,13 @@ class RRule implements \Iterator, \ArrayAccess
 				return $set;
 
 			case self::DAILY:
+				$n = (int) date('z', mktime(0,0,0,$month,$day,$year));
+				return [$n];
+
 			case self::HOURLY:
 			case self::MINUTELY:
 			case self::SECONDLY:
-				$n = (int) date('z', mktime(0,0,0,$month,$day,$year));
-				return [$n];
+				throw new \Exception('Unimplemented frequency');
 		}
 	}
 
@@ -623,9 +797,9 @@ class RRule implements \Iterator, \ArrayAccess
 	 */
 	protected function buildNthWeekdayMask($year, $month, $day, array & $masks)
 	{
-		$masks['yearday_is_in_weekday_relative'] = array();
+		$masks['yearday_is_nth_weekday'] = array();
 
-		if ( $this->byweekday_relative ) {
+		if ( $this->byweekday_nth ) {
 			$ranges = array();
 			if ( $this->freq == self::YEARLY ) {
 				if ( $this->bymonth ) {
@@ -646,7 +820,7 @@ class RRule implements \Iterator, \ArrayAccess
 				// care about cross-year weekly periods.
 				foreach ( $ranges as $tmp ) {
 					list($first, $last) = $tmp;
-					foreach ( $this->byweekday_relative as $tmp ) {
+					foreach ( $this->byweekday_nth as $tmp ) {
 						list($weekday, $nth) = $tmp;
 						if ( $nth < 0 ) {
 							$i = $last + ($nth + 1) * 7;
@@ -657,7 +831,7 @@ class RRule implements \Iterator, \ArrayAccess
 							$i = $i + (7 - $masks['yearday_to_weekday'][$i] + $weekday) % 7;
 						}
 						if ( $i >= $first && $i <= $last ) {
-							$masks['yearday_is_in_weekday_relative'][$i] = true;
+							$masks['yearday_is_nth_weekday'][$i] = true;
 						}
 					}
 				}
@@ -870,7 +1044,7 @@ class RRule implements \Iterator, \ArrayAccess
 						}
 					}
 					// everytime month or year changes
-					if ( $this->byweekday_relative ) {
+					if ( $this->byweekday_nth ) {
 						$this->buildNthWeekdayMask($year, $month, $day, $masks);
 					}
 					$masks['year'] = $year;
@@ -916,7 +1090,7 @@ class RRule implements \Iterator, \ArrayAccess
 						continue;
 					}
 
-					if ( $this->byweekday_relative && ! isset($masks['yearday_is_in_weekday_relative'][$yearday]) ) {
+					if ( $this->byweekday_nth && ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
 						continue;
 					}
 
@@ -964,7 +1138,7 @@ class RRule implements \Iterator, \ArrayAccess
 					}
 
 					next($timeset);
-					if ( $occurrence >= $this->dtstart ) { // ignore occurences before DTSTART
+					if ( $occurrence >= $this->dtstart ) { // ignore occurrences before DTSTART
 						$total += 1;
 						return $occurrence; // yield
 					}
@@ -1007,7 +1181,7 @@ class RRule implements \Iterator, \ArrayAccess
 				case self::HOURLY:
 				case self::MINUTELY:
 				case self::SECONDLY:
-					throw new \InvalidArgumentException('Unimplemented frequency');
+					throw new \Exception('Unimplemented frequency');
 			}
 		}
 	}

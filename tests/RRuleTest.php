@@ -115,6 +115,9 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02'
 		], $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+		}
 	}
 
 
@@ -160,6 +163,9 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02'
 		], $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+		}
 	}
 
 	public function weeklyRules()
@@ -197,6 +203,9 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02'
 		], $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+		}
 	}
 
 	public function dailyRules()
@@ -234,6 +243,9 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02'
 		], $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+		}
 	}
 
 
@@ -315,4 +327,40 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 // [date_create('1997-09-02'),
 //  date_create('1997-09-03'),
 //  date_create('1997-09-03')])
+
+	public function notOccurrences()
+	{
+		return array(
+			array(
+				['FREQ' => 'YEARLY', 'DTSTART' => '1999-09-02'],
+				['1999-09-01','1999-09-03']
+			),
+			array(
+				['FREQ' => 'YEARLY', 'DTSTART' => '1999-09-02', 'UNTIL' => '2000-09-02'],
+				['2001-09-02']
+			),
+			array(
+				['FREQ' => 'YEARLY', 'DTSTART' => '1999-09-02', 'COUNT' => 3],
+				['2010-09-02']
+			),
+			array(
+				['FREQ' => 'YEARLY', 'DTSTART' => '1999-09-02', 'INTERVAL' => 2],
+				['2000-09-02', '2002-09-02']
+			),
+			array(
+				['FREQ' => 'MONTHLY', 'DTSTART' => '1999-09-02', 'INTERVAL' => 2],
+				['1999-10-02', '1999-12-02']
+			),
+		);
+	}
+
+	/**
+	 * @dataProvider notOccurrences
+	 */
+	public function testDoesNotOccursAt($rule, $not_occurences)
+	{
+		foreach ( $not_occurences as $date ) {
+			$this->assertFalse((new RRule($rule))->occursAt($date), $date);
+		}
+	}
 }
