@@ -48,7 +48,7 @@ Just add this to your `composer.json` file:
 ```JSON
 {
     "require": {
-        "rlanvin/php-rrule": "dev-master*"
+        "rlanvin/php-rrule": "dev-master"
     }
 }
 ```

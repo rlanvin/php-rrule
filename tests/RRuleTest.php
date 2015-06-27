@@ -900,8 +900,9 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testDoesNotOccursAt($rule, $not_occurences)
 	{
+		$rule = new RRule($rule);
 		foreach ( $not_occurences as $date ) {
-			$this->assertFalse((new RRule($rule))->occursAt($date), $date);
+			$this->assertFalse($rule->occursAt($date), $date);
 		}
 	}
 }
