@@ -490,7 +490,7 @@ class RRule implements \Iterator, \ArrayAccess
 				foreach ( $this->byminute as $minute ) {
 					foreach ( $this->bysecond as $second ) {
 						// fixme another format?
-						$this->timeset[] = [$hour,$minute,$second];
+						$this->timeset[] = array($hour,$minute,$second);
 					}
 				}
 			}
