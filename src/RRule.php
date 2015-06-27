@@ -578,7 +578,7 @@ class RRule implements \Iterator, \ArrayAccess
 		if ( $this->byminute && ! in_array((int) $date->format('i'), $this->byminute) ) {
 			return false;
 		}
-		if ( $this->bysecond && ! in_array((int) $date->format('s'), $this->byhour) ) {
+		if ( $this->bysecond && ! in_array((int) $date->format('s'), $this->bysecond) ) {
 			return false;
 		}
 
@@ -606,7 +606,7 @@ class RRule implements \Iterator, \ArrayAccess
 		}
 
 		if ( $this->bymonthday || $this->bymonthday_negative ) {
-			$monthday_negative = -1 * ($month_len - $day - 1);
+			$monthday_negative = -1 * ($month_len - $day + 1);
 
 			if ( ! in_array($day, $this->bymonthday) && ! in_array($monthday_negative, $this->bymonthday_negative) ) {
 				return false;
@@ -804,6 +804,12 @@ class RRule implements \Iterator, \ArrayAccess
 
 	/**
 	 * Some serious magic is happening here.
+	 * This method will calculate the yeardays corresponding to each Nth weekday
+	 * (in BYDAY rule part).
+	 * For example, in Jan 1998, in a MONTHLY interval, "1SU,-1SU" (first Sunday
+	 * and last Sunday) would be transformed into [3=>true,24=>true] because
+	 * the first Sunday of Jan 1998 is yearday 3 (counting from 0) and the
+	 * last Sunday of Jan 1998 is yearday 24 (counting from 0).
 	 */
 	protected function buildNthWeekdayMask($year, $month, $day, array & $masks)
 	{
@@ -814,7 +820,7 @@ class RRule implements \Iterator, \ArrayAccess
 			if ( $this->freq == self::YEARLY ) {
 				if ( $this->bymonth ) {
 					foreach ( $this->bymonth as $bymonth ) {
-						$ranges[] = [$masks['last_day_of_month'][$bymonth-1], $masks['last_day_of_month'][$bymonth]];
+						$ranges[] = [$masks['last_day_of_month'][$bymonth-1], $masks['last_day_of_month'][$bymonth]-1];
 					}
 				}
 				else {
@@ -822,7 +828,7 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 			}
 			elseif ( $this->freq == self::MONTHLY ) {
-				$ranges[] = [$masks['last_day_of_month'][$month-1], $masks['last_day_of_month'][$month]];
+				$ranges[] = [$masks['last_day_of_month'][$month-1], $masks['last_day_of_month'][$month]-1];
 			}
 
 			if ( $ranges ) {
@@ -840,6 +846,7 @@ class RRule implements \Iterator, \ArrayAccess
 							$i = $first + ($nth - 1) * 7;
 							$i = $i + (7 - $masks['yearday_to_weekday'][$i] + $weekday) % 7;
 						}
+
 						if ( $i >= $first && $i <= $last ) {
 							$masks['yearday_is_nth_weekday'][$i] = true;
 						}
