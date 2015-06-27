@@ -435,7 +435,7 @@ class RRule implements \Iterator, \ArrayAccess
 			}
 		}
 		elseif ( $this->freq < self::HOURLY ) { 
-			$this->byhour = [(int) $this->dtstart->format('G')];
+			$this->byhour = array((int) $this->dtstart->format('G'));
 		}
 
 		if ( not_empty($parts['BYMINUTE']) ) {
@@ -456,7 +456,7 @@ class RRule implements \Iterator, \ArrayAccess
 			}
 		}
 		elseif ( $this->freq < self::MINUTELY ) {
-			$this->byminute = [(int) $this->dtstart->format('i')];
+			$this->byminute = array((int) $this->dtstart->format('i'));
 		}
 
 		if ( not_empty($parts['BYSECOND']) ) {
@@ -477,7 +477,7 @@ class RRule implements \Iterator, \ArrayAccess
 			}
 		}
 		elseif ( $this->freq < self::SECONDLY ) {
-			$this->bysecond = [(int) $this->dtstart->format('s')];
+			$this->bysecond = array((int) $this->dtstart->format('s'));
 		}
 
 		if ( $this->freq < self::HOURLY ) {
