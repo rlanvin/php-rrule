@@ -34,7 +34,7 @@ Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wik
 
 ## Requirements
 
-- PHP >= 5.4
+- PHP >= 5.3
 
 ## Installation
 

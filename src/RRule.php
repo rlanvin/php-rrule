@@ -94,7 +94,7 @@ class RRule implements \Iterator, \ArrayAccess
 	const YEARLY = 1;
 
 	// frequency names
-	public static $frequencies = [
+	public static $frequencies = array(
 		'SECONDLY' => self::SECONDLY,
 		'MINUTELY' => self::MINUTELY,
 		'HOURLY' => self::HOURLY,
@@ -102,10 +102,10 @@ class RRule implements \Iterator, \ArrayAccess
 		'WEEKLY' => self::WEEKLY,
 		'MONTHLY' => self::MONTHLY,
 		'YEARLY' => self::YEARLY
-	];
+	);
 
 	// weekdays numbered from 1 (ISO-8601 or date('N'))
-	public static $week_days =  [
+	public static $week_days = array(
 		'MO' => 1,
 		'TU' => 2,
 		'WE' => 3,
@@ -113,7 +113,7 @@ class RRule implements \Iterator, \ArrayAccess
 		'FR' => 5,
 		'SA' => 6,
 		'SU' => 7
-	];
+	);
 
 	// original rule
 	protected $rule = array(
@@ -285,8 +285,8 @@ class RRule implements \Iterator, \ArrayAccess
 			if ( ! is_array($parts['BYDAY']) ) {
 				$parts['BYDAY'] = explode(',',$parts['BYDAY']);
 			}
-			$this->byweekday = [];
-			$this->byweekday_nth = [];
+			$this->byweekday = array();
+			$this->byweekday_nth = array();
 			foreach ( $parts['BYDAY'] as $value ) {
 				$value = trim($value);
 				$valid = preg_match('/^([+-]?[0-9]+)?([A-Z]{2})$/', $value, $matches);
@@ -326,8 +326,8 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYMONTHDAY'] = explode(',',$parts['BYMONTHDAY']);
 			}
 
-			$this->bymonthday = [];
-			$this->bymonthday_negative = [];
+			$this->bymonthday = array();
+			$this->bymonthday_negative = array();
 			foreach ( $parts['BYMONTHDAY'] as $value ) {
 				if ( ! $value || $value < -31 || $value > 31 ) {
 					throw new \InvalidArgumentException('Invalid BYMONTHDAY value: '.$value.' (valid values are 1 to 31 or -31 to -1)');
@@ -350,7 +350,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYYEARDAY'] = explode(',',$parts['BYYEARDAY']);
 			}
 
-			$this->bysetpos = [];
+			$this->bysetpos = array();
 			foreach ( $parts['BYYEARDAY'] as $value ) {
 				if ( ! $value || $value < -366 || $value > 366 ) {
 					throw new \InvalidArgumentException('Invalid BYSETPOS value: '.$value.' (valid values are 1 to 366 or -366 to -1)');
@@ -370,7 +370,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYWEEKNO'] = explode(',',$parts['BYWEEKNO']);
 			}
 
-			$this->byweekno = [];
+			$this->byweekno = array();
 			foreach ( $parts['BYWEEKNO'] as $value ) {
 				if ( ! $value || $value < -53 || $value > 53 ) {
 					throw new \InvalidArgumentException('Invalid BYWEEKNO value: '.$value.' (valid values are 1 to 53 or -53 to -1)');
@@ -386,7 +386,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYMONTH'] = explode(',',$parts['BYMONTH']);
 			}
 
-			$this->bymonth = [];
+			$this->bymonth = array();
 			foreach ( $parts['BYMONTH'] as $value ) {
 				if ( $value < 1 || $value > 12 ) {
 					throw new \InvalidArgumentException('Invalid BYMONTH value: '.$value);
@@ -404,7 +404,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYSETPOS'] = explode(',',$parts['BYSETPOS']);
 			}
 
-			$this->bysetpos = [];
+			$this->bysetpos = array();
 			foreach ( $parts['BYSETPOS'] as $value ) {
 				if ( ! $value || $value < -366 || $value > 366 ) {
 					throw new \InvalidArgumentException('Invalid BYSETPOS value: '.$value.' (valid values are 1 to 366 or -366 to -1)');
@@ -422,7 +422,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYHOUR'] = explode(',',$parts['BYHOUR']);
 			}
 
-			$this->byhour = [];
+			$this->byhour = array();
 			foreach ( $parts['BYHOUR'] as $value ) {
 				if ( $value < 0 || $value > 23 ) {
 					throw new \InvalidArgumentException('Invalid BYHOUR value: '.$value);
@@ -443,7 +443,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYMINUTE'] = explode(',',$parts['BYMINUTE']);
 			}
 
-			$this->byminute = [];
+			$this->byminute = array();
 			foreach ( $parts['BYMINUTE'] as $value ) {
 				if ( $value < 0 || $value > 59 ) {
 					throw new \InvalidArgumentException('Invalid BYMINUTE value: '.$value);
@@ -464,7 +464,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$parts['BYSECOND'] = explode(',',$parts['BYSECOND']);
 			}
 
-			$this->bysecond = [];
+			$this->bysecond = array();
 			foreach ( $parts['BYSECOND'] as $value ) {
 				if ( $value < 0 || $value > 60 ) {
 					throw new \InvalidArgumentException('Invalid BYSECOND value: '.$value);
@@ -506,7 +506,7 @@ class RRule implements \Iterator, \ArrayAccess
 		if ( ! $this->count && ! $this->until ) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
-		$res = [];
+		$res = array();
 		foreach ( $this as $occurrence ) {
 			$res[] = $occurrence;
 		}
@@ -518,7 +518,7 @@ class RRule implements \Iterator, \ArrayAccess
 	 */
 	public function getOccurrencesBetween($begin, $end)
 	{
-		$res = [];
+		$res = array();
 		foreach ( $this as $occurrence ) {
 			if ( $occurrence < $begin ) {
 				continue;
@@ -779,7 +779,7 @@ class RRule implements \Iterator, \ArrayAccess
 				// crossing year boundary in reverse (i.e. if the week started
 				// during the previous year), because that would generate
 				// negative indexes (which would not work with the masks)
-				$set = [];
+				$set = array();
 				$i = (int) date('z', mktime(0,0,0,$month,$day,$year));
 				$start = $i;
 				for ( $j = 0; $j < 7; $j++ ) {
@@ -793,7 +793,7 @@ class RRule implements \Iterator, \ArrayAccess
 
 			case self::DAILY:
 				$n = (int) date('z', mktime(0,0,0,$month,$day,$year));
-				return [$n];
+				return array($n);
 
 			case self::HOURLY:
 			case self::MINUTELY:
@@ -820,15 +820,21 @@ class RRule implements \Iterator, \ArrayAccess
 			if ( $this->freq == self::YEARLY ) {
 				if ( $this->bymonth ) {
 					foreach ( $this->bymonth as $bymonth ) {
-						$ranges[] = [$masks['last_day_of_month'][$bymonth-1], $masks['last_day_of_month'][$bymonth]-1];
+						$ranges[] = array(
+							$masks['last_day_of_month'][$bymonth - 1],
+							$masks['last_day_of_month'][$bymonth] - 1
+						);
 					}
 				}
 				else {
-					$ranges = [[0,$masks['year_len']-1]];
+					$ranges = array(array(0, $masks['year_len'] - 1));
 				}
 			}
 			elseif ( $this->freq == self::MONTHLY ) {
-				$ranges[] = [$masks['last_day_of_month'][$month-1], $masks['last_day_of_month'][$month]-1];
+				$ranges[] = array(
+					$masks['last_day_of_month'][$month - 1],
+					$masks['last_day_of_month'][$month] - 1
+				);
 			}
 
 			if ( $ranges ) {
@@ -1119,7 +1125,7 @@ class RRule implements \Iterator, \ArrayAccess
 
 				// XXX this needs to be applied after expanding the timeset
 				if ( $this->bysetpos ) {
-					$filtered_set = [];
+					$filtered_set = array();
 					$n = sizeof($current_set);
 					foreach ( $this->bysetpos as $pos ) {
 						if ( $pos < 0 ) {
@@ -1185,11 +1191,11 @@ class RRule implements \Iterator, \ArrayAccess
 					break;
 				case self::WEEKLY:
 					// here we take a little shortcut from the Python version, by using DateTime
-					list($year,$month,$day) = explode('-',(new \DateTime("$year-$month-$day"))->modify('+'.($this->interval*7).'day')->format('Y-n-j'));
+					list($year,$month,$day) = explode('-',date_create("$year-$month-$day")->modify('+'.($this->interval*7).'day')->format('Y-n-j'));
 					break;
 				case self::DAILY:
 					// here we take a little shortcut from the Python version, by using DateTime
-					list($year,$month,$day) = explode('-',(new \DateTime("$year-$month-$day"))->modify('+'.$this->interval.'day')->format('Y-n-j'));
+					list($year,$month,$day) = explode('-',date_create("$year-$month-$day")->modify('+'.$this->interval.'day')->format('Y-n-j'));
 					break;
 				case self::HOURLY:
 				case self::MINUTELY:
