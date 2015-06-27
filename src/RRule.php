@@ -267,15 +267,15 @@ class RRule implements \Iterator, \ArrayAccess
 			switch ( $this->freq ) {
 				case self::YEARLY:
 					if ( ! not_empty($parts['BYMONTH']) ) {
-						$parts['BYMONTH'] = [(int) $this->dtstart->format('m')];
+						$parts['BYMONTH'] = array((int) $this->dtstart->format('m'));
 					}
-					$parts['BYMONTHDAY'] = [(int) $this->dtstart->format('j')];
+					$parts['BYMONTHDAY'] = array((int) $this->dtstart->format('j'));
 					break;
 				case self::MONTHLY:
-					$parts['BYMONTHDAY'] = [(int) $this->dtstart->format('j')];
+					$parts['BYMONTHDAY'] = array((int) $this->dtstart->format('j'));
 					break;
 				case self::WEEKLY:
-					$parts['BYDAY'] = [array_search($this->dtstart->format('N'), self::$week_days)];
+					$parts['BYDAY'] = array(array_search($this->dtstart->format('N'), self::$week_days));
 					break;
 			}
 		}
@@ -295,7 +295,7 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 
 				if ( $matches[1] ) {
-					$this->byweekday_nth[] = [self::$week_days[$matches[2]], (int)$matches[1]];
+					$this->byweekday_nth[] = array(self::$week_days[$matches[2]], (int)$matches[1]);
 				}
 				else {
 					$this->byweekday[] = self::$week_days[$matches[2]];
