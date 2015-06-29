@@ -4,6 +4,9 @@ use RRule\RRule;
 
 class RRuleTest extends PHPUnit_Framework_TestCase
 {
+	/**
+	 * These rules are invalid according to the RFC
+	 */
 	public function invalidRules()
 	{
 		return array(
@@ -51,56 +54,98 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		new RRule($rule);
 	}
 
-	public function testIsLeapYear()
-	{
-		$this->assertFalse(\RRule\is_leap_year(1700));
-		$this->assertFalse(\RRule\is_leap_year(1800));
-		$this->assertFalse(\RRule\is_leap_year(1900));
-		$this->assertTrue(\RRule\is_leap_year(2000));
-	}
-
-// date_create\((array(0-9)+), (array(0-9)+), (array(0-9)+)array( ,0-9\))+
-
+	/**
+	 * YEARLY rules, mostly taken from Python test suite.
+	 */
 	public function yearlyRules()
 	{
 		return array(
-			array(array(),array(date_create('1997-09-02'),date_create('1998-09-02'), date_create('1999-09-02'))),
-			array(array('INTERVAL' => 2), array(date_create('1997-09-02'),date_create('1999-09-02'),date_create('2001-09-02'))),
-			array(array('DTSTART' => '2000-02-29'), array(date_create('2000-02-29'),date_create('2004-02-29'),date_create('2008-02-29'))),
-			array(array('BYMONTH' => array(1,3)), array(date_create('1998-01-02'),date_create('1998-03-02'),date_create('1999-01-02'))),
-			array(array('BYMONTHDAY' => array(1,3)), array(date_create('1997-09-03'),date_create('1997-10-01'),date_create('1997-10-03'))),
-			array(array('BYMONTH' => array(1,3), 'BYMONTHDAY' => array(5,7)), array(date_create('1998-01-05'),date_create('1998-01-07'),date_create('1998-03-05'))),
-			array(array('BYDAY' => array('TU','TH')), array(date_create('1997-09-02'),date_create('1997-09-04'),date_create('1997-09-09'))),
-			array(array('BYDAY' => array('SU')), array(date_create('1997-09-07'),date_create('1997-09-14'),date_create('1997-09-21'))),
-			array(array('BYDAY' => array('1TU','-1TH')), array(date_create('1997-12-25'),date_create('1998-01-06'),date_create('1998-12-31'))),
-			array(array('BYDAY' => array('3TU','-3TH')), array(date_create('1997-12-11'),date_create('1998-01-20'),date_create('1998-12-17'))),
-			array(array('BYMONTH' => array(1,3), 'BYDAY' => array('TU','TH')), array(date_create('1998-01-01'),date_create('1998-01-06'),date_create('1998-01-08'))),
-			array(array('BYMONTH' => array(1,3), 'BYDAY' => array('1TU','-1TH')), array(date_create('1998-01-06'),date_create('1998-01-29'),date_create('1998-03-03'))),
+			array(array(),array(
+				date_create('1997-09-02'),date_create('1998-09-02'), date_create('1999-09-02'))),
+			array(array('INTERVAL' => 2), array(
+				date_create('1997-09-02'),date_create('1999-09-02'),date_create('2001-09-02'))),
+			array(array('DTSTART' => '2000-02-29'), array(
+				date_create('2000-02-29'),date_create('2004-02-29'),date_create('2008-02-29'))),
+			array(array('BYMONTH' => array(1,3)), array(
+				date_create('1998-01-02'),date_create('1998-03-02'),date_create('1999-01-02'))),
+			array(array('BYMONTHDAY' => array(1,3)), array(
+				date_create('1997-09-03'),date_create('1997-10-01'),date_create('1997-10-03'))),
+			array(array('BYMONTH' => array(1,3), 'BYMONTHDAY' => array(5,7)), array(
+				date_create('1998-01-05'),date_create('1998-01-07'),date_create('1998-03-05'))),
+			array(array('BYDAY' => array('TU','TH')), array(
+				date_create('1997-09-02'),date_create('1997-09-04'),date_create('1997-09-09'))),
+			array(array('BYDAY' => array('SU')), array(
+				date_create('1997-09-07'),date_create('1997-09-14'),date_create('1997-09-21'))),
+			array(array('BYDAY' => array('1TU','-1TH')), array(
+				date_create('1997-12-25'),date_create('1998-01-06'),date_create('1998-12-31'))),
+			array(array('BYDAY' => array('3TU','-3TH')), array(
+				date_create('1997-12-11'),date_create('1998-01-20'),date_create('1998-12-17'))),
+			array(array('BYMONTH' => array(1,3), 'BYDAY' => array('TU','TH')), array(
+				date_create('1998-01-01'),date_create('1998-01-06'),date_create('1998-01-08'))),
+			array(array('BYMONTH' => array(1,3), 'BYDAY' => array('1TU','-1TH')), array(
+				date_create('1998-01-06'),date_create('1998-01-29'),date_create('1998-03-03'))),
 			// This is interesting because the TH(-3) ends up before the TU(3).
-			array(array('BYMONTH' => array(1,3), 'BYDAY' => array('3TU','-3TH')), array(date_create('1998-01-15'),date_create('1998-01-20'),date_create('1998-03-12'))),
-			array(array('BYMONTHDAY' => array(1,3), 'BYDAY' => array('TU','TH')), array(date_create('1998-01-01'),date_create('1998-02-03'),date_create('1998-03-03'))),
-			array(array('BYMONTHDAY' => array(1,3), 'BYDAY' => array('TU','TH'), 'BYMONTH' => array(1,3)), array(date_create('1998-01-01'),date_create('1998-03-03'),date_create('2001-03-01'))),
-			array(array('BYYEARDAY' => array(1,100,200,365), 'COUNT' => 4), array(date_create('1997-12-31'),date_create('1998-01-01'),date_create('1998-04-10'), date_create('1998-07-19'))),
-			array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'COUNT' => 4), array(date_create('1997-12-31'),date_create('1998-01-01'),date_create('1998-04-10'), date_create('1998-07-19'))),
-			array(array('BYYEARDAY' => array(1,100,200,365), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(date_create('1998-04-10'),date_create('1998-07-19'),date_create('1999-04-10'), date_create('1999-07-19'))),
-			array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(date_create('1998-04-10'),date_create('1998-07-19'),date_create('1999-04-10'), date_create('1999-07-19'))),
-			array(array('BYWEEKNO' => 20),array(date_create('1998-05-11'),date_create('1998-05-12'),date_create('1998-05-13'))),
+			array(array('BYMONTH' => array(1,3), 'BYDAY' => array('3TU','-3TH')), array(
+				date_create('1998-01-15'),date_create('1998-01-20'),date_create('1998-03-12'))),
+			array(array('BYMONTHDAY' => array(1,3), 'BYDAY' => array('TU','TH')), array(
+				date_create('1998-01-01'),date_create('1998-02-03'),date_create('1998-03-03'))),
+			array(array('BYMONTHDAY' => array(1,3), 'BYDAY' => array('TU','TH'), 'BYMONTH' => array(1,3)), array(
+				date_create('1998-01-01'),date_create('1998-03-03'),date_create('2001-03-01'))),
+			array(array('BYYEARDAY' => array(1,100,200,365), 'COUNT' => 4), array(
+				date_create('1997-12-31'),date_create('1998-01-01'),date_create('1998-04-10'), date_create('1998-07-19'))),
+			array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'COUNT' => 4), array(
+				date_create('1997-12-31'),date_create('1998-01-01'),date_create('1998-04-10'), date_create('1998-07-19'))),
+			array(array('BYYEARDAY' => array(1,100,200,365), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
+				date_create('1998-04-10'),date_create('1998-07-19'),date_create('1999-04-10'), date_create('1999-07-19'))),
+			array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
+				date_create('1998-04-10'),date_create('1998-07-19'),date_create('1999-04-10'), date_create('1999-07-19'))),
+			array(array('BYWEEKNO' => 20),array(
+				date_create('1998-05-11'),date_create('1998-05-12'),date_create('1998-05-13'))),
 			// That's a nice one. The first days of week number one may be in the last year.
-			array(array('BYWEEKNO' => 1, 'BYDAY' => 'MO'), array(date_create('1997-12-29'), date_create('1999-01-04'), date_create('2000-01-03'))),
+			array(array('BYWEEKNO' => 1, 'BYDAY' => 'MO'), array(
+				date_create('1997-12-29'), date_create('1999-01-04'), date_create('2000-01-03'))),
 			// Another nice test. The last days of week number 52/53 may be in the next year.
-			array(array('BYWEEKNO' => 52, 'BYDAY' => 'SU'), array(date_create('1997-12-28'), date_create('1998-12-27'), date_create('2000-01-02'))),
-			array(array('BYWEEKNO' => -1, 'BYDAY' => 'SU'), array(date_create('1997-12-28'), date_create('1999-01-03'), date_create('2000-01-02'))),
-			array(array('BYWEEKNO' => 53, 'BYDAY' => 'MO'), array(date_create('1998-12-28'), date_create('2004-12-27'), date_create('2009-12-28'))),
+			array(array('BYWEEKNO' => 52, 'BYDAY' => 'SU'), array(
+				date_create('1997-12-28'), date_create('1998-12-27'), date_create('2000-01-02'))),
+			array(array('BYWEEKNO' => -1, 'BYDAY' => 'SU'), array(
+				date_create('1997-12-28'), date_create('1999-01-03'), date_create('2000-01-02'))),
+			array(array('BYWEEKNO' => 53, 'BYDAY' => 'MO'), array(
+				date_create('1998-12-28'), date_create('2004-12-27'), date_create('2009-12-28'))),
 
-			// FIXME (time part missing)
-			// array(array('BYHOUR' => array(6, 18)), array(date_create('1997-09-02'),date_create('1998-09-02'),date_create('1998-09-02'))),
-			// array(array('BYMINUTE'=> array(6, 18)), array('1997-09-02', '1997-09-02', '1998-09-02')),
-			// array(array('BYSECOND' => array(6, 18)), array('1997-09-02', '1997-09-02', '1998-09-02')),
-			// array(array('BYHOUR' => array(6, 18), 'BYMINUTE' => array(6, 18)),  array('1997-09-02','1997-09-02','1998-09-02')),
-			// array(array('BYHOUR' => array(6, 18), 'BYSECOND' => array(6, 18)), array('1997-09-02','1997-09-02','1998-09-02')),
-			// array(array('BYMINUTE' => array(6, 18), 'BYSECOND' => array(6, 18)), array('1997-09-02','1997-09-02','1997-09-02')),
-			// array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(6, 18),'BYSECOND'=>array(6, 18)),array('1997-09-02','1997-09-02','1997-09-02')),
-			// array(array('BYMONTHDAY'=>15,'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3),array(date_create('1997-11-15'),date_create('1998-02-15'),date_create('1998-11-15')))
+			// TODO BYSETPOS
+
+			array(array('BYHOUR' => array(6, 18)),array(
+				date_create('1997-09-02 06:00:00'),
+				date_create('1997-09-02 18:00:00'),
+				date_create('1998-09-02 06:00:00'))),
+			array(array('BYMINUTE'=> array(15, 30)), array(
+				date_create('1997-09-02 00:15:00'),
+				date_create('1997-09-02 00:30:00'),
+				date_create('1998-09-02 00:15:00'))),
+			array(array('BYSECOND' => array(10, 20)), array(
+				date_create('1997-09-02 00:00:10'),
+				date_create('1997-09-02 00:00:20'),
+				date_create('1998-09-02 00:00:10'))),
+			array(array('BYHOUR' => array(6, 18), 'BYMINUTE' => array(15, 30)),  array(
+				date_create('1997-09-02 06:15:00'),
+				date_create('1997-09-02 06:30:00'),
+				date_create('1997-09-02 18:15:00'))),
+			array(array('BYHOUR' => array(6, 18), 'BYSECOND' => array(10, 20)), array(
+				date_create('1997-09-02 06:00:10'),
+				date_create('1997-09-02 06:00:20'),
+				date_create('1997-09-02 18:00:10'))),
+			array(array('BYMINUTE' => array(15, 30), 'BYSECOND' => array(10, 20)), array(
+				date_create('1997-09-02 00:15:10'),
+				date_create('1997-09-02 00:15:20'),
+				date_create('1997-09-02 00:30:10'))),
+			array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(15, 30),'BYSECOND'=>array(10, 20)),array(
+				date_create('1997-09-02 06:15:10'),
+				date_create('1997-09-02 06:15:20'),
+				date_create('1997-09-02 06:30:10'))),
+			// array(array('BYMONTHDAY'=>15,'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3)),array(
+			// 	date_create('1997-11-15 18:00:00'),
+			// 	date_create('1998-02-15 06:00:00'),
+			// 	date_create('1998-11-15 18:00:00')))
 		);
 	}
 
@@ -121,34 +166,62 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	}
 
 
+	/**
+	 * MONTHY rules, mostly taken from the Python test suite
+	 */
 	public function monthlyRules()
 	{
 		return array(
-			array(array(),array(date_create('1997-09-02'),date_create('1997-10-02'),date_create('1997-11-02'))),
-			array(array('INTERVAL'=>2),array(date_create('1997-09-02'),date_create('1997-11-02'),date_create('1998-01-02'))),
-			array(array('INTERVAL'=>18),array(date_create('1997-09-02'),date_create('1999-03-02'),date_create('2000-09-02'))),
-			array(array('BYMONTH' => array(1, 3)),array(date_create('1998-01-02'),date_create('1998-03-02'),date_create('1999-01-02'))),
-			array(array('BYMONTHDAY' => array(1, 3)),array(date_create('1997-09-03'),date_create('1997-10-01'),date_create('1997-10-03'))),
-			array(array('BYMONTHDAY' => array(5, 7), 'BYMONTH' => array(1, 3)), array(date_create('1998-01-05'), date_create('1998-01-07'), date_create('1998-03-05'))),
-			array(array('BYDAY' => array('TU', 'TH')), array(date_create('1997-09-02'),date_create('1997-09-04'),date_create('1997-09-09'))),
+			array(array(),array(
+				date_create('1997-09-02'),date_create('1997-10-02'),date_create('1997-11-02'))),
+			array(array('INTERVAL'=>2),array(
+				date_create('1997-09-02'),date_create('1997-11-02'),date_create('1998-01-02'))),
+			array(array('INTERVAL'=>18),array(
+				date_create('1997-09-02'),date_create('1999-03-02'),date_create('2000-09-02'))),
+			array(array('BYMONTH' => array(1, 3)),array(
+				date_create('1998-01-02'),date_create('1998-03-02'),date_create('1999-01-02'))),
+			array(array('BYMONTHDAY' => array(1, 3)),array(
+				date_create('1997-09-03'),date_create('1997-10-01'),date_create('1997-10-03'))),
+			array(array('BYMONTHDAY' => array(5, 7), 'BYMONTH' => array(1, 3)), array(
+				date_create('1998-01-05'), date_create('1998-01-07'), date_create('1998-03-05'))),
+			array(array('BYDAY' => array('TU', 'TH')), array(
+				date_create('1997-09-02'),date_create('1997-09-04'),date_create('1997-09-09'))),
 			// Third Monday of the month
-			array(array('BYDAY' => '3MO'),array(date_create('1997-09-15'),date_create('1997-10-20'),date_create('1997-11-17'))),
-			array(array('BYDAY' => '1TU,-1TH'),array(date_create('1997-09-02'),date_create('1997-09-25'),date_create('1997-10-07'))),
-			array(array('BYDAY' => '3TU,-3TH'),array(date_create('1997-09-11'),date_create('1997-09-16'),date_create('1997-10-16'))),
-			array(array('BYDAY' => 'TU,TH', 'BYMONTH' => array(1, 3)),array(date_create('1998-01-01'),date_create('1998-01-06'),date_create('1998-01-08'))),
-			array(array('BYMONTH' => array(1, 3), 'BYDAY' => '1TU, -1TH'),array(date_create('1998-01-06'),date_create('1998-01-29'),date_create('1998-03-03'))),
-			array(array('BYMONTH' => array(1, 3), 'BYDAY' => '3TU, -3TH'),array(date_create('1998-01-15'),date_create('1998-01-20'),date_create('1998-03-12'))),
-			array(array('BYMONTHDAY' => array(1, 3), 'BYDAY' => array('TU', 'TH')), array(date_create('1998-01-01'),date_create('1998-02-03'),date_create('1998-03-03'))),
-			array(array('BYMONTH' => array(1, 3), 'BYMONTHDAY' => array(1, 3), 'BYDAY' => array('TU', 'TH')),array(date_create('1998-01-01'),date_create('1998-03-03'),date_create('2001-03-01'))),
+			array(array('BYDAY' => '3MO'),array(
+				date_create('1997-09-15'),date_create('1997-10-20'),date_create('1997-11-17'))),
+			array(array('BYDAY' => '1TU,-1TH'),array(
+				date_create('1997-09-02'),date_create('1997-09-25'),date_create('1997-10-07'))),
+			array(array('BYDAY' => '3TU,-3TH'),array(
+				date_create('1997-09-11'),date_create('1997-09-16'),date_create('1997-10-16'))),
+			array(array('BYDAY' => 'TU,TH', 'BYMONTH' => array(1, 3)),array(
+				date_create('1998-01-01'),date_create('1998-01-06'),date_create('1998-01-08'))),
+			array(array('BYMONTH' => array(1, 3), 'BYDAY' => '1TU, -1TH'),array(
+				date_create('1998-01-06'),date_create('1998-01-29'),date_create('1998-03-03'))),
+			array(array('BYMONTH' => array(1, 3), 'BYDAY' => '3TU, -3TH'),array(
+				date_create('1998-01-15'),date_create('1998-01-20'),date_create('1998-03-12'))),
+			array(array('BYMONTHDAY' => array(1, 3), 'BYDAY' => array('TU', 'TH')), array(
+				date_create('1998-01-01'),date_create('1998-02-03'),date_create('1998-03-03'))),
+			array(array('BYMONTH' => array(1, 3), 'BYMONTHDAY' => array(1, 3), 'BYDAY' => array('TU', 'TH')),array(
+				date_create('1998-01-01'),date_create('1998-03-03'),date_create('2001-03-01'))),
 
-			// array(array('BYHOUR'=> array(6, 18),array('1997-09-02',date_create('1997-10-02'),date_create('1997-10-02'))),
-			// array(array('BYMINUTE'=> array(6, 18),array('1997-09-02','1997-09-02',date_create('1997-10-02'))),
-			// array(array('BYSECOND' => array(6, 18),array('1997-09-02','1997-09-02',date_create('1997-10-02'))),
-			// array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(6, 18)),array('1997-09-02','1997-09-02',date_create('1997-10-02'))),
-			// array(array('BYHOUR'=>array(6, 18),'BYSECOND'=>array(6, 18)),array('1997-09-02','1997-09-02',date_create('1997-10-02'))),
-			// array(array('BYMINUTE'=>array(6, 18),'BYSECOND'=>array(6, 18)),array('1997-09-02','1997-09-02','1997-09-02')),
-			// array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(6, 18),'BYSECOND'=>array(6, 18)),array('1997-09-02','1997-09-02','1997-09-02')),
-			// array(array('BYMONTHDAY'=>array(13, 17),'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3)),array(date_create('1997-09-13'),date_create('1997-09-17'),date_create('1997-10-13')))
+			// TODO BYSETPOS
+
+			array(array('BYHOUR'=> array(6, 18)),array(
+				date_create('1997-09-02 06:00:00'),date_create('1997-09-02 18:00:00'),date_create('1997-10-02 06:00:00'))),
+			array(array('BYMINUTE'=> array(6, 18)),array(
+				date_create('1997-09-02 00:06:00'),date_create('1997-09-02 00:18:00'),date_create('1997-10-02 00:06:00'))),
+			array(array('BYSECOND' => array(6, 18)),array(
+				date_create('1997-09-02 00:00:06'),date_create('1997-09-02 00:00:18'),date_create('1997-10-02 00:00:06'))),
+			array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(6, 18)),array(
+				date_create('1997-09-02 06:06:00'),date_create('1997-09-02 06:18:00'),date_create('1997-09-02 18:06:00'))),
+			array(array('BYHOUR'=>array(6, 18),'BYSECOND'=>array(6, 18)),array(
+				date_create('1997-09-02 06:00:06'),date_create('1997-09-02 06:00:18'),date_create('1997-09-02 18:00:06'))),
+			array(array('BYMINUTE'=>array(6, 18),'BYSECOND'=>array(6, 18)),array(
+				date_create('1997-09-02 00:06:06'),date_create('1997-09-02 00:06:18'),date_create('1997-09-02 00:18:06'))),
+			array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(6, 18),'BYSECOND'=>array(6, 18)),array(
+				date_create('1997-09-02 06:06:06'),date_create('1997-09-02 06:06:18'),date_create('1997-09-02 06:18:06'))),
+			// array(array('BYMONTHDAY'=>array(13, 17),'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3)),array(
+			// 	date_create('1997-09-13 06:00'),date_create('1997-09-17'),date_create('1997-10-13')))
 		);
 	}
 
@@ -168,28 +241,45 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
+	/**
+	 * WEEKLY rules, mostly taken from the Python test suite
+	 */
 	public function weeklyRules()
 	{
 		return array(
-			array(array(),array(date_create('1997-09-02'), date_create('1997-09-09'), date_create('1997-09-16'))),
-			array(array('interval'=>2),array(date_create('1997-09-02'),date_create('1997-09-16'),date_create('1997-09-30'))),
-			array(array('interval'=>20),array(date_create('1997-09-02'),date_create('1998-01-20'),date_create('1998-06-09'))),
-			array(array('bymonth'=>array(1, 3)),array(date_create('1998-01-06'),date_create('1998-01-13'),date_create('1998-01-20'))),
-			array(array('byday'=> array('TU', 'TH')),array(date_create('1997-09-02'), date_create('1997-09-04'), date_create('1997-09-09'))),
+			array(array(),array(
+				date_create('1997-09-02'), date_create('1997-09-09'), date_create('1997-09-16'))),
+			array(array('interval'=>2),array(
+				date_create('1997-09-02'),date_create('1997-09-16'),date_create('1997-09-30'))),
+			array(array('interval'=>20),array(
+				date_create('1997-09-02'),date_create('1998-01-20'),date_create('1998-06-09'))),
+			array(array('bymonth'=>array(1, 3)),array(
+				date_create('1998-01-06'),date_create('1998-01-13'),date_create('1998-01-20'))),
+			array(array('byday'=> array('TU', 'TH')),array(
+				date_create('1997-09-02'), date_create('1997-09-04'), date_create('1997-09-09'))),
 
 			# This test is interesting, because it crosses the year
 			# boundary in a weekly period to find day '1' as a
 			# valid recurrence.
-			array(array('bymonth'=>array(1, 3),'byday'=>array('TU', 'TH')),array(date_create('1998-01-01'), date_create('1998-01-06'), date_create('1998-01-08'))),
+			array(array('bymonth'=>array(1, 3),'byday'=>array('TU', 'TH')),array(
+				date_create('1998-01-01'), date_create('1998-01-06'), date_create('1998-01-08'))),
 
-			// array(array('byhour'=>array(6, 18)),array(date_create('1997-09-02'),date_create('1997-09-09'),date_create('1997-09-09'))),
-			// array(array('byminute'=>array(6, 18)),array(date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-09'))),
-			// array(array('bysecond'=> array(6, 18)),array(date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-09'))),
-			// array(array('byhour'=> array(6, 18),'byminute'=>array(6, 18)),array(date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-09'))),
-			// array(array('byhour'=>array(6, 18),'bysecond'=>array(6, 18)),array(date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-09'))),
-			// array(array('byminute'=>array(6, 18),'bysecond'=>array(6, 18)),array(date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-02'))),
-			// array(array('byhour'=>array(6, 18),'byminute'=>array(6, 18),'bysecond'=>array(6, 18)),array(date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-02'))),
-			// array(array('byday'=>array('TU', 'TH'),'byhour'=>array(6, 18),'bysetpos'=>array(3, -3)),array(date_create('1997-09-02'),date_create('1997-09-04'),date_create('1997-09-09')))
+			array(array('byhour'=>array(6, 18)),array(
+				date_create('1997-09-02 06:00:00'),date_create('1997-09-02 18:00:00'),date_create('1997-09-09 06:00:00'))),
+			array(array('byminute'=>array(6, 18)),array(
+				date_create('1997-09-02 00:06:00'),date_create('1997-09-02 00:18:00'),date_create('1997-09-09 00:06:00'))),
+			array(array('bysecond'=> array(6, 18)),array(
+				date_create('1997-09-02 00:00:06'),date_create('1997-09-02 00:00:18'),date_create('1997-09-09 00:00:06'))),
+			array(array('byhour'=> array(6, 18),'byminute'=>array(6, 18)),array(
+				date_create('1997-09-02 06:06:00'),date_create('1997-09-02 06:18:00'),date_create('1997-09-02 18:06:00'))),
+			// array(array('byhour'=>array(6, 18),'bysecond'=>array(6, 18)),array(
+			// 	date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-09'))),
+			// array(array('byminute'=>array(6, 18),'bysecond'=>array(6, 18)),array(
+			// 	date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-02'))),
+			// array(array('byhour'=>array(6, 18),'byminute'=>array(6, 18),'bysecond'=>array(6, 18)),array(
+			// 	date_create('1997-09-02'),date_create('1997-09-02'),date_create('1997-09-02'))),
+			// array(array('byday'=>array('TU', 'TH'),'byhour'=>array(6, 18),'bysetpos'=>array(3, -3)),array(
+			// 	date_create('1997-09-02'),date_create('1997-09-04'),date_create('1997-09-09')))
 		);
 	}
 	/**
@@ -208,28 +298,51 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
+	/**
+	 * DAILY rules, mostly taken from the Python test suite
+	 */
 	public function dailyRules()
 	{
 		return array(
-			array(array(), array(date_create('1997-09-02'),date_create('1997-09-03'),date_create('1997-09-04'))),
-			array(array('interval'=>2),array(date_create('1997-09-02'), date_create('1997-09-04'), date_create('1997-09-06'))),
-			array(array('interval'=>92),array(date_create('1997-09-02'), date_create('1997-12-03'), date_create('1998-03-05'))),
-			array(array('bymonth'=>array(1, 3)),array(date_create('1998-01-01'), date_create('1998-01-02'), date_create('1998-01-03'))),
-			array(array('bymonthday'=>array(1, 3)),array(date_create('1997-09-03'), date_create('1997-10-01'), date_create('1997-10-03'))),
-			array(array('bymonth'=>array(1, 3),'bymonthday'=>array(5, 7)),array(date_create('1998-01-05'), date_create('1998-01-07'), date_create('1998-03-05'))),
-			array(array('byday'=>array('TU', 'TH')),array(date_create('1997-09-02'), date_create('1997-09-04'), date_create('1997-09-09'))),
-			array(array('bymonth'=> array(1, 3), 'byday'=> array('TU', 'TH')),array(date_create('1998-01-01'), date_create('1998-01-06'), date_create('1998-01-08'))),
-			array(array('bymonthday'=> array(1, 3), 'byday'=>array('TU', 'TH')),array(date_create('1998-01-01'), date_create('1998-02-03'), date_create('1998-03-03'))),
-			array(array('bymonth'=>array(1, 3),'bymonthday'=>array(1, 3),'byday'=>array('TU', 'TH')),array(date_create('1998-01-01'), date_create('1998-03-03'), date_create('2001-03-01'))),
-			// array(array('count'=>4,'byyearday'=>array(1, 100, 200, 365)),array(date_create('1997-12-31'), date_create('1998-01-01'), date_create('1998-04-10'), date_create('1998-07-19'))),
-			// array(array('count'=>4,'byyearday'=>array(-365, -266, -166, -1)),array(date_create('1997-12-31'), date_create('1998-01-01'), date_create('1998-04-10'), date_create('1998-07-19'))),
-			// array(array('count'=>4, 'bymonth'=>array(1, 7),'byyearday'=>array(1, 100, 200, 365)),array(date_create('1998-01-01'),date_create('1998-07-19'),date_create('1999-01-01'),date_create('1999-07-19'))),
-			// array(array('count'=>4, 'bymonth' => array(1, 7), 'byyearday' => array(-365, -266, -166, -1)),array(date_create('1998-01-01'), date_create('1998-07-19'), date_create('1999-01-01'), date_create('1999-07-19'))),
-			// array(array('byweekno' => 20), array(date_create('1998-05-11'), date_create('1998-05-12'), date_create('1998-05-13'))),
-			// array(array('byweekno' => 1, 'byday' => 'MO'),array(date_create('1997-12-29'),date_create('1999-01-04'),date_create('2000-01-03'))),
-			// array(array('byweekno' => 52, 'byday' => 'SU'), array(date_create('1997-12-28'),  date_create('1998-12-27'), date_create('2000-01-02'))),
-			// array(array('byweekno' => -1, 'byday' => 'SU'),array(date_create('1997-12-28'),date_create('1999-01-03'),date_create('2000-01-02'))),
-			// array(array('byweekno'=>53,'byday'=>'MO'),array(date_create('1998-12-28'), date_create('2004-12-27'), date_create('2009-12-28')))
+			array(array(), array(
+				date_create('1997-09-02'),date_create('1997-09-03'),date_create('1997-09-04'))),
+			array(array('interval'=>2),array(
+				date_create('1997-09-02'), date_create('1997-09-04'), date_create('1997-09-06'))),
+			array(array('interval'=>92),array(
+				date_create('1997-09-02'), date_create('1997-12-03'), date_create('1998-03-05'))),
+			array(array('bymonth'=>array(1, 3)),array(
+				date_create('1998-01-01'), date_create('1998-01-02'), date_create('1998-01-03'))),
+			array(array('bymonthday'=>array(1, 3)),array(
+				date_create('1997-09-03'), date_create('1997-10-01'), date_create('1997-10-03'))),
+			array(array('bymonth'=>array(1, 3),'bymonthday'=>array(5, 7)),array(
+				date_create('1998-01-05'), date_create('1998-01-07'), date_create('1998-03-05'))),
+			array(array('byday'=>array('TU', 'TH')),array(
+				date_create('1997-09-02'), date_create('1997-09-04'), date_create('1997-09-09'))),
+			array(array('bymonth'=> array(1, 3), 'byday'=> array('TU', 'TH')),array(
+				date_create('1998-01-01'), date_create('1998-01-06'), date_create('1998-01-08'))),
+			array(array('bymonthday'=> array(1, 3), 'byday'=>array('TU', 'TH')),array(
+				date_create('1998-01-01'), date_create('1998-02-03'), date_create('1998-03-03'))),
+			array(array('bymonth'=>array(1, 3),'bymonthday'=>array(1, 3),'byday'=>array('TU', 'TH')),array(
+				date_create('1998-01-01'), date_create('1998-03-03'), date_create('2001-03-01'))),
+
+			// TODO BYSETPOS
+			array(array('BYHOUR'=> array(6, 18)),array(
+				date_create('1997-09-02 06:00:00'),date_create('1997-09-02 18:00:00'),date_create('1997-09-03 06:00:00'))),
+			array(array('BYMINUTE'=> array(6, 18)),array(
+				date_create('1997-09-02 00:06:00'),date_create('1997-09-02 00:18:00'),date_create('1997-09-03 00:06:00'))),
+			array(array('BYSECOND' => array(6, 18)),array(
+				date_create('1997-09-02 00:00:06'),date_create('1997-09-02 00:00:18'),date_create('1997-09-03 00:00:06'))),
+			array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(6, 18)),array(
+				date_create('1997-09-02 06:06:00'),date_create('1997-09-02 06:18:00'),date_create('1997-09-02 18:06:00'))),
+			array(array('BYHOUR'=>array(6, 18),'BYSECOND'=>array(6, 18)),array(
+				date_create('1997-09-02 06:00:06'),date_create('1997-09-02 06:00:18'),date_create('1997-09-02 18:00:06'))),
+			array(array('BYMINUTE'=>array(6, 18),'BYSECOND'=>array(6, 18)),array(
+				date_create('1997-09-02 00:06:06'),date_create('1997-09-02 00:06:18'),date_create('1997-09-02 00:18:06'))),
+			array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(6, 18),'BYSECOND'=>array(6, 18)),array(
+				date_create('1997-09-02 06:06:06'),date_create('1997-09-02 06:06:18'),date_create('1997-09-02 06:18:06'))),
+			// array(array('BYMONTHDAY'=>array(13, 17),'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3)),array(
+			// 	date_create('1997-09-13 06:00'),date_create('1997-09-17'),date_create('1997-10-13')))
+
 		);
 	}
 	/**
@@ -248,85 +361,354 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
+	/**
+	 * HOURLY rules, mostly taken from the Python test suite
+	 */
+	public function hourlyRules()
+	{
+		return array(
+			array(array(), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 10:00:00'),
+				date_create('1997-09-02 11:00:00'))),
+			array(array('interval' => 2), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 11:00:00'),
+				date_create('1997-09-02 13:00:00'))),
+			array(array('interval' => 769), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-10-04 10:00:00'),
+				date_create('1997-11-05 11:00:00'))),
+			array(array('bymonth' => '1, 3'), array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 01:00:00'),
+				date_create('1998-01-01 02:00:00'))),
+			array(array('bymonthday'=>'1, 3'), array(
+				date_create('1997-09-03 00:00:00'),
+				date_create('1997-09-03 01:00:00'),
+				date_create('1997-09-03 02:00:00'))),
+			array(array('bymonth'=>'1, 3','bymonthday'=>'5, 7'),array(
+				date_create('1998-01-05 00:00'),
+				date_create('1998-01-05 01:00'),
+				date_create('1998-01-05 02:00'))),
+			array(array('byday'=>'TU, TH'), array(
+				date_create('1997-09-02 09:00'),
+				date_create('1997-09-02 10:00'),
+				date_create('1997-09-02 11:00'))),
+			array(array('bymonth'=> '1, 3', 'byday' => 'TU, TH'), array(
+				date_create('1998-01-01 00:00'),
+				date_create('1998-01-01 01:00'),
+				date_create('1998-01-01 02:00'))),
+			array(array('bymonthday'=>'1, 3','byday'=>'TU, TH'), array(
+				date_create('1998-01-01 00:00'),
+				date_create('1998-01-01 01:00'),
+				date_create('1998-01-01 02:00'))),
+			array(array('bymonth'=> '1, 3','bymonthday'=>'1, 3','byday'=>'TU, TH'), array(
+				date_create('1998-01-01 00:00'),
+				date_create('1998-01-01 01:00'),
+				date_create('1998-01-01 02:00'))),
+			array(array('count'=>4,'byyearday'=>'1, 100, 200, 365'), array(
+				date_create('1997-12-31 00:00'),
+				date_create('1997-12-31 01:00'),
+				date_create('1997-12-31 02:00'),
+				date_create('1997-12-31 03:00'))),
+			array(array('count'=>4,'byyearday'=>'-365, -266, -166, -1'), array(
+				date_create('1997-12-31 00:00'),
+				date_create('1997-12-31 01:00'),
+				date_create('1997-12-31 02:00'),
+				date_create('1997-12-31 03:00'))),
+			array(array('count'=>4,'bymonth'=>'4, 7','byyearday'=>'1, 100, 200, 365'), array(
+				date_create('1998-04-10 00:00'),
+				date_create('1998-04-10 01:00'),
+				date_create('1998-04-10 02:00'),
+				date_create('1998-04-10 03:00'))),
+			array(array('count'=>4,'bymonth'=>'4, 7','byyearday'=>'-365, -266, -166, -1'), array(
+				date_create('1998-04-10 00:00'),
+				date_create('1998-04-10 01:00'),
+				date_create('1998-04-10 02:00'),
+				date_create('1998-04-10 03:00'))),
+			array(array('byhour'=>'6, 18'), array(
+				date_create('1997-09-02 18:00'),
+				date_create('1997-09-03 06:00'),
+				date_create('1997-09-03 18:00'))),
+			array(array('byminute'=>'6, 18'),array(
+				date_create('1997-09-02 09:06'),
+				date_create('1997-09-02 09:18'),
+				date_create('1997-09-02 10:06'))),
+			array(array('bysecond'=>'6, 18'),array(
+				date_create('1997-09-02 09:00:06'),
+				date_create('1997-09-02 09:00:18'),
+				date_create('1997-09-02 10:00:06'))),
+			array(array('byhour'=>'6, 18','byminute'=>'6, 18'),array(
+				date_create('1997-09-02 18:06'),
+				date_create('1997-09-02 18:18'),
+				date_create('1997-09-03 06:06'))),
+			array(array('byhour'=>'6, 18','bysecond'=>'6, 18'),array(
+				date_create('1997-09-02 18:00:06'),
+				date_create('1997-09-02 18:00:18'),
+				date_create('1997-09-03 06:00:06'))),
+			array(array('byminute'=>'6, 18','bysecond'=>'6, 18'),array(
+				date_create('1997-09-02 09:06:06'),
+				date_create('1997-09-02 09:06:18'),
+				date_create('1997-09-02 09:18:06'))),
+			array(array('byhour'=>'6, 18','byminute'=>'6, 18','bysecond'=>'6, 18'), array(
+				date_create('1997-09-02 18:06:06'),
+				date_create('1997-09-02 18:06:18'),
+				date_create('1997-09-02 18:18:06'))),
+			// FIXME infinite loop
+			// array(array('byminute'=>'15, 45','bysecond'=>'15, 45','bysetpos'=>'3, -3'), array(
+			// 	date_create('1997-09-02 09:15:45'),
+			// 	date_create('1997-09-02 09:45:15'),
+			// 	date_create('1997-09-02 10:15:45')))
+		);
+	}
+	/**
+	 * @dataProvider hourlyRules
+	 */
+	public function testHourly($rule, $occurrences)
+	{
+		$rule = new RRule(array_merge(array(
+			'FREQ' => 'HOURLY',
+			'COUNT' => 3,
+			'DTSTART' => '1997-09-02 09:00:00'
+		), $rule));
+		$this->assertEquals($occurrences, $rule->getOccurrences());
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+		}
+	}
 
-//     def testDailyByHour(self):
-//         self.assertEqual(list(rrule(DAILY,
+	public function minutelyRules()
+	{
+		return array(
+			array(array(), array(
+				date_create('1997-09-02 09:00'),
+				date_create('1997-09-02 09:01'),
+				date_create('1997-09-02 09:02'))),
+			array(array('interval'=>2), array(
+				date_create('1997-09-02 09:00'),
+				date_create('1997-09-02 09:02'),
+				date_create('1997-09-02 09:04'))),
+			array(array('interval'=>1501),array(
+				date_create('1997-09-02 09:00'),
+				date_create('1997-09-03 10:01'),
+				date_create('1997-09-04 11:02'))),
+			array(array('bymonth'=>'1, 3'),array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 00:01:00'),
+				date_create('1998-01-01 00:02:00'))),
+			array(array('bymonthday'=>'1, 3'), array(
+				date_create('1997-09-03 00:00:00'),
+				date_create('1997-09-03 00:01:00'),
+				date_create('1997-09-03 00:02:00'))),
+			array(array('bymonth'=>'1, 3','bymonthday'=>'5, 7'), array(
+				date_create('1998-01-05 00:00:00'),
+				date_create('1998-01-05 00:01:00'),
+				date_create('1998-01-05 00:02:00'))),
+			array(array('byday'=>'TU, TH'), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 09:01:00'),
+				date_create('1997-09-02 09:02:00'))),
+			array(array('bymonth'=>'1, 3','byday'=>'TU, TH'), array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 00:01:00'),
+				date_create('1998-01-01 00:02:00'))),
+			array(array('bymonthday'=>'1, 3','byday'=>'TU, TH'),array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 00:01:00'),
+				date_create('1998-01-01 00:02:00'))),
+			array(array('bymonth'=>'1, 3','bymonthday'=>'1, 3','byday'=> 'TU, TH'), array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 00:01:00'),
+				date_create('1998-01-01 00:02:00'))),
+			array(array('count'=>4, 'byyearday'=> '1, 100, 200, 365'), array(
+				date_create('1997-12-31 00:00:00'),
+				date_create('1997-12-31 00:01:00'),
+				date_create('1997-12-31 00:02:00'),
+				date_create('1997-12-31 00:03:00'))),
+			array(array('count'=>4,'byyearday'=>'-365, -266, -166, -1'), array(
+				date_create('1997-12-31 00:00:00'),
+				date_create('1997-12-31 00:01:00'),
+				date_create('1997-12-31 00:02:00'),
+				date_create('1997-12-31 00:03:00'))),
+			array(array('count'=>4,'bymonth'=>'4, 7','byyearday'=>'1, 100, 200, 365'),array(
+				date_create('1998-04-10 00:00:00'),
+				date_create('1998-04-10 00:01:00'),
+				date_create('1998-04-10 00:02:00'),
+				date_create('1998-04-10 00:03:00'))),
+			array(array('count'=>4,'bymonth'=>'4, 7','byyearday'=>'-365, -266, -166, -1'),array(
+				date_create('1998-04-10 00:00:00'),
+				date_create('1998-04-10 00:01:00'),
+				date_create('1998-04-10 00:02:00'),
+				date_create('1998-04-10 00:03:00'))),
+			array(array('byhour'=>'6, 18'),array(
+				date_create('1997-09-02 18:00:00'),
+				date_create('1997-09-02 18:01:00'),
+				date_create('1997-09-02 18:02:00'))),
+			array(array('byminute'=>'6, 18'),array(
+				date_create('1997-09-02 09:06:00'),
+				date_create('1997-09-02 09:18:00'),
+				date_create('1997-09-02 10:06:00'))),
+			array(array('bysecond'=> '6, 18'), array(
+				date_create('1997-09-02 09:00:06'),
+				date_create('1997-09-02 09:00:18'),
+				date_create('1997-09-02 09:01:06'))),
+			array(array('byhour'=>'6, 18','byminute'=>'6, 18'), array(
+				date_create('1997-09-02 18:06:00'),
+				date_create('1997-09-02 18:18:00'),
+				date_create('1997-09-03 06:06:00'))),
+			array(array('byhour'=>'6, 18','bysecond'=>'6, 18'), array(
+				date_create('1997-09-02 18:00:06'),
+				date_create('1997-09-02 18:00:18'),
+				date_create('1997-09-02 18:01:06'))),
+			array(array('byminute'=>'6, 18','bysecond'=>'6, 18'),array(
+				date_create('1997-09-02 09:06:06'),
+				date_create('1997-09-02 09:06:18'),
+				date_create('1997-09-02 09:18:06'))),
+			array(array('byhour'=>'6, 18','byminute'=>'6, 18','bysecond'=>'6, 18'),array(
+				date_create('1997-09-02 18:06:06'),
+				date_create('1997-09-02 18:06:18'),
+				date_create('1997-09-02 18:18:06'))),
+			//FIXME
+			// array(array('bysecond'=>'15, 30, 45','bysetpos'=>'3, -3'),array(
+			// 	date_create('1997-09-02 09:00:15'),
+			// 	date_create('1997-09-02 09:00:45'),
+			// 	date_create('1997-09-02 09:01:15')))
+		);
+	}
+	/**
+	 * @dataProvider minutelyRules
+	 */
+	public function testMinutely($rule, $occurrences)
+	{
+		$rule = new RRule(array_merge(array(
+			'FREQ' => 'minutely',
+			'COUNT' => 3,
+			'DTSTART' => '1997-09-02 09:00:00'
+		), $rule));
+		$this->assertEquals($occurrences, $rule->getOccurrences());
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+		}
+	}
 
-//      byhour=(6, 18),
+	/**
+	 * SECONDLY rules, mostly taken from the Python test suite
+	 */
+	public function secondlyRules()
+	{
+		return array(
+			array(array(), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 09:00:01'),
+				date_create('1997-09-02 09:00:02'))),
+			array(array('interval'=>2), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 09:00:02'),
+				date_create('1997-09-02 09:00:04'))),
+			array(array('interval'=>90061), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-03 10:01:01'),
+				date_create('1997-09-04 11:02:02'))),
+			array(array('bymonth'=>'1, 3'),array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 00:00:01'),
+				date_create('1998-01-01 00:00:02'))),
+			array(array('bymonthday'=>'1, 3'), array(
+				date_create('1997-09-03 00:00:00'),
+				date_create('1997-09-03 00:00:01'),
+				date_create('1997-09-03 00:00:02'))),
+			array(array('bymonth'=>'1, 3','bymonthday'=>'5, 7'),array(
+				date_create('1998-01-05 00:00:00'),
+				date_create('1998-01-05 00:00:01'),
+				date_create('1998-01-05 00:00:02'))),
+			array(array('byday'=>'TU, TH'), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 09:00:01'),
+				date_create('1997-09-02 09:00:02'))),
+			array(array('bymonth'=>'1, 3','byday'=>'TU, TH'),array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 00:00:01'),
+				date_create('1998-01-01 00:00:02'))),
+			array(array('bymonthday'=>'1, 3','byday'=>'TU, TH'),array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 00:00:01'),
+				date_create('1998-01-01 00:00:02'))),
+			array(array('bymonth'=>'1, 3','bymonthday'=>'1, 3','byday'=>'TU, TH'),array(
+				date_create('1998-01-01 00:00:00'),
+				date_create('1998-01-01 00:00:01'),
+				date_create('1998-01-01 00:00:02'))),
+			array(array('count'=>4,'byyearday'=>'1, 100, 200, 365'),array(
+				date_create('1997-12-31 00:00:00'),
+				date_create('1997-12-31 00:00:01'),
+				date_create('1997-12-31 00:00:02'),
+				date_create('1997-12-31 00:00:03'))),
+			array(array('count'=>4,'byyearday'=>'-365, -266, -166, -1'),array(
+				date_create('1997-12-31 00:00:00'),
+				date_create('1997-12-31 00:00:01'),
+				date_create('1997-12-31 00:00:02'),
+				date_create('1997-12-31 00:00:03'))),
+			array(array('count'=>4,'bymonth'=>'4, 7','byyearday'=>'1, 100, 200, 365'),array(
+				date_create('1998-04-10 00:00:00'),
+				date_create('1998-04-10 00:00:01'),
+				date_create('1998-04-10 00:00:02'),
+				date_create('1998-04-10 00:00:03'))),
+			array(array('count'=>4,'bymonth'=>'4, 7','byyearday'=>'-365, -266, -166, -1'),array(
+				date_create('1998-04-10 00:00:00'),
+				date_create('1998-04-10 00:00:01'),
+				date_create('1998-04-10 00:00:02'),
+				date_create('1998-04-10 00:00:03'))),
+			array(array('byhour'=>'6, 18'),array(
+				date_create('1997-09-02 18:00:00'),
+				date_create('1997-09-02 18:00:01'),
+				date_create('1997-09-02 18:00:02'))),
+			array(array('byminute'=>'6, 18'), array(
+				date_create('1997-09-02 09:06:00'),
+				date_create('1997-09-02 09:06:01'),
+				date_create('1997-09-02 09:06:02'))),
+			array(array('bysecond'=>'6, 18'), array(
+				date_create('1997-09-02 09:00:06'),
+				date_create('1997-09-02 09:00:18'),
+				date_create('1997-09-02 09:01:06'))),
+			array(array('byhour'=>'6, 18','byminute'=>'6, 18'), array(
+				date_create('1997-09-02 18:06:00'),
+				date_create('1997-09-02 18:06:01'),
+				date_create('1997-09-02 18:06:02'))),
+			array(array('byhour'=>'6, 18','bysecond'=>'6, 18'), array(
+				date_create('1997-09-02 18:00:06'),
+				date_create('1997-09-02 18:00:18'),
+				date_create('1997-09-02 18:01:06'))),
+			array(array('byminute'=>'6, 18','bysecond'=>'6, 18'), array(
+				date_create('1997-09-02 09:06:06'),
+				date_create('1997-09-02 09:06:18'),
+				date_create('1997-09-02 09:18:06'))),
+			array(array('byhour'=>'6, 18','byminute'=>'6, 18','bysecond'=>'6, 18'), array(
+				date_create('1997-09-02 18:06:06'),
+				date_create('1997-09-02 18:06:18'),
+				date_create('1997-09-02 18:18:06'))),
+			// TODO BY SETPOS
+			array(array('bysecond'=>'0','byminute'=>'1','dtstart'=>date_create('2010-03-22 12:01:00')), array(
+				date_create('2010-03-22 12:01:00'),
+				date_create('2010-03-22 13:01:00'),
+				date_create('2010-03-22 14:01:00'))),
 
-// array(date_create('1997-09-02'),
-//  date_create('1997-09-03'),
-//  date_create('1997-09-03')))
-
-//     def testDailyByMinute(self):
-//         self.assertEqual(list(rrule(DAILY,
-
-//      byminute=(6, 18),
-
-// array(date_create('1997-09-02'),
-//  date_create('1997-09-02'),
-//  date_create('1997-09-03')))
-
-//     def testDailyBySecond(self):
-//         self.assertEqual(list(rrule(DAILY,
-
-//      bysecond=(6, 18),
-
-// array(date_create('1997-09-02'),
-//  date_create('1997-09-02'),
-//  date_create('1997-09-03')))
-
-//     def testDailyByHourAndMinute(self):
-//         self.assertEqual(list(rrule(DAILY,
-
-//      byhour=(6, 18),
-//      byminute=(6, 18),
-
-// array(date_create('1997-09-02'),
-//  date_create('1997-09-02'),
-//  date_create('1997-09-03')))
-
-//     def testDailyByHourAndSecond(self):
-//         self.assertEqual(list(rrule(DAILY,
-
-//      byhour=(6, 18),
-//      bysecond=(6, 18),
-
-// array(date_create('1997-09-02'),
-//  date_create('1997-09-02'),
-//  date_create('1997-09-03')))
-
-//     def testDailyByMinuteAndSecond(self):
-//         self.assertEqual(list(rrule(DAILY,
-
-//      byminute=(6, 18),
-//      bysecond=(6, 18),
-
-// array(date_create('1997-09-02'),
-//  date_create('1997-09-02'),
-//  date_create('1997-09-02')))
-
-//     def testDailyByHourAndMinuteAndSecond(self):
-//         self.assertEqual(list(rrule(DAILY,
-
-//      byhour=(6, 18),
-//      byminute=(6, 18),
-//      bysecond=(6, 18),
-
-// array(date_create('1997-09-02'),
-//  date_create('1997-09-02'),
-//  date_create('1997-09-02')))
-
-//     def testDailyBySetPos(self):
-//         self.assertEqual(list(rrule(DAILY,
-
-//      byhour=(6, 18),
-//      byminute=(15, 45),
-//      bysetpos=(3, -3),
-
-// array(date_create('1997-09-02'),
-//  date_create('1997-09-03'),
-//  date_create('1997-09-03')))
+		);
+	}
+	/**
+	 * @dataProvider secondlyRules
+	 */
+	public function testSecondly($rule, $occurrences)
+	{
+		$rule = new RRule(array_merge(array(
+			'FREQ' => 'secondly',
+			'COUNT' => 3,
+			'DTSTART' => '1997-09-02 09:00:00'
+		), $rule));
+		$this->assertEquals($occurrences, $rule->getOccurrences());
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+		}
+	}
 
 	/**
 	 * Examples given in the RFC.
@@ -659,8 +1041,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				date_create('1999-03-10 09:00:00'),
 				date_create('1999-03-11 09:00:00'),
 				date_create('1999-03-12 09:00:00'),
-				date_create('1999-03-13 09:00:00'))
-			),
+				date_create('1999-03-13 09:00:00'))),
 			// Every Tuesday, every other month, 6 occurences.
 			array(
 				array('freq' => 'monthly', 'count' => 6, 'interval' => 2, 'byday' => 'TU', 'dtstart' => '1997-09-02 09:00:00'),
@@ -669,8 +1050,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				date_create('1997-09-16 09:00:00'),
 				date_create('1997-09-23 09:00:00'),
 				date_create('1997-09-30 09:00:00'),
-				date_create('1997-11-04 09:00:00'))
-			),
+				date_create('1997-11-04 09:00:00'))),
 			// Yearly in June and July for 10 occurrences.
 			array(
 				array('freq' => 'yearly', 'count' => 10, 'bymonth' => '6,7', 'dtstart' => '1997-06-10 09:00:00'),
@@ -790,7 +1170,101 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				date_create('1997-10-30 09:00:00'),
 				date_create('1997-11-27 09:00:00'))
 			),
-			// todo HOURLY, MINUTELY, SECONDLY
+			// Every 3 hours from 9:00 AM to 5:00 PM on a specific day.
+			array(
+				array('freq' => 'hourly', 'interval' => 3, 'dtstart' => '1997-09-29 09:00:00', 'until' => '1997-09-29 17:00:00'),
+				array(date_create('1997-09-29 09:00:00'),
+				date_create('1997-09-29 12:00:00'),
+				date_create('1997-09-29 15:00:00'))
+			),
+			// Every 15 minutes for 6 occurrences.
+			array(
+				array('freq' => 'MINUTELY', 'interval' => 15, 'count' => 6, 'dtstart' => '1997-09-02 09:00:00'),
+				array(date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 09:15:00'),
+				date_create('1997-09-02 09:30:00'),
+				date_create('1997-09-02 09:45:00'),
+				date_create('1997-09-02 10:00:00'),
+				date_create('1997-09-02 10:15:00'))
+			),
+			// Every hour and a half for 4 occurrences.
+			array(
+				array('freq' => 'MINUTELY', 'interval' => 90, 'count' => 4, 'dtstart' => '1997-09-02 09:00:00'),
+				array(date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 10:30:00'),
+				date_create('1997-09-02 12:00:00'),
+				date_create('1997-09-02 13:30:00'))
+			),
+			// Every 20 minutes from 9:00 AM to 4:40 PM for two days.
+			array(
+				array('freq' => 'MINUTELY', 'interval' => 20, 'count' => 48,
+					'byhour' => range(9,16), 'byminute' => '0,20,40',
+					'dtstart' => '1997-09-02 09:00:00'), array(
+				date_create('1997-09-02 09:00:00'),
+				date_create('1997-09-02 09:20:00'),
+				date_create('1997-09-02 09:40:00'),
+				date_create('1997-09-02 10:00:00'),
+				date_create('1997-09-02 10:20:00'),
+				date_create('1997-09-02 10:40:00'),
+				date_create('1997-09-02 11:00:00'),
+				date_create('1997-09-02 11:20:00'),
+				date_create('1997-09-02 11:40:00'),
+				date_create('1997-09-02 12:00:00'),
+				date_create('1997-09-02 12:20:00'),
+				date_create('1997-09-02 12:40:00'),
+				date_create('1997-09-02 13:00:00'),
+				date_create('1997-09-02 13:20:00'),
+				date_create('1997-09-02 13:40:00'),
+				date_create('1997-09-02 14:00:00'),
+				date_create('1997-09-02 14:20:00'),
+				date_create('1997-09-02 14:40:00'),
+				date_create('1997-09-02 15:00:00'),
+				date_create('1997-09-02 15:20:00'),
+				date_create('1997-09-02 15:40:00'),
+				date_create('1997-09-02 16:00:00'),
+				date_create('1997-09-02 16:20:00'),
+				date_create('1997-09-02 16:40:00'),
+				date_create('1997-09-03 09:00:00'),
+				date_create('1997-09-03 09:20:00'),
+				date_create('1997-09-03 09:40:00'),
+				date_create('1997-09-03 10:00:00'),
+				date_create('1997-09-03 10:20:00'),
+				date_create('1997-09-03 10:40:00'),
+				date_create('1997-09-03 11:00:00'),
+				date_create('1997-09-03 11:20:00'),
+				date_create('1997-09-03 11:40:00'),
+				date_create('1997-09-03 12:00:00'),
+				date_create('1997-09-03 12:20:00'),
+				date_create('1997-09-03 12:40:00'),
+				date_create('1997-09-03 13:00:00'),
+				date_create('1997-09-03 13:20:00'),
+				date_create('1997-09-03 13:40:00'),
+				date_create('1997-09-03 14:00:00'),
+				date_create('1997-09-03 14:20:00'),
+				date_create('1997-09-03 14:40:00'),
+				date_create('1997-09-03 15:00:00'),
+				date_create('1997-09-03 15:20:00'),
+				date_create('1997-09-03 15:40:00'),
+				date_create('1997-09-03 16:00:00'),
+				date_create('1997-09-03 16:20:00'),
+				date_create('1997-09-03 16:40:00'))
+			),
+			// An example where the days generated makes a difference because of wkst.
+			array(array('freq' => 'WEEKLY', 'interval' => 2, 'count' => 4,
+				'byday' => 'TU,SU', 'WKST' => 'MO', 'dtstart' => '1997-08-05 09:00:00'),array(
+				date_create('1997-08-05 09:00:00'),
+				date_create('1997-08-10 09:00:00'),
+				date_create('1997-08-19 09:00:00'),
+				date_create('1997-08-24 09:00:00'))
+			),
+			array(array('freq' => 'WEEKLY', 'interval' => 2, 'count' => 4,
+				'byday' => 'TU,SU', 'WKST' => 'SU', 'dtstart' => '1997-08-05 09:00:00'),array(
+				date_create('1997-08-05 09:00:00'),
+				date_create('1997-08-17 09:00:00'),
+				date_create('1997-08-19 09:00:00'),
+				date_create('1997-08-31 09:00:00'))
+			),
+
 		);
 	}
 
@@ -804,6 +1278,41 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		foreach ( $occurrences as $date ) {
 			$this->assertTrue($rule->occursAt($date), 'RRule occurs at: '.$date->format('r'));
 		}
+	}
+
+	/**
+	 * Rules that generate no occurence, because of a bad combination of BYXXX parts
+	 * An infinite loop is likely to occur if a test fails.
+	 */
+	public function rulesWithoutOccurrences()
+	{
+		return array(
+			// Every year on February and on the week number 50 (impossible)
+			array(array(
+				'freq' => 'yearly',
+				'interval' => 1,
+				'bymonth' => 2,
+				'byweekno' => 50,
+				'dtstart' => '1997-02-02 09:00:00',
+				'count' => 1
+			)),
+			// Every 2 months, on odd months, starting a even month (impossible)
+			array(array(
+				'freq' => 'monthly',
+				'interval' => 2,
+				'bymonth' => [1,3,5,7,9,11],
+				'dtstart' => '1997-02-02 09:00:00',
+				'count' => 1
+			)),
+		);
+	}
+	/**
+	 * @dataProvider rulesWithoutOccurrences
+	 */
+	public function testRulesWithoutOccurrences($rule)
+	{
+		$rule = new RRule($rule);
+		$this->assertEmpty($rule->getOccurrences());
 	}
 
 	/**
@@ -892,17 +1401,36 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				array('FREQ' => 'MONTHLY', 'DTSTART' => '1999-09-02', 'INTERVAL' => 2),
 				array('1999-10-02', '1999-12-02')
 			),
+
+			// todo weekly,daily
+
+			array(
+				array('freq' => 'hourly', 'dtstart' => '1999-09-02 09:00:00', 'INTERVAL' => 2),
+				array('1999-09-02 10:00:00', '1999-09-02 12:00:00')
+			),
+			array(
+				array('freq' => 'hourly', 'dtstart' => '1999-09-02 09:00:00', 'INTERVAL' => 5),
+				array('1999-09-03 09:00:00')
+			),
 		);
 	}
 
 	/**
 	 * @dataProvider notOccurrences
 	 */
-	public function testDoesNotOccursAt($rule, $not_occurences)
+	public function testNotOccurrences($rule, $not_occurences)
 	{
 		$rule = new RRule($rule);
 		foreach ( $not_occurences as $date ) {
 			$this->assertFalse($rule->occursAt($date), $date);
 		}
+	}
+
+	public function testIsLeapYear()
+	{
+		$this->assertFalse(\RRule\is_leap_year(1700));
+		$this->assertFalse(\RRule\is_leap_year(1800));
+		$this->assertFalse(\RRule\is_leap_year(1900));
+		$this->assertTrue(\RRule\is_leap_year(2000));
 	}
 }

@@ -66,6 +66,19 @@ function is_leap_year($year)
 }
 
 /**
+ * Calculate the Greatest Common Divisor of a and b.
+ * Unless b==0, the result will have the same sign as b (so that when
+ * b is divided by it, the result comes out positive).
+ */
+function gcd($a, $b)
+{
+	while ($b) {
+		list($a, $b) = array($b, $a % $b);
+	}
+	return $a;
+}
+
+/**
  * Implementation of RRULE as defined by RFC 5545.
  * Heavily based on python-dateutil/rrule
  *
@@ -396,8 +409,11 @@ class RRule implements \Iterator, \ArrayAccess
 		}
 
 		if ( not_empty($parts['BYSETPOS']) ) {
-			if ( ! (not_empty($parts['BYWEEKNO']) || not_empty($parts['BYYEARDAY']) || not_empty($parts['BYMONTHDAY']) || not_empty($parts['BYDAY']) || not_empty($parts['BYMONTH'])) ) {
-				throw new \InvalidArgumentException('The BYSETPOST rule part MUST only be used in conjunction with another BYxxx rule part.');
+			if ( ! (not_empty($parts['BYWEEKNO']) || not_empty($parts['BYYEARDAY'])
+				|| not_empty($parts['BYMONTHDAY']) || not_empty($parts['BYDAY'])
+				|| not_empty($parts['BYMONTH']) || not_empty($parts['BYHOUR'])
+				|| not_empty($parts['BYMINUTE']) || not_empty($parts['BYSECOND'])) ) {
+				throw new \InvalidArgumentException('The BYSETPOS rule part MUST only be used in conjunction with another BYxxx rule part.');
 			}
 
 			if ( ! is_array($parts['BYSETPOS']) ) {
@@ -649,30 +665,50 @@ class RRule implements \Iterator, \ArrayAccess
 				break;
 			case self::MONTHLY:
 				// we need to count the number of months elapsed
-				$nb_months = (12 - $start_month) + 12*($year - $start_year - 1) + $month;
+				$diff = (12 - $start_month) + 12*($year - $start_year - 1) + $month;
 
-				if ( ($nb_months % $this->interval) !== 0 ) {
+				if ( ($diff % $this->interval) !== 0 ) {
 					return false;
 				}
 				break;
 			case self::WEEKLY:
 				// count nb of days and divide by 7 to get number of weeks
-				$nb_days = $date->diff($this->dtstart)->format('%a');
-				$nb_weeks = (int) ($nb_days/7);
-				if ( $nb_weeks % $this->interval !== 0 ) {
+				// we add some days to align dtstart with wkst
+				$diff = $date->diff($this->dtstart);
+				$diff = (int) (($diff->days + pymod($this->dtstart->format('N') - $this->wkst,7)) / 7);
+				if ( $diff % $this->interval !== 0 ) {
 					return false;
 				}
 				break;
 			case self::DAILY:
 				// count nb of days
-				$nb_days = $date->diff($this->dtstart)->format('%a');
-				if ( $nb_days % $this->interval !== 0 ) {
+				$diff = $date->diff($this->dtstart);
+				if ( $diff->days % $this->interval !== 0 ) {
 					return false;
 				}
 				break;
+			// XXX: I'm not sure the 3 formulas below take the DST into account...
 			case self::HOURLY:
+				$diff = $date->diff($this->dtstart);
+				$diff = $diff->h + $diff->days * 24;
+				if ( $diff % $this->interval !== 0 ) {
+					return false;
+				}
+				break;
 			case self::MINUTELY:
+				$diff = $date->diff($this->dtstart);
+				$diff  = $diff->i + $diff->h * 60 + $diff->days * 1440;
+				if ( $diff % $this->interval !== 0 ) {
+					return false;
+				}
+				break;
 			case self::SECONDLY:
+				$diff = $date->diff($this->dtstart);
+				$diff  = $diff->s + $diff->i * 60 + $diff->h * 3600 + $diff->days * 86400;
+				if ( $diff % $this->interval !== 0 ) {
+					return false;
+				}
+				break;
 				throw new \Exception('Unimplemented frequency');
 		}
 
@@ -792,13 +828,11 @@ class RRule implements \Iterator, \ArrayAccess
 				return $set;
 
 			case self::DAILY:
-				$n = (int) date('z', mktime(0,0,0,$month,$day,$year));
-				return array($n);
-
 			case self::HOURLY:
 			case self::MINUTELY:
 			case self::SECONDLY:
-				throw new \Exception('Unimplemented frequency');
+				$n = (int) date('z', mktime(0,0,0,$month,$day,$year));
+				return array($n);
 		}
 	}
 
@@ -863,7 +897,12 @@ class RRule implements \Iterator, \ArrayAccess
 	}
 
 	/**
-	 * More magic
+	 * More serious magic.
+	 * This method calculates the yeardays corresponding to the week number
+	 * (in the WEEKNO rule part).
+	 * Because weeks can cross year boundaries (that is, week #1 can start the
+	 * previous year, and week 52/53 can continue till the next year), the
+	 * algorithm is quite long.
 	 */
 	protected function buildWeeknoMask($year, $month, $day, & $masks)
 	{
@@ -972,10 +1011,82 @@ class RRule implements \Iterator, \ArrayAccess
 		}
 	}
 
+
+	/**
+	 * Not sure what it does yet
+	 */
+	protected function getTimeSet($hour, $minute, $second)
+	{
+		// echo "getTimeSet($hour,$minute,$second)\n";
+		switch ( $this->freq ) {
+			case self::HOURLY:
+				$set = array();
+				foreach ( $this->byminute as $minute ) {
+					foreach ( $this->bysecond as $second ) {
+						// should we use another type?
+						$set[] = array($hour, $minute, $second);
+					}
+				}
+				// sort ?
+				return $set;
+			case self::MINUTELY:
+				$set = array();
+				foreach ( $this->bysecond as $second ) {
+					// should we use another type?
+					$set[] = array($hour, $minute, $second);
+				}
+				// sort ?
+				return $set;
+			case self::SECONDLY:
+				return array(array($hour, $minute, $second));
+			default:
+				throw new \LogicException('getTimeSet called with an invalid frequency');
+		}
+	}
+
 	/**
 	 * This is the main method, where all of the magic happens.
 	 *
 	 * This method is a generator that works for PHP 5.3/5.4 (using static variables)
+	 *
+	 * The main idea is : a brute force made fast by not relying on date() functions
+	 * 
+	 * There is one big loop that examines every interval of the given frequency
+	 * (so every day, every week, every month or every year), constructs an
+	 * array of all the yeardays of the interval (for daily frequencies, the array
+	 * only has one element, for weekly 7, and so on), and then filters out any
+	 * day that do no match BYXXX elements.
+	 *
+	 * The algorithm does not try to be "smart" in calculating the increment of
+	 * the loop. That is, for a rule like "every day in January for 10 years"
+	 * the algorithm will loop through every day of the year, each year, generating
+	 * some 3650 iterations (+ some to account for the leap years).
+	 * This is a bit counter-intuitive, as it is obvious that the loop could skip
+	 * all the days in February till December since they are never going to match.
+	 *
+	 * Fortunately, this approach is still super fast because it doesn't rely
+	 * on date() or DateTime functions, and instead does all the date operations
+	 * manually, either arithmetically or using arrays as converters.
+	 *
+	 * Another quirk of this approach is that because the granularity is by day,
+	 * higher frequencies (hourly, minutely and secondly) have to have
+	 * their own special loops within the main loop.
+	 * Moreover, at such frequencies, the brute-force approach starts to really
+	 * suck. For example, a rule like
+	 * "Every minute, every Jan 1st between 10:00 and 10:59, for 10 years" 
+	 * requires a tremendous amount of useless iterations to jump from Jan 1st 10:59
+	 * at year 1 to Jan 1st 10.00 at year 2.
+	 *
+	 * In order to make a "smart jump", we would have to have a way to determine
+	 * the gap between the next occurence arithmetically. I think that would require
+	 * to analyze each "BYXXX" rule part that "Limit" the set (see the RFC page 43)
+	 * at the given frequency. For example, a YEARLY frequency doesn't need "smart
+	 * jump" at all; MONTHLY and WEEKLY frequencies only need to check BYMONTH;
+	 * DAILY frequency needs to check BYMONTH, BYMONTHDAY and BYDAY, and so on.
+	 * The check probably has to be done in reverse order, e.g. for DAILY frequencies
+	 * attempt to jump to the next weekday (BYDAY) or next monthday (BYMONTHDAY)
+	 * (I don't know yet which one first), and then if that results in a change of
+	 * month, attempt to jump to the next BYMONTH, and so on.
 	 */
 	protected function iterate($reset = false)
 	{
@@ -1004,19 +1115,25 @@ class RRule implements \Iterator, \ArrayAccess
 				// simply loop by adding +7 days. The Python lib does some
 				// calculation magic at the end of the loop (when incrementing)
 				// to realign on first pass.
-				$tmp = $this->dtstart->modify('-'.pymod($this->dtstart->format('N') - $this->wkst,7).'days');
-				list($year,$month,$day) = explode('-',$tmp->format('Y-n-j'));
+				$tmp = clone $this->dtstart;
+				$tmp = $tmp->modify('-'.pymod($this->dtstart->format('N') - $this->wkst,7).'days');
+				list($year,$month,$day,$hour,$minute,$second) = explode(' ',$tmp->format('Y n j G i s'));
 				unset($tmp);
 			}
 			else {
-				list($year,$month,$day) = explode('-',$this->dtstart->format('Y-n-j'));
+				list($year,$month,$day,$hour,$minute,$second) = explode(' ',$this->dtstart->format('Y n j G i s'));
 			}
+			// remove leading zeros
+			$minute = (int) $minute;
+			$second = (int) $second;
 		}
 
 		// todo, not sure when this should be rebuilt
 		// and not sure what this does anyway
 		if ( $timeset == null ) {
-			if ( $this->freq < self::HOURLY ) { // daily, weekly, monthly or yearly
+			if ( $this->freq < self::HOURLY ) {
+				// daily, weekly, monthly or yearly
+				// we don't need to calculate a new timeset
 				$timeset = $this->timeset;
 			}
 			else {
@@ -1032,8 +1149,12 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 			}
 		}
+		// echo json_encode($timeset),"\n";
+		// fgets(STDIN);
 
-		while (true) {
+		// while (true) {
+		$max_cycles = self::$REPEAT_CYCLES[$this->freq <= self::DAILY ? $this->freq : self::DAILY];
+		for ( $i = 0; $i < $max_cycles; $i++ ) {
 			// 1. get an array of all days in the next interval (day, month, week, etc.)
 			// we filter out from this array all days that do not match the BYXXX conditions
 			// to speed things up, we use days of the year (day numbers) instead of date
@@ -1169,20 +1290,22 @@ class RRule implements \Iterator, \ArrayAccess
 			}
 
 			// 3. we reset the loop to the next interval
-			$current_set = null; // reset the loop
+			$days_increment = 0;
 			switch ( $this->freq ) {
 				case self::YEARLY:
-					// we do not care about $month or $day not existing, they are not used in yearly frequency
+					// we do not care about $month or $day not existing,
+					// they are not used in yearly frequency
 					$year = $year + $this->interval;
 					break;
 				case self::MONTHLY:
-					// we do not care about the day of the month not existing, it is not used in monthly frequency
+					// we do not care about the day of the month not existing
+					// it is not used in monthly frequency
 					$month = $month + $this->interval;
 					if ( $month > 12 ) {
-						$delta = (int) ($month / 12);
+						$div = (int) ($month / 12);
 						$mod = $month % 12;
 						$month = $mod;
-						$year = $year + $delta;
+						$year = $year + $div;
 						if ( $month == 0 ) {
 							$month = 12;
 							$year = $year - 1;
@@ -1190,19 +1313,131 @@ class RRule implements \Iterator, \ArrayAccess
 					}
 					break;
 				case self::WEEKLY:
-					// here we take a little shortcut from the Python version, by using DateTime
-					list($year,$month,$day) = explode('-',date_create("$year-$month-$day")->modify('+'.($this->interval*7).'day')->format('Y-n-j'));
+					$days_increment = $this->interval*7;
 					break;
 				case self::DAILY:
-					// here we take a little shortcut from the Python version, by using DateTime
-					list($year,$month,$day) = explode('-',date_create("$year-$month-$day")->modify('+'.$this->interval.'day')->format('Y-n-j'));
+					$days_increment = $this->interval;
 					break;
+
+				// For the time frequencies, things are a little bit different.
+				// We could just add "$this->interval" hours, minutes or seconds
+				// to the current time, and go through the main loop again,
+				// but since the frequencies are so high and needs to much iteration
+				// it's actually a bit faster to have custom loops and only
+				// call the DateTime method at the very end.
+
 				case self::HOURLY:
+					if ( empty($current_set) ) {
+						// an empty set means that this day has been filtered out
+						// by one of the BYXXX rule. So there is no need to
+						// examine it any further, we know nothing is going to
+						// occur anyway.
+						// so we jump to one iteration right before next day
+						$hour += ((int) ((23 - $hour) / $this->interval)) * $this->interval;
+					}
+
+					$found = false;
+					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::HOURLY]; $j++ ) {
+						$hour += $this->interval;
+						$div = (int) ($hour / 24);
+						$mod = $hour % 24;
+						if ( $div ) {
+							$hour = $mod;
+							$days_increment += $div;
+						}
+						if ( ! $this->byhour || in_array($hour, $this->byhour)) {
+							$found = true;
+							break;
+						}
+					}
+
+					if ( ! $found ) {
+						return null; // stop the iterator
+					}
+
+					$timeset = $this->getTimeSet($hour, $minute, $second);
+					break;
 				case self::MINUTELY:
+					if ( empty($current_set) ) {
+						$minute += ((int) ((1439 - ($hour*60+$minute)) / $this->interval)) * $this->interval;
+					}
+
+					$found = false;
+					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::MINUTELY]; $j++ ) {
+						$minute += $this->interval;
+						$div = (int) ($minute / 60);
+						$mod = $minute % 60;
+						if ( $div ) {
+							$minute = $mod;
+							$hour += $div;
+							$div = (int) ($hour / 24);
+							$mod = $hour % 24;
+							if ( $div ) {
+								$hour = $mod;
+								$days_increment += $div;
+							}
+						}
+						if ( (! $this->byhour || in_array($hour, $this->byhour)) &&
+						(! $this->byminute || in_array($minute, $this->byminute)) ) {
+							$found = true;
+							break;
+						}
+					}
+
+					if ( ! $found ) {
+						return null; // stop the iterator
+					}
+
+					$timeset = $this->getTimeSet($hour, $minute, $second);
+					break;
 				case self::SECONDLY:
-					throw new \Exception('Unimplemented frequency');
+					if ( empty($current_set) ) {
+						$second += ((int) ((86399 - ($hour*3600 + $minute*60 + $second)) / $this->interval)) * $this->interval;
+					}
+
+					$found = false;
+					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::SECONDLY]; $j++ ) {
+						$second += $this->interval;
+						$div = (int) ($second / 60);
+						$mod = $second % 60;
+						if ( $div ) {
+							$second = $mod;
+							$minute += $div;
+							$div = (int) ($minute / 60);
+							$mod = $minute % 60;
+							if ( $div ) {
+								$minute = $mod;
+								$hour += $div;
+								$div = (int) ($hour / 24);
+								$mod = $hour % 24;
+								if ( $div ) {
+									$hour = $mod;
+									$days_increment += $div;
+								}
+							}
+						}
+						if ( ( ! $this->byhour || in_array($hour, $this->byhour) )
+							&& ( ! $this->byminute || in_array($minute, $this->byminute) ) 
+							&& ( ! $this->bysecond || in_array($second, $this->bysecond) ) ) {
+							$found = true;
+							break;
+						}
+					}
+
+					if ( ! $found ) {
+						return null; // stop the iterator
+					}
+
+					$timeset = $this->getTimeSet($hour, $minute, $second);
+					break;
 			}
+			// here we take a little shortcut from the Python version, by using DateTime
+			if ( $days_increment ) {
+				list($year,$month,$day) = explode('-',date_create("$year-$month-$day")->modify("+ $days_increment days")->format('Y-n-j'));
+			}
+			$current_set = null; // reset the loop
 		}
+		return null; // stop the iterator
 	}
 
 // constants
@@ -1324,5 +1559,33 @@ class RRule implements \Iterator, \ArrayAccess
 
 	public static $LAST_DAY_OF_MONTH = array(
 		0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
+	);
+
+	/**
+	 * Maximum number of cycles after which a calendar repeats itself. This
+	 * is used to detect infinite loop: if no occurrence has been found 
+	 * after this numbers of cycles, we can abort.
+	 *
+	 * The Gregorian calendar cycle repeat completely every 400 years
+	 * (146,097 days or 20,871 weeks).
+	 * A smaller cycle would be 28 years (1,461 weeks), but it only works
+	 * if there is no dropped leap year in between.
+	 * 2100 will be a dropped leap year, but I'm going to assume it's not
+	 * going to be a problem anytime soon, so at the moment I use the 28 years
+	 * cycle.
+	 */
+	public static $REPEAT_CYCLES = array(
+		// self::YEARLY => 400,
+		// self::MONTHLY => 4800,
+		// self::WEEKLY => 20871,
+		// self::DAILY =>  146097, // that's a lot of cycles, it takes a few seconds to detect infinite loop
+		self::YEARLY => 28,
+		self::MONTHLY => 336,
+		self::WEEKLY => 1461,
+		self::DAILY => 10227,
+
+		self::HOURLY => 24,
+		self::MINUTELY => 1440,
+		self::SECONDLY => 86400 // that's a lot of cycles too
 	);
 }
