@@ -482,6 +482,9 @@ class RRule implements \Iterator, \ArrayAccess
 
 			$this->bysecond = array();
 			foreach ( $parts['BYSECOND'] as $value ) {
+				// yes, "60" is a valid value, in (very rare) cases on leap seconds
+				//  December 31, 2005 23:59:60 UTC is a valid date...
+				// so is 2012-06-30T23:59:60UTC
 				if ( $value < 0 || $value > 60 ) {
 					throw new \InvalidArgumentException('Invalid BYSECOND value: '.$value);
 				}
@@ -497,10 +500,11 @@ class RRule implements \Iterator, \ArrayAccess
 		}
 
 		if ( $this->freq < self::HOURLY ) {
-			// for frequencies DAILY, WEEKLY, MONTHLY AND YEARLY, we build
+			// for frequencies DAILY, WEEKLY, MONTHLY AND YEARLY, we can build
 			// an array of every time of the day at which there should be an
 			// occurrence - default, if no BYHOUR/BYMINUTE/BYSECOND are provided
-			// is only one time, and it's the DTSTART time.
+			// is only one time, and it's the DTSTART time. This is a cached version
+			// if you will, since it'll never change at these frequencies
 			$this->timeset = array();
 			foreach ( $this->byhour as $hour ) {
 				foreach ( $this->byminute as $minute ) {
@@ -510,7 +514,8 @@ class RRule implements \Iterator, \ArrayAccess
 					}
 				}
 			}
-			sort($this->timeset);
+			// FIXME sort ??
+			// sort($this->timeset);
 		}
 	}
 
@@ -704,6 +709,7 @@ class RRule implements \Iterator, \ArrayAccess
 				break;
 			case self::SECONDLY:
 				$diff = $date->diff($this->dtstart);
+				// XXX does not account for leap second (should it?)
 				$diff  = $diff->s + $diff->i * 60 + $diff->h * 3600 + $diff->days * 86400;
 				if ( $diff % $this->interval !== 0 ) {
 					return false;
@@ -1013,7 +1019,13 @@ class RRule implements \Iterator, \ArrayAccess
 
 
 	/**
-	 * Not sure what it does yet
+	 * This builds an array of every time of the day that matches the BYXXX time
+	 * criteria. It will only process $this->frequency at one time. So:
+	 * - for HOURLY frequencies it builds the minutes and second of the given hour
+	 * - for MINUTELY frequencies it builds the seconds of the given minute
+	 * - for SECONDLY frequencies, it returns an array with one element
+	 * 
+	 * This method is called everytime an increment of at least one hour is made.
 	 */
 	protected function getTimeSet($hour, $minute, $second)
 	{
@@ -1070,7 +1082,8 @@ class RRule implements \Iterator, \ArrayAccess
 	 *
 	 * Another quirk of this approach is that because the granularity is by day,
 	 * higher frequencies (hourly, minutely and secondly) have to have
-	 * their own special loops within the main loop.
+	 * their own special loops within the main loop, making the all thing quite
+	 * convoluted.
 	 * Moreover, at such frequencies, the brute-force approach starts to really
 	 * suck. For example, a rule like
 	 * "Every minute, every Jan 1st between 10:00 and 10:59, for 10 years" 
@@ -1094,13 +1107,13 @@ class RRule implements \Iterator, \ArrayAccess
 		// at every call of the method (to emulate a generator)
 		static $year = null, $month = null, $day = null;
 		static $hour = null, $minute = null, $second = null;
-		static $current_set = null, $masks = null, $timeset = null;
+		static $dayset = null, $masks = null, $timeset = null;
 		static $total = 0;
 
 		if ( $reset ) {
 			$year = $month = $day = null;
 			$hour = $minute = $second = null;
-			$current_set = $masks = $timeset = null;
+			$dayset = $masks = $timeset = null;
 			$total = 0;
 		}
 
@@ -1128,8 +1141,7 @@ class RRule implements \Iterator, \ArrayAccess
 			$second = (int) $second;
 		}
 
-		// todo, not sure when this should be rebuilt
-		// and not sure what this does anyway
+		// we initialize the timeset
 		if ( $timeset == null ) {
 			if ( $this->freq < self::HOURLY ) {
 				// daily, weekly, monthly or yearly
@@ -1137,6 +1149,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$timeset = $this->timeset;
 			}
 			else {
+				// initialize empty if it's not going to occurs on the first iteration
 				if (
 					($this->freq >= self::HOURLY && $this->byhour && ! in_array($hour, $this->byhour))
 					|| ($this->freq >= self::MINUTELY && $this->byminute && ! in_array($minute, $this->byminute))
@@ -1149,8 +1162,6 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 			}
 		}
-		// echo json_encode($timeset),"\n";
-		// fgets(STDIN);
 
 		// while (true) {
 		$max_cycles = self::$REPEAT_CYCLES[$this->freq <= self::DAILY ? $this->freq : self::DAILY];
@@ -1158,7 +1169,7 @@ class RRule implements \Iterator, \ArrayAccess
 			// 1. get an array of all days in the next interval (day, month, week, etc.)
 			// we filter out from this array all days that do not match the BYXXX conditions
 			// to speed things up, we use days of the year (day numbers) instead of date
-			if ( $current_set === null ) {
+			if ( $dayset === null ) {
 				// rebuild the various masks and converters
 				// these arrays will allow fast date operations
 				// without relying on date() methods
@@ -1196,13 +1207,13 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 
 				// calculate the current set
-				$current_set = $this->getDaySet($year, $month, $day, $masks);
-// echo"\tWorking with $year-$month-$day set=".json_encode($current_set)."\n";
+				$dayset = $this->getDaySet($year, $month, $day, $masks);
+// echo"\tWorking with $year-$month-$day set=".json_encode($dayset)."\n";
 // print_r(json_encode($masks));
 // fgets(STDIN);
 				$filtered_set = array();
 
-				foreach ( $current_set as $yearday ) {
+				foreach ( $dayset as $yearday ) {
 					if ( $this->bymonth && ! in_array($masks['yearday_to_month'][$yearday], $this->bymonth) ) {
 						continue;
 					}
@@ -1242,51 +1253,91 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 // echo "\tFiltered set (before BYSETPOS)=".json_encode($filtered_set)."\n";
 
-				$current_set = $filtered_set;
+				$dayset = $filtered_set;
 
-				// XXX this needs to be applied after expanding the timeset
-				if ( $this->bysetpos ) {
+				// if BYSETPOS is set, we need to expand the timeset to filter by pos
+				// so we make a special loop to return while generating
+				if ( $this->bysetpos && $timeset ) {
 					$filtered_set = array();
-					$n = sizeof($current_set);
 					foreach ( $this->bysetpos as $pos ) {
+						// echo "pos = $pos => ";
+						$n = count($timeset);
 						if ( $pos < 0 ) {
-							$pos = $n + $pos;
+							$pos = $n * count($dayset) + $pos;
 						}
 						else {
 							$pos = $pos - 1;
 						}
-						if ( isset($current_set[$pos]) ) {
-							$filtered_set[] = $current_set[$pos];
+// echo "$pos => ";
+						$div = (int) ($pos / $n); // daypos
+						$mod = $pos % $n; // timepos
+	// echo "array index $div / $mod\n";
+	// echo "div = $div, mod = $mod\n";
+	// echo "dayset[$div] = ",$dayset[$div]," timeset[$mod] = ",json_encode($timeset[$mod]),"\n";
+	// fgets(STDIN);
+
+						if ( isset($dayset[$div]) && isset($timeset[$mod]) ) {
+							$yearday = $dayset[$div];
+							$time = $timeset[$mod];
+							// used as array key to ensure uniqueness
+							$tmp = $year.':'.$yearday.':'.$time[0].':'.$time[1].':'.$time[2];
+							if ( ! isset($filtered_set[$tmp]) ) {
+								$occurrence = \DateTime::createFromFormat(
+									'Y z',
+									"$year $yearday"
+								);
+								$occurrence->setTime($time[0], $time[1], $time[2]);
+								$filtered_set[$tmp] = $occurrence;
+							}
 						}
 					}
-					$current_set = array_unique($filtered_set);
+					sort($filtered_set);
+					$dayset = $filtered_set;
 				}
-
 // echo "\tFiltered set (after BYSETPOS)=".json_encode($filtered_set)."\n";
 			}
 
 			// 2. loop, generate a valid date, and return the result (fake "yield")
 			// at the same time, we check the end condition and return null if
 			// we need to stop
-			while ( ($yearday = current($current_set)) !== false ) {
-				$occurrence = \DateTime::createFromFormat('Y z', "$year $yearday");
+			if ( $this->bysetpos && $timeset ) {
+				while ( ($occurrence = current($dayset)) !== false ) {
 
-				while ( ($time = current($timeset)) !== false ) {
-					$occurrence->setTime($time[0], $time[1], $time[2]);
 					// consider end conditions
 					if ( $this->until && $occurrence > $this->until ) {
 						// $this->length = $total (?)
 						return null;
 					}
 
-					next($timeset);
+					next($dayset);
 					if ( $occurrence >= $this->dtstart ) { // ignore occurrences before DTSTART
 						$total += 1;
 						return $occurrence; // yield
 					}
 				}
-				reset($timeset);
-				next($current_set);
+			}
+			else {
+				// normal loop, without BYSETPOS
+				while ( ($yearday = current($dayset)) !== false ) {
+					$occurrence = \DateTime::createFromFormat('Y z', "$year $yearday");
+
+					while ( ($time = current($timeset)) !== false ) {
+						$occurrence->setTime($time[0], $time[1], $time[2]);
+						// consider end conditions
+						if ( $this->until && $occurrence > $this->until ) {
+							// $this->length = $total (?)
+							return null;
+						}
+
+						next($timeset);
+						if ( $occurrence >= $this->dtstart ) { // ignore occurrences before DTSTART
+							$total += 1;
+							return $occurrence; // yield
+						}
+					}
+					reset($timeset);
+					next($dayset);
+				}
 			}
 
 			// 3. we reset the loop to the next interval
@@ -1327,7 +1378,7 @@ class RRule implements \Iterator, \ArrayAccess
 				// call the DateTime method at the very end.
 
 				case self::HOURLY:
-					if ( empty($current_set) ) {
+					if ( empty($dayset) ) {
 						// an empty set means that this day has been filtered out
 						// by one of the BYXXX rule. So there is no need to
 						// examine it any further, we know nothing is going to
@@ -1358,7 +1409,7 @@ class RRule implements \Iterator, \ArrayAccess
 					$timeset = $this->getTimeSet($hour, $minute, $second);
 					break;
 				case self::MINUTELY:
-					if ( empty($current_set) ) {
+					if ( empty($dayset) ) {
 						$minute += ((int) ((1439 - ($hour*60+$minute)) / $this->interval)) * $this->interval;
 					}
 
@@ -1391,7 +1442,7 @@ class RRule implements \Iterator, \ArrayAccess
 					$timeset = $this->getTimeSet($hour, $minute, $second);
 					break;
 				case self::SECONDLY:
-					if ( empty($current_set) ) {
+					if ( empty($dayset) ) {
 						$second += ((int) ((86399 - ($hour*3600 + $minute*60 + $second)) / $this->interval)) * $this->interval;
 					}
 
@@ -1435,7 +1486,7 @@ class RRule implements \Iterator, \ArrayAccess
 			if ( $days_increment ) {
 				list($year,$month,$day) = explode('-',date_create("$year-$month-$day")->modify("+ $days_increment days")->format('Y-n-j'));
 			}
-			$current_set = null; // reset the loop
+			$dayset = null; // reset the loop
 		}
 		return null; // stop the iterator
 	}

@@ -112,7 +112,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array(array('BYWEEKNO' => 53, 'BYDAY' => 'MO'), array(
 				date_create('1998-12-28'), date_create('2004-12-27'), date_create('2009-12-28'))),
 
-			// TODO BYSETPOS
+			// todo bysetpos
 
 			array(array('BYHOUR' => array(6, 18)),array(
 				date_create('1997-09-02 06:00:00'),
@@ -142,10 +142,10 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				date_create('1997-09-02 06:15:10'),
 				date_create('1997-09-02 06:15:20'),
 				date_create('1997-09-02 06:30:10'))),
-			// array(array('BYMONTHDAY'=>15,'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3)),array(
-			// 	date_create('1997-11-15 18:00:00'),
-			// 	date_create('1998-02-15 06:00:00'),
-			// 	date_create('1998-11-15 18:00:00')))
+			array(array('BYMONTHDAY'=>15,'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3)),array(
+				date_create('1997-11-15 18:00:00'),
+				date_create('1998-02-15 06:00:00'),
+				date_create('1998-11-15 18:00:00')))
 		);
 	}
 
@@ -204,7 +204,11 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array(array('BYMONTH' => array(1, 3), 'BYMONTHDAY' => array(1, 3), 'BYDAY' => array('TU', 'TH')),array(
 				date_create('1998-01-01'),date_create('1998-03-03'),date_create('2001-03-01'))),
 
-			// TODO BYSETPOS
+			// last workday of the month
+			array(array('BYDAY'=>'MO,TU,WE,TH,FR','BYSETPOS'=>-1), array(
+				date_create('1997-09-30'),
+				date_create('1997-10-31'),
+				date_create('1997-11-28'))),
 
 			array(array('BYHOUR'=> array(6, 18)),array(
 				date_create('1997-09-02 06:00:00'),date_create('1997-09-02 18:00:00'),date_create('1997-10-02 06:00:00'))),
@@ -220,8 +224,13 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				date_create('1997-09-02 00:06:06'),date_create('1997-09-02 00:06:18'),date_create('1997-09-02 00:18:06'))),
 			array(array('BYHOUR'=>array(6, 18),'BYMINUTE'=>array(6, 18),'BYSECOND'=>array(6, 18)),array(
 				date_create('1997-09-02 06:06:06'),date_create('1997-09-02 06:06:18'),date_create('1997-09-02 06:18:06'))),
-			// array(array('BYMONTHDAY'=>array(13, 17),'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3)),array(
-			// 	date_create('1997-09-13 06:00'),date_create('1997-09-17'),date_create('1997-10-13')))
+			array(array('BYMONTHDAY'=>array(13, 17),'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, -3)),array(
+				date_create('1997-09-13 18:00'),date_create('1997-09-17 06:00'),date_create('1997-10-13 18:00'))),
+			// avoid duplicates
+			array(array('BYMONTHDAY'=>array(13, 17),'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(3, 3, -3)),array(
+				date_create('1997-09-13 18:00'),date_create('1997-09-17 06:00'),date_create('1997-10-13 18:00'))),
+			array(array('BYMONTHDAY'=>array(13, 17),'BYHOUR'=>array(6, 18),'BYSETPOS'=>array(4, -1)),array(
+				date_create('1997-09-17 18:00'),date_create('1997-10-17 18:00'),date_create('1997-11-17 18:00')))
 		);
 	}
 
@@ -1300,7 +1309,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array(array(
 				'freq' => 'monthly',
 				'interval' => 2,
-				'bymonth' => [1,3,5,7,9,11],
+				'bymonth' => '1,3,5,7,9,11',
 				'dtstart' => '1997-02-02 09:00:00',
 				'count' => 1
 			)),
@@ -1406,7 +1415,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 			array(
 				array('freq' => 'hourly', 'dtstart' => '1999-09-02 09:00:00', 'INTERVAL' => 2),
-				array('1999-09-02 10:00:00', '1999-09-02 12:00:00')
+				array('1999-09-02 10:00:00', '1999-09-02 09:01:01','1999-09-02 12:00:00')
 			),
 			array(
 				array('freq' => 'hourly', 'dtstart' => '1999-09-02 09:00:00', 'INTERVAL' => 5),
