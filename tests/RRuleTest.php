@@ -1323,14 +1323,9 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				'dtstart' => '1997-02-02 09:00:00',
 				'count' => 1
 			)),
-			// every 52 weeks, in November, starting in July (not going to happen)
-			array(array(
-				'freq' => 'weekly',
-				'interval' => 52,
-				'bymonth' => 11,
-				'dtstart' => '2015-07-01 09:00:00',
-				'count' => 1
-			)),
+
+			// haven't found a weekly rule with no occurence yet
+
 			// every 7 days, monday, starting a wednesday (still nope)
 			array(array(
 				'freq' => 'daily',
@@ -1488,6 +1483,15 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				date_create('2015-07-01 09:00:30'),
 				date_create('2016-07-01 09:00:15'))
 			),
+			// every 52 weeks, in November, starting in July (will happen in 2185 - to test year 2038 problem)
+			array(array(
+				'freq' => 'weekly',
+				'interval' => 52,
+				'bymonth' => 11,
+				'dtstart' => '2015-07-01 09:00:00',
+				'count' => 1), array(
+				date_create('2185-11-30 09:00:00')
+			)),
 		);
 	}
 

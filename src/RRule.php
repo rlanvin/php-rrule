@@ -579,7 +579,7 @@ class RRule implements \Iterator, \ArrayAccess
 		// we need some more variables before we continue
 		list($year, $month, $day, $yearday, $weekday) = explode(' ',$date->format('Y n j z N'));
 		$masks = array();
-		$masks['weekday_of_1st_yearday'] = date('N', mktime(0,0,0,1,1,$year));
+		$masks['weekday_of_1st_yearday'] = date_create($year.'-01-01 00:00:00')->format('N');
 		$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
 		if ( is_leap_year($year) ) {
 			$masks['year_len'] = 366;
@@ -795,7 +795,7 @@ class RRule implements \Iterator, \ArrayAccess
 				// during the previous year), because that would generate
 				// negative indexes (which would not work with the masks)
 				$set = array();
-				$i = (int) date('z', mktime(0,0,0,$month,$day,$year));
+				$i = (int) date_create($year.'-'.$month.'-'.$day.' 00:00:00')->format('z');
 				$start = $i;
 				for ( $j = 0; $j < 7; $j++ ) {
 					$set[] = $i;
@@ -810,8 +810,8 @@ class RRule implements \Iterator, \ArrayAccess
 			case self::HOURLY:
 			case self::MINUTELY:
 			case self::SECONDLY:
-				$n = (int) date('z', mktime(0,0,0,$month,$day,$year));
-				return array($n);
+				$i = (int) date_create($year.'-'.$month.'-'.$day.' 00:00:00')->format('z');
+				return array($i);
 		}
 	}
 
@@ -967,7 +967,7 @@ class RRule implements \Iterator, \ArrayAccess
 			// or week number 1 got days from last year, so there are no
 			// days from last year's last week number in this year.
 			if ( ! in_array(-1, $this->byweekno) ) {
-				$weekday_of_1st_yearday = date('N', mktime(0,0,0,1,1,$year-1));
+				$weekday_of_1st_yearday = date_create(($year-1).'-01-01 00:00:00')->format('N');
 				$first_wkst_offset_last_year = (7 - $weekday_of_1st_yearday + $this->wkst) % 7;
 				$last_year_len = 365 + is_leap_year($year - 1);
 				if ( $first_wkst_offset_last_year >= 4) {
@@ -1152,7 +1152,7 @@ class RRule implements \Iterator, \ArrayAccess
 						$masks['leap_year'] = is_leap_year($year);
 						$masks['year_len'] = 365 + (int) $masks['leap_year'];
 						$masks['next_year_len'] = 365 + is_leap_year($year + 1);
-						$masks['weekday_of_1st_yearday'] = date('N', mktime(0,0,0,1,1,$year));
+						$masks['weekday_of_1st_yearday'] = date_create($year."-01-01 00:00:00")->format('N');
 						$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
 						if ( $masks['leap_year'] ) {
 							$masks['yearday_to_month'] = self::$MONTH_MASK_366;
