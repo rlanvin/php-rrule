@@ -1390,7 +1390,8 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	public function testRulesWithoutOccurrences($rule)
 	{
 		$rule = new RRule($rule);
-		$this->assertEmpty($rule->getOccurrences());
+		$occurrences = $rule->getOccurrences();
+		$this->assertEmpty($rule->getOccurrences(), 'This should be empty : '.json_encode($occurrences));
 	}
 
 	/**
@@ -1562,7 +1563,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	{
 		$rule = new RRule($rule);
 		foreach ( $not_occurences as $date ) {
-			$this->assertFalse($rule->occursAt($date), $date);
+			$this->assertFalse($rule->occursAt($date), "Rule must not match $date");
 		}
 	}
 
