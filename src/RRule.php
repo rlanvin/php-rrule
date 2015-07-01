@@ -66,20 +66,7 @@ function is_leap_year($year)
 }
 
 /**
- * Calculate the Greatest Common Divisor of a and b.
- * Unless b==0, the result will have the same sign as b (so that when
- * b is divided by it, the result comes out positive).
- */
-function gcd($a, $b)
-{
-	while ($b) {
-		list($a, $b) = array($b, $a % $b);
-	}
-	return $a;
-}
-
-/**
- * Implementation of RRULE as defined by RFC 5545.
+ * Implementation of RRULE as defined by RFC 5545 (iCalendar).
  * Heavily based on python-dateutil/rrule
  *
  * Some useful terms to understand the algorithms and variables naming:
@@ -430,9 +417,6 @@ class RRule implements \Iterator, \ArrayAccess
 			}
 		}
 
-// now for the time options
-// this gets more complicated
-
 		if ( not_empty($parts['BYHOUR']) ) {
 			if ( ! is_array($parts['BYHOUR']) ) {
 				$parts['BYHOUR'] = explode(',',$parts['BYHOUR']);
@@ -446,9 +430,7 @@ class RRule implements \Iterator, \ArrayAccess
 				$this->byhour[] = (int) $value;
 			}
 
-			if ( $this->freq === self::HOURLY ) {
-				// do something (__construct_byset) ?
-			}
+			sort($this->byhour);
 		}
 		elseif ( $this->freq < self::HOURLY ) { 
 			$this->byhour = array((int) $this->dtstart->format('G'));
@@ -466,10 +448,7 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 				$this->byminute[] = (int) $value;
 			}
-
-			if ( $this->freq == self::MINUTELY ) {
-				// do something
-			}
+			sort($this->byminute);
 		}
 		elseif ( $this->freq < self::MINUTELY ) {
 			$this->byminute = array((int) $this->dtstart->format('i'));
@@ -490,10 +469,7 @@ class RRule implements \Iterator, \ArrayAccess
 				}
 				$this->bysecond[] = (int) $value;
 			}
-
-			if ( $this->freq == self::SECONDLY ) {
-				// do something
-			}
+			sort($this->bysecond);
 		}
 		elseif ( $this->freq < self::SECONDLY ) {
 			$this->bysecond = array((int) $this->dtstart->format('s'));
@@ -509,13 +485,10 @@ class RRule implements \Iterator, \ArrayAccess
 			foreach ( $this->byhour as $hour ) {
 				foreach ( $this->byminute as $minute ) {
 					foreach ( $this->bysecond as $second ) {
-						// fixme another format?
 						$this->timeset[] = array($hour,$minute,$second);
 					}
 				}
 			}
-			// FIXME sort ??
-			// sort($this->timeset);
 		}
 	}
 
@@ -1029,7 +1002,6 @@ class RRule implements \Iterator, \ArrayAccess
 	 */
 	protected function getTimeSet($hour, $minute, $second)
 	{
-		// echo "getTimeSet($hour,$minute,$second)\n";
 		switch ( $this->freq ) {
 			case self::HOURLY:
 				$set = array();
@@ -1208,9 +1180,7 @@ class RRule implements \Iterator, \ArrayAccess
 
 				// calculate the current set
 				$dayset = $this->getDaySet($year, $month, $day, $masks);
-// echo"\tWorking with $year-$month-$day set=".json_encode($dayset)."\n";
-// print_r(json_encode($masks));
-// fgets(STDIN);
+
 				$filtered_set = array();
 
 				foreach ( $dayset as $yearday ) {
@@ -1251,7 +1221,6 @@ class RRule implements \Iterator, \ArrayAccess
 
 					$filtered_set[] = $yearday;
 				}
-// echo "\tFiltered set (before BYSETPOS)=".json_encode($filtered_set)."\n";
 
 				$dayset = $filtered_set;
 
@@ -1260,7 +1229,6 @@ class RRule implements \Iterator, \ArrayAccess
 				if ( $this->bysetpos && $timeset ) {
 					$filtered_set = array();
 					foreach ( $this->bysetpos as $pos ) {
-						// echo "pos = $pos => ";
 						$n = count($timeset);
 						if ( $pos < 0 ) {
 							$pos = $n * count($dayset) + $pos;
@@ -1268,14 +1236,9 @@ class RRule implements \Iterator, \ArrayAccess
 						else {
 							$pos = $pos - 1;
 						}
-// echo "$pos => ";
+
 						$div = (int) ($pos / $n); // daypos
 						$mod = $pos % $n; // timepos
-	// echo "array index $div / $mod\n";
-	// echo "div = $div, mod = $mod\n";
-	// echo "dayset[$div] = ",$dayset[$div]," timeset[$mod] = ",json_encode($timeset[$mod]),"\n";
-	// fgets(STDIN);
-
 						if ( isset($dayset[$div]) && isset($timeset[$mod]) ) {
 							$yearday = $dayset[$div];
 							$time = $timeset[$mod];
@@ -1294,7 +1257,6 @@ class RRule implements \Iterator, \ArrayAccess
 					sort($filtered_set);
 					$dayset = $filtered_set;
 				}
-// echo "\tFiltered set (after BYSETPOS)=".json_encode($filtered_set)."\n";
 			}
 
 			// 2. loop, generate a valid date, and return the result (fake "yield")

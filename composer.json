@@ -1,7 +1,7 @@
 {
     "name": "rlanvin/php-rrule",
     "type": "library",
-    "description": "Lightweight RRule implementation (RFC 5545)",
+    "description": "Lightweight and fast recurrence rules for PHP (RFC 5545)",
     "keywords": ["rrule","ical","recurrence","recurring","date"],
     "homepage": "https://github.com/rlanvin/php-rrule",
     "license": "MIT",

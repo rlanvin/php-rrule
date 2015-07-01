@@ -38,9 +38,6 @@ Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wik
 
 ## Installation
 
-This is still a work in progress, use at your own risk!
-In particular, HOURLY, MINUTELY and SECONDLY frequencies are not implemented.
-
 The recommended way is to install the lib [through Composer](http://getcomposer.org/).
 
 Just add this to your `composer.json` file:
@@ -64,24 +61,21 @@ require 'vendor/autoload.php';
 
 ### Alternative method
 
-Since it's a no-nonsense implementation, there is only one class.
-So you can just download `src/RRule.php` and require it.
+You can just download `src/RRule.php` and require it.
 
 ## Note
 
 I started this library because I wasn't happy with the existing implementations
-in PHP. The ones I tested were slow and/or had a very awkward/verbose API that
-I didn't like to use. They were also all missing a generator/iterator, which I
-think is key. So I thought it would be a good learning project to port the
+in PHP, so I thought it would be a good learning project to port the
 python-dateutil rrule implementation into PHP.
 
-The Python lib was a bit difficult to understand because the algorithms (very smart by the way),
+The Python lib was a bit difficult to understand because the algorithms 
 are not commented and the variables are very opaque (I'm looking at
 you `lno1wkst`). I tried to comment and explain as much of the algorithm as possible
 in this PHP port, so feel free to check the code if you're interested.
 
 The lib differs from the python version in various aspects, notably in the 
-respect of the RFC. This version is strictier and will not accept many
+respect of the RFC. This version is a bit strictier and will not accept many
 non-compliant combinations of rule parts, that the python version otherwise accepts.
 There are also some additional features in this version.
 
