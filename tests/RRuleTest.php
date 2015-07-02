@@ -160,8 +160,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02'
 		), $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').'in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').'in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -724,8 +733,13 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02 09:00:00'
 		), $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
 		}
 	}
 

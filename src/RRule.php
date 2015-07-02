@@ -83,7 +83,7 @@ function is_leap_year($year)
  * @see https://tools.ietf.org/html/rfc5545
  * @see https://labix.org/python-dateutil
  */
-class RRule implements \Iterator, \ArrayAccess
+class RRule implements \Iterator, \ArrayAccess, \Countable
 {
 	const SECONDLY = 7;
 	const MINUTELY = 6;
@@ -154,6 +154,10 @@ class RRule implements \Iterator, \ArrayAccess
 	protected $wkst = null;
 	protected $timeset = null;
 
+	// cache variables
+	public $total = null;
+	protected $cache = array();
+
 // Public interface
 
 	/**
@@ -189,15 +193,26 @@ class RRule implements \Iterator, \ArrayAccess
 		$this->wkst = self::$week_days[$parts['WKST']];
 
 		// FREQ
-		$parts['FREQ'] = strtoupper($parts['FREQ']);
-		if ( (is_int($parts['FREQ']) && ($parts['FREQ'] < self::SECONDLY || $parts['FREQ'] > self::YEARLY))
-			|| ! array_key_exists($parts['FREQ'], self::$frequencies) ) {
-			throw new \InvalidArgumentException(
-				'The FREQ rule part must be one of the following: '
-				.implode(', ',array_keys(self::$frequencies))
-			);
+		if ( is_integer($parts['FREQ']) ) {
+			if ( $parts['FREQ'] > self::SECONDLY || $parts['FREQ'] < self::YEARLY ) {
+				throw new \InvalidArgumentException(
+					'The FREQ rule part must be one of the following: '
+					.implode(', ',array_keys(self::$frequencies))
+				);
+			}
+			$this->freq = $parts['FREQ'];
 		}
-		$this->freq = self::$frequencies[$parts['FREQ']];
+		else { // string
+			$parts['FREQ'] = strtoupper($parts['FREQ']);
+			if ( ! array_key_exists($parts['FREQ'], self::$frequencies) ) {
+				throw new \InvalidArgumentException(
+					'The FREQ rule part must be one of the following: '
+					.implode(', ',array_keys(self::$frequencies))
+				);
+			}
+			$this->freq = self::$frequencies[$parts['FREQ']];
+		}
+		
 
 		// INTERVAL
 		$parts['INTERVAL'] = (int) $parts['INTERVAL'];
@@ -210,22 +225,12 @@ class RRule implements \Iterator, \ArrayAccess
 
 		// DTSTART
 		if ( not_empty($parts['DTSTART']) ) {
-			if ( $parts['DTSTART'] instanceof \DateTime ) {
-				$this->dtstart = $parts['DTSTART'];
-			}
-			else {
-				try {
-					if ( is_integer($parts['DTSTART']) ) {
-						$this->dtstart = \DateTime::createFromFormat('U',$parts['DTSTART']);
-					}
-					else {
-						$this->dtstart = new \DateTime($parts['DTSTART']);
-					}
-				} catch (\Exception $e) {
-					throw new \InvalidArgumentException(
-						'Failed to parse DTSTART ; it must be a valid date, timestamp or \DateTime object'
-					);
-				}
+			try {
+				$this->dtstart = self::parseDate($parts['DTSTART']);
+			} catch (\Exception $e) {
+				throw new \InvalidArgumentException(
+					'Failed to parse DTSTART ; it must be a valid date, timestamp or \DateTime object'
+				);
 			}
 		} 
 		else {
@@ -234,22 +239,12 @@ class RRule implements \Iterator, \ArrayAccess
 
 		// UNTIL (optional)
 		if ( not_empty($parts['UNTIL']) ) {
-			if ( $parts['UNTIL'] instanceof \DateTime ) {
-				$this->until = $parts['UNTIL'];
-			}
-			else {
-				try {
-					if ( is_integer($parts['UNTIL']) ) {
-						$this->until = \DateTime::createFromFormat('U',$parts['UNTIL']);
-					}
-					else {
-						$this->until = new \DateTime($parts['UNTIL']);
-					}
-				} catch (\Exception $e) {
-					throw new \InvalidArgumentException(
-						'Failed to parse UNTIL ; it must be a valid date, timestamp or \DateTime object'
-					);
-				}
+			try {
+				$this->until = self::parseDate($parts['UNTIL']);
+			} catch (\Exception $e) {
+				throw new \InvalidArgumentException(
+					'Failed to parse UNTIL ; it must be a valid date, timestamp or \DateTime object'
+				);
 			}
 		}
 
@@ -288,7 +283,7 @@ class RRule implements \Iterator, \ArrayAccess
 			$this->byweekday = array();
 			$this->byweekday_nth = array();
 			foreach ( $parts['BYDAY'] as $value ) {
-				$value = trim($value);
+				$value = trim(strtoupper($value));
 				$valid = preg_match('/^([+-]?[0-9]+)?([A-Z]{2})$/', $value, $matches);
 				if ( ! $valid || (not_empty($matches[1]) && ($matches[1] == 0 || $matches[1] > 53 || $matches[1] < -53)) || ! array_key_exists($matches[2], self::$week_days) ) {
 					throw new \InvalidArgumentException('Invalid BYDAY value: '.$value);
@@ -492,6 +487,13 @@ class RRule implements \Iterator, \ArrayAccess
 		}
 	}
 
+	public function clearCache()
+	{
+		$this->total = null;
+		$this->cache = array();
+		return $this;
+	}
+
 	/**
 	 * @return array
 	 */
@@ -500,6 +502,12 @@ class RRule implements \Iterator, \ArrayAccess
 		if ( ! $this->count && ! $this->until ) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
+
+		// cached version already computed
+		if ( $this->total !== null ) {
+			return $this->cache;
+		}
+
 		$res = array();
 		foreach ( $this as $occurrence ) {
 			$res[] = $occurrence;
@@ -512,8 +520,16 @@ class RRule implements \Iterator, \ArrayAccess
 	 */
 	public function getOccurrencesBetween($begin, $end)
 	{
+		$begin = self::parseDate($begin);
+		$end = self::parseDate($end);
+
+		$iterator = $this;
+		if ( $this->total !== null ) {
+			$iterator = $this->cache;
+		}
+
 		$res = array();
-		foreach ( $this as $occurrence ) {
+		foreach ( $iterator as $occurrence ) {
 			if ( $occurrence < $begin ) {
 				continue;
 			}
@@ -547,17 +563,15 @@ class RRule implements \Iterator, \ArrayAccess
 	 */
 	public function occursAt($date)
 	{
-		if ( ! $date instanceof \DateTime ) {
-			try {
-				if ( is_integer($date) ) {
-					$date = \DateTime::createFromFormat('U',$date);
-				}
-				else {
-					$date = new \DateTime($date);
-				}
-			} catch ( \Exception $e ) {
-				throw new \InvalidArgumentException('Failed to parse the date');
-			}
+		$date = self::parseDate($date);
+
+		if ( in_array($date, $this->cache) ) {
+			// in the cache (whether cache is complete or not)
+			return true;
+		}
+		elseif ( $this->total !== null ) {
+			// cache complete and not in cache
+			return false;
 		}
 
 		// let's start with the obvious
@@ -722,43 +736,66 @@ class RRule implements \Iterator, \ArrayAccess
 
 // Iterator interface
 
-	protected $position = 0;
+	protected $current = 0;
+	protected $key = 0;
 
 	public function rewind()
 	{
-		$this->position = $this->iterate(true);
+		$this->current = $this->iterate(true);
+		$this->key = 0;
 	}
 
 	public function current()
 	{
-		return $this->position;
+		return $this->current;
 	}
 
 	public function key()
 	{
-		// void
+		return $this->key;
 	}
 
 	public function next()
 	{
-		$this->position = $this->iterate();
+		$this->current = $this->iterate();
+		$this->key += 1;
 	}
 
 	public function valid()
 	{
-		return $this->position !== null;
+		return $this->current !== null;
 	}
 
 // ArrayAccess interface
 
 	public function offsetExists($offset)
 	{
-		
+		return is_numeric($offset) && $offset >= 0 && $offset < count($this);
 	}
 
 	public function offsetGet($offset)
 	{
-		
+		if ( isset($this->cache[$offset]) ) {
+			// found in cache
+			return $this->cache[$offset];
+		}
+		elseif ( $this->total !== null ) {
+			// cache complete and not found in cache
+			return null;
+		}
+
+		// not in cache and cache not complete, we have to loop to find it
+		$i = 0;
+		foreach ( $this as $occurrence ) {
+			if ( $i == $offset ) {
+				return $occurrence;
+			}
+			$i++;
+			if ( $i > $offset ) {
+				break;
+			}
+		}
+		return null;
 	}
 
 	public function offsetSet($offset, $value)
@@ -771,7 +808,53 @@ class RRule implements \Iterator, \ArrayAccess
 		throw new LogicException('Unsetting a Date in a RRule is not supported');
 	}
 
+// Countable interface
+
+	/**
+	 * Returns the number of recurrences in this set. It will have go
+	 * through the whole recurrence, if this hasn't been done before, which
+	 * introduces a performance penality.
+	 * @return int
+	 */
+	public function count()
+	{
+		if ( ! $this->count && ! $this->until ) {
+			throw new \LogicException('Cannot count an infinite recurrence rule.');
+		}
+
+		if ( $this->total === null ) {
+			foreach ( $this as $occurrence ) {}
+		}
+
+		return $this->total;
+	}
+
 // private methods
+
+	/**
+	 * Convert any date into a DateTime object.
+	 * @throws InvalidArgumentException on error
+	 * @param mixed $date
+	 * @return DaeTime
+	 */
+	static public function parseDate($date)
+	{
+		if ( ! $date instanceof \DateTime ) {
+			try {
+				if ( is_integer($date) ) {
+					$date = \DateTime::createFromFormat('U',$date);
+				}
+				else {
+					$date = new \DateTime($date);
+				}
+			} catch (\Exception $e) {
+				throw new \InvalidArgumentException(
+					'Failed to parse the date "$date"'
+				);
+			}
+		}
+		return $date;
+	}
 
 	/**
 	 * This method returns an array of days of the year (numbered from 0 to 365)
@@ -1080,33 +1163,71 @@ class RRule implements \Iterator, \ArrayAccess
 		static $year = null, $month = null, $day = null;
 		static $hour = null, $minute = null, $second = null;
 		static $dayset = null, $masks = null, $timeset = null;
-		static $total = 0;
+		static $dtstart = null, $total = 0, $use_cache = true;
 
 		if ( $reset ) {
 			$year = $month = $day = null;
 			$hour = $minute = $second = null;
 			$dayset = $masks = $timeset = null;
+			$dtstart = null;
 			$total = 0;
+			$use_cache = true;
+			reset($this->cache);
+		}
+
+		// go through the cache first
+		if ( $use_cache ) {
+			while ( ($occurrence = current($this->cache)) !== false ) {
+				// echo "Cache hit\n";
+				$dtstart = $occurrence;
+				next($this->cache);
+				$total += 1;
+				return $occurrence;
+			}
+			reset($this->cache);
+			// now set use_cache to false to skip the all thing on next iteration
+			// and start filling the cache instead
+			$use_cache = false;
+			// if the cache as been used up completely and we now there is nothing else
+			if ( $total === $this->total ) {
+				// echo "Cache used up, nothing else to compute\n";
+				return null;
+			}
+			// echo "Cache used up with occurrences remaining\n";
+			if ( $dtstart ) {
+				// so we skip the last occurrence of the cache
+				if ( $this->freq === self::SECONDLY ) {
+					$dtstart->modify('+'.$this->interval.'second');
+				}
+				else {
+					$dtstart->modify('+1second');
+				}
+			}
 		}
 
 		// stop once $total has reached COUNT
 		if ( $this->count && $total >= $this->count ) {
+			$this->total = $total;
 			return null;
 		}
 
-		if ( $year == null ) {
+		if ( $dtstart === null ) {
+			$dtstart = clone $this->dtstart;
+		}
+
+		if ( $year === null ) {
 			if ( $this->freq === self::WEEKLY ) {
 				// we align the start date to the WKST, so we can then
 				// simply loop by adding +7 days. The Python lib does some
 				// calculation magic at the end of the loop (when incrementing)
 				// to realign on first pass.
-				$tmp = clone $this->dtstart;
-				$tmp = $tmp->modify('-'.pymod($this->dtstart->format('N') - $this->wkst,7).'days');
+				$tmp = clone $dtstart;
+				$tmp->modify('-'.pymod($this->dtstart->format('N') - $this->wkst,7).'days');
 				list($year,$month,$day,$hour,$minute,$second) = explode(' ',$tmp->format('Y n j G i s'));
 				unset($tmp);
 			}
 			else {
-				list($year,$month,$day,$hour,$minute,$second) = explode(' ',$this->dtstart->format('Y n j G i s'));
+				list($year,$month,$day,$hour,$minute,$second) = explode(' ',$dtstart->format('Y n j G i s'));
 			}
 			// remove leading zeros
 			$minute = (int) $minute;
@@ -1267,13 +1388,14 @@ class RRule implements \Iterator, \ArrayAccess
 
 					// consider end conditions
 					if ( $this->until && $occurrence > $this->until ) {
-						// $this->length = $total (?)
+						$this->total = $total; // save total for count() cache
 						return null;
 					}
 
 					next($dayset);
-					if ( $occurrence >= $this->dtstart ) { // ignore occurrences before DTSTART
+					if ( $occurrence >= $dtstart ) { // ignore occurrences before DTSTART
 						$total += 1;
+						$this->cache[] = $occurrence;
 						return $occurrence; // yield
 					}
 				}
@@ -1287,13 +1409,14 @@ class RRule implements \Iterator, \ArrayAccess
 						$occurrence->setTime($time[0], $time[1], $time[2]);
 						// consider end conditions
 						if ( $this->until && $occurrence > $this->until ) {
-							// $this->length = $total (?)
+							$this->total = $total; // save total for count() cache
 							return null;
 						}
 
 						next($timeset);
-						if ( $occurrence >= $this->dtstart ) { // ignore occurrences before DTSTART
+						if ( $occurrence >= $dtstart ) { // ignore occurrences before DTSTART
 							$total += 1;
+							$this->cache[] = $occurrence;
 							return $occurrence; // yield
 						}
 					}
@@ -1365,6 +1488,7 @@ class RRule implements \Iterator, \ArrayAccess
 					}
 
 					if ( ! $found ) {
+						$this->total = $total; // save total for count cache
 						return null; // stop the iterator
 					}
 
@@ -1398,6 +1522,7 @@ class RRule implements \Iterator, \ArrayAccess
 					}
 
 					if ( ! $found ) {
+						$this->total = $total; // save total for count cache
 						return null; // stop the iterator
 					}
 
@@ -1438,6 +1563,7 @@ class RRule implements \Iterator, \ArrayAccess
 					}
 
 					if ( ! $found ) {
+						$this->total = $total; // save total for count cache
 						return null; // stop the iterator
 					}
 
@@ -1450,6 +1576,8 @@ class RRule implements \Iterator, \ArrayAccess
 			}
 			$dayset = null; // reset the loop
 		}
+
+		$this->total = $total; // save total for count cache
 		return null; // stop the iterator
 	}
 
