@@ -155,7 +155,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	protected $timeset = null;
 
 	// cache variables
-	public $total = null;
+	protected $total = null;
 	protected $cache = array();
 
 // Public interface
@@ -520,8 +520,16 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 */
 	public function getOccurrencesBetween($begin, $end)
 	{
-		$begin = self::parseDate($begin);
-		$end = self::parseDate($end);
+		if ( $begin !== null ) {
+			$begin = self::parseDate($begin);
+		}
+
+		if ( $end !== null ) {
+			$end = self::parseDate($end);
+		}
+		elseif ( ! $this->count && ! $this->until ) {
+			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
+		}
 
 		$iterator = $this;
 		if ( $this->total !== null ) {
@@ -530,10 +538,10 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 		$res = array();
 		foreach ( $iterator as $occurrence ) {
-			if ( $occurrence < $begin ) {
+			if ( $begin !== null && $occurrence < $begin ) {
 				continue;
 			}
-			if ( $occurrence > $end ) {
+			if ( $end !== null && $occurrence > $end ) {
 				break;
 			}
 			$res[] = $occurrence;
