@@ -166,9 +166,20 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 * because in order to validate some BYXXX parts, we need to know
 	 * the value of some other parts (FREQ or other BXXX parts).
 	 */
-	public function __construct(array $parts)
+	public function __construct($parts)
 	{
-		$parts = array_change_key_case($parts, CASE_UPPER);
+		if ( is_string($parts) ) {
+			$parts = self::parseRfcString($parts);
+		}
+		elseif ( is_array($parts) ) {
+			$parts = array_change_key_case($parts, CASE_UPPER);
+		}
+		else {
+			throw new \InvalidArgumentException(sprintf(
+				'The first argument must be a string or an array (%s provided)',
+				gettype($parts)
+			));
+		}
 
 		// validate extra parts
 		$unsupported = array_diff_key($parts, $this->rule);
@@ -212,7 +223,6 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			}
 			$this->freq = self::$frequencies[$parts['FREQ']];
 		}
-		
 
 		// INTERVAL
 		$parts['INTERVAL'] = (int) $parts['INTERVAL'];
@@ -257,6 +267,9 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			$this->count = (int) $parts['COUNT'];
 		}
 
+		if ( $this->until && $this->count ) {
+			throw new \InvalidArgumentException('The UNTIL or COUNT rule parts MUST NOT occur in the same rule');
+		}
 		// infer necessary BYXXX rules from DTSTART, if not provided
 		if ( ! (not_empty($parts['BYWEEKNO']) || not_empty($parts['BYYEARDAY']) || not_empty($parts['BYMONTHDAY']) || not_empty($parts['BYDAY'])) ) {
 			switch ( $this->freq ) {
@@ -487,6 +500,117 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		}
 	}
 
+	public function __toString()
+	{
+		return $this->rfcString();
+	}
+
+	/**
+	 * Format a rule according to RFC 5545
+	 * @return string
+	 */
+	public function rfcString()
+	{
+		$str = '';
+		if ( $this->rule['DTSTART'] ) {
+			$str = sprintf(
+				"DTSTART;TZID=%s:%s\nRRULE:",
+				$this->dtstart->getTimezone()->getName(),
+				$this->dtstart->format('Ymd\THis')
+			);
+		}
+
+		$parts = [];
+		foreach ( $this->rule as $key => $value ) {
+			if ( $key === 'DTSTART' ) {
+				continue;
+			}
+			if ( $key === 'INTERVAL' && $value == 1 ) {
+				continue;
+			}
+			if ( $key === 'WKST' && $value === 'MO') {
+				continue;
+			}
+			if ( $key === 'UNTIL' && $value ) {
+				// for a reason that I do not understand, UNTIL seems to always
+				// be in UTC (even when DTSTART includes TZID)
+				$tmp = clone $this->until;
+				$tmp->setTimezone(new \DateTimeZone('UTC'));
+				$parts[] = 'UNTIL='.$tmp->format('Ymd\THis\Z');
+				continue;
+			}
+			if ( $value ) {
+				if ( is_array($value) ) {
+					$value = implode(',',$value);
+				}
+				$parts[] = strtoupper(str_replace(' ','',"$key=$value"));
+			}
+		}
+		$str .= implode(';',$parts);
+
+		return $str;
+	}
+
+	/**
+	 * Take a RFC 5545 string and returns an array (to be given to the constructor)
+	 * @return array
+	 */
+	static public function parseRfcString($string)
+	{
+		$parts = array();
+
+		$string = trim($string);
+
+		foreach ( explode("\n", $string) as $line ) {
+			$line = trim($line);
+			if ( strpos($line,':') === false ) {
+				$property_name = 'RRULE';
+				$property_value = $line;
+			}
+			else {
+				list($property_name,$property_value) = explode(':',$line);
+			}
+			$tmp = explode(';',$property_name);
+			$property_name = $tmp[0];
+			$property_params = array();
+			array_splice($tmp,0,1);
+			foreach ( $tmp as $pair ) {
+				if ( strpos($pair,'=') === false ) {
+					throw new \InvalidArgumentException('Failed to parse RFC string, invlaid property parameters: '.$pair);
+				}
+				list($key,$value) = explode('=',$pair);
+				$property_params[$key] = $value;
+			}
+
+			switch ( $property_name ) {
+				case 'DTSTART':
+					$tmp = null;
+					if ( isset($property_params['TZID']) ) {
+						$tmp = new \DateTimeZone($property_params['TZID']);
+					}
+					$parts['DTSTART'] = new \DateTime($property_value, $tmp);
+					break;
+				case 'RRULE':
+					foreach ( explode(';',$property_value) as $pair ) {
+						list($key, $value) = explode('=', $pair);
+						if ( $key === 'UNTIL' ) {
+							$value = new \DateTime($value);
+						}
+						$parts[$key] = $value;
+					}
+					break;
+				default:
+					throw new \InvalidArgumentException('Failed to parse RFC string, unsupported property: '.$property_name);
+			}
+		}
+
+		return $parts;
+	}
+
+	/**
+	 * Clear the cache. Do NOT use while the class is iterating
+	 * @return $this
+	 */
 	public function clearCache()
 	{
 		$this->total = null;
@@ -552,6 +676,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	/**
 	 * Alias of occursAt
 	 * Because I think both are correct in English, aren't they?
+	 * @return bool
 	 */
 	public function occursOn($date)
 	{
@@ -743,6 +868,8 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	}
 
 // Iterator interface
+// Note: if cache is complete, we could probably avoid completely calling iterate()
+// and instead iterate directly on the $this->cache array
 
 	protected $current = 0;
 	protected $key = 0;
@@ -838,6 +965,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	}
 
 // private methods
+// where all the magic happens
 
 	/**
 	 * Convert any date into a DateTime object.
@@ -867,6 +995,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	/**
 	 * This method returns an array of days of the year (numbered from 0 to 365)
 	 * of the current timeframe (year, month, week, day) containing the current date
+	 * @return array
 	 */
 	protected function getDaySet($year, $month, $day, array $masks)
 	{
@@ -914,6 +1043,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 * and last Sunday) would be transformed into [3=>true,24=>true] because
 	 * the first Sunday of Jan 1998 is yearday 3 (counting from 0) and the
 	 * last Sunday of Jan 1998 is yearday 24 (counting from 0).
+	 * @return null (modifies $mask parameter)
 	 */
 	protected function buildNthWeekdayMask($year, $month, $day, array & $masks)
 	{
@@ -973,8 +1103,9 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 * Because weeks can cross year boundaries (that is, week #1 can start the
 	 * previous year, and week 52/53 can continue till the next year), the
 	 * algorithm is quite long.
+	 * @return null (modifies $mask)
 	 */
-	protected function buildWeeknoMask($year, $month, $day, & $masks)
+	protected function buildWeeknoMask($year, $month, $day, array & $masks)
 	{
 		$masks['yearday_is_in_weekno'] = array();
 
@@ -1090,6 +1221,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 * - for SECONDLY frequencies, it returns an array with one element
 	 * 
 	 * This method is called everytime an increment of at least one hour is made.
+	 * @return array
 	 */
 	protected function getTimeSet($hour, $minute, $second)
 	{
@@ -1163,6 +1295,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 * attempt to jump to the next weekday (BYDAY) or next monthday (BYMONTHDAY)
 	 * (I don't know yet which one first), and then if that results in a change of
 	 * month, attempt to jump to the next BYMONTH, and so on.
+	 * @return \DateTime|null
 	 */
 	protected function iterate($reset = false)
 	{
@@ -1592,7 +1725,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 // constants
 // Every mask is 7 days longer to handle cross-year weekly periods.
 
-	public static $MONTH_MASK = array(
+	protected static $MONTH_MASK = array(
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 		3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
@@ -1608,7 +1741,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		1,1,1,1,1,1,1
 	);
 
-	public static $MONTH_MASK_366 = array(
+	protected static $MONTH_MASK_366 = array(
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 		3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
@@ -1624,7 +1757,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		1,1,1,1,1,1,1
 	);
 
-	public static $MONTHDAY_MASK = array(
+	protected static $MONTHDAY_MASK = array(
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
@@ -1640,7 +1773,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		1,2,3,4,5,6,7
 	);
 
-	public static $MONTHDAY_MASK_366 = array(
+	protected static $MONTHDAY_MASK_366 = array(
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
@@ -1656,7 +1789,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		1,2,3,4,5,6,7
 	);
 
-	public static $NEGATIVE_MONTHDAY_MASK = array(
+	protected static $NEGATIVE_MONTHDAY_MASK = array(
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
@@ -1672,7 +1805,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		-31,-30,-29,-28,-27,-26,-25
 	);
 
-	public static $NEGATIVE_MONTHDAY_MASK_366 = array(
+	protected static $NEGATIVE_MONTHDAY_MASK_366 = array(
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
@@ -1688,7 +1821,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		-31,-30,-29,-28,-27,-26,-25
 	);
 
-	public static $WEEKDAY_MASK = array(
+	protected static $WEEKDAY_MASK = array(
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
@@ -1702,11 +1835,11 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7
 	);
 
-	public static $LAST_DAY_OF_MONTH_366 = array(
+	protected static $LAST_DAY_OF_MONTH_366 = array(
 		0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366
 	);
 
-	public static $LAST_DAY_OF_MONTH = array(
+	protected static $LAST_DAY_OF_MONTH = array(
 		0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
 	);
 
@@ -1723,7 +1856,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 * going to be a problem anytime soon, so at the moment I use the 28 years
 	 * cycle.
 	 */
-	public static $REPEAT_CYCLES = array(
+	protected static $REPEAT_CYCLES = array(
 		// self::YEARLY => 400,
 		// self::MONTHLY => 4800,
 		// self::WEEKLY => 20871,
@@ -1737,4 +1870,402 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		self::MINUTELY => 1440,
 		self::SECONDLY => 86400 // that's a lot of cycles too
 	);
+
+// i18n methods (could be moved into a separate class, since it's not always necessary)
+
+	/** 
+	 * Select a translation in $array based on the value of $n
+	 * @return string
+	 */
+	static protected function i18nSelect($array, $n)
+	{
+		if ( ! is_array($array) ) {
+			return $array;
+		}
+
+		if ( array_key_exists($n, $array) ) {
+			return $array[$n];
+		}
+		elseif ( array_key_exists('else', $array) ) {
+			return $array['else'];
+		}
+		else {
+			return ''; // or throw?
+		}
+	}
+
+	/**
+	 * Create a comma-separated list, with the last item added with an " and "
+	 * Example : Monday, Tuesday and Friday
+	 * @return string
+	 */
+	static protected function i18nList(array $array, $and = 'and')
+	{
+		if ( count($array) > 1 ) {
+			$last = array_splice($array, -1);
+			return sprintf(
+				'%s %s %s',
+				implode(', ',$array),
+				$and,
+				implode('',$last)
+			);
+		}
+		else {
+			return $array[0];
+		}
+	}
+
+	/**
+	 * Load a translation file in memory.
+	 * Will load the basic first (e.g. "en") and then the region-specific (e.g. "en_GB")
+	 */
+	static protected function i18nLoad($locale)
+	{
+		return array(
+			'freq' => array(
+				self::YEARLY => array(
+					'1' => 'yearly',
+					'else' => 'every %{interval} years'
+				),
+				self::MONTHLY => array(
+					'1' => 'monthly',
+					'else' => 'every %{interval} months'
+				),
+				self::WEEKLY => array(
+					'1' => 'weekly',
+					'2' => 'every other week',
+					'else' => 'every %{interval} weeks'
+				),
+				self::DAILY => array(
+					'1' => 'daily',
+					'2' => 'every other day',
+					'else' => 'every %{interval} days'
+				),
+				self::HOURLY => array(
+					'1' => 'hourly',
+					'else' => 'every %{interval} hours'
+				),
+				self::MINUTELY => array(
+					'1' => 'minutely',
+					'else' => 'every %{interval} minutes'
+				),
+				self::SECONDLY => array(
+					'1' => 'secondly',
+					'else' => 'every %{interval} seconds'
+				),
+			),
+			'dtstart' => 'starting from %{date}',
+			'infinite' => 'forever',
+			'until' => 'until %{date}',
+			'count' => array(
+				'1' => 'one time',
+				'else' => '%{count} times'
+			),
+			'and' => 'and',
+			'bymonth' => array(
+				'limit' => 'only in %{months}',
+				'expand' => 'in %{months}',
+			),
+			'months' => array(
+				'January',
+				'February',
+				'March',
+				'April',
+				'May',
+				'June',
+				'July',
+				'August',
+				'September',
+				'October',
+				'November',
+				'December',
+			),
+			'byweekday' => array(
+				'limit' => 'only on %{weekdays}',
+				'expand' => 'on %{weekdays}',
+			),
+			'weekdays' => array(
+				1 => 'Monday',
+				2 => 'Tuesday',
+				3 => 'Wednesday',
+				4 => 'Thursday',
+				5 => 'Friday',
+				6 => 'Saturday',
+				7 => 'Sunday',
+			),
+			'nth_weekday' => array(
+				'1' => 'the first %{weekday}', // e.g. the first Monday
+				'2' => 'the second %{weekday}',
+				'3' => 'the third %{weekday}',
+				'else' => 'the %{n}th %{weekday}'
+			),
+			'-nth_weekday' => array(
+				'-1' => 'the last %{weekday}',
+				'-2' => 'the penultimate %{weekday}',
+				'-3' => 'the antepenultimate %{weekday}',
+				'else' => 'the %{n}th to the last %{weekday}'
+			),
+			'byweekno' => array(
+				'1' => 'on week %{weeks}',
+				'else' => 'on weeks number %{weeks}'
+			),
+			'nth_weekno' => '%{n}',
+			'bymonthday' => array(
+				'limit' => 'only on {%monthdays}',
+				'expand' => 'on %{monthdays}'
+			),
+			'nth_monthday' => array(
+				'1' => 'the 1st',
+				'2' => 'the 2nd',
+				'3' => 'the 3rd',
+				'21' => 'the 21st',
+				'22' => 'the 22nd',
+				'23' => 'the 23rd',
+				'31' => 'the 31st',
+				'else' => 'the %{n}th'
+			),
+			'-nth_monthday' => array(
+				'1' => 'the last day',
+				'2' => 'the penultimate day',
+				'3' => 'the antepenultimate day',
+				'21' => 'the 21st to the last day',
+				'22' => 'the 22nd to the last day',
+				'23' => 'the 23rd to the last day',
+				'31' => 'the 31st to the last day',
+				'else' => 'the %{n}th to the last day'
+			),
+			'byyearday' => array(
+				'limit' => 'only on {%yeardays}',
+				'expand' => 'on %{yeardays}'
+			),
+			'nth_yearday' => array(
+				'1' => 'the first day',
+				'2' => 'the second day',
+				'3' => 'the third day',
+				'else' => 'the %{n}th day'
+			),
+			'-nth_yearday' => array(
+				'-1' => 'the last day',
+				'-2' => 'the penultimate day',
+				'-3' => 'the antepenultimate day',
+				'else' => 'the %{n}th to the last day'
+			),
+			'x_of_the_y' => array(
+				self::YEARLY => '%{x} of the year',
+				self::MONTHLY => '%{x} of the month',
+			)
+		);
+	}
+
+	/**
+	 * Format a rule in a human readable string
+	 */
+	public function humanReadable(array $opt = array())
+	{
+		$opt = array_merge(array(
+			'locale' => \Locale::getDefault(),
+			'date_format' => \IntlDateFormatter::SHORT,
+			'time_format' => \IntlDateFormatter::SHORT,
+			'date_formatter' => null
+		), $opt);
+
+		if ( ! $opt['date_formatter'] ) {
+			$formatter = \IntlDateFormatter::create(
+				$opt['locale'],
+				$opt['date_format'],
+				$opt['time_format'],
+				date_default_timezone_get() // XXX should be $this->something?
+			);
+		}
+
+		$i18n = self::i18nLoad($opt['locale']);
+
+		$parts = array(
+			'freq' => '',
+			'byweekday' => '',
+			'bymonth' => '',
+			'byweekno' => '',
+			'byyearday' => '',
+			'bymonthday' => '',
+			'byhour' => '',
+			'byminute' => '',
+			'bysecond' => '',
+			'bysetpos' => ''
+		);
+
+		// Every (INTERVAL) FREQ...
+		$parts['freq'] = strtr(
+			self::i18nSelect($i18n['freq'][$this->freq], $this->interval),
+			array(
+				'%{interval}' => $this->interval
+			)
+		);
+
+		// BYXXX rules
+		if ( $this->bymonth ) {
+			$selector = $this->freq > self::YEARLY ? 'limit' : 'expand';
+			$tmp = $this->bymonth;
+			foreach ( $tmp as & $value) {
+				$value = $i18n['months'][$value];
+			}
+			$parts['bymonth'] = strtr($i18n['bymonth'][$selector], array(
+				'%{months}' => self::i18nList($tmp, $i18n['and'])
+			));
+		}
+
+		if ( $this->byweekno ) {
+			// XXX negative week number are not great here
+			$tmp = $this->byweekno;
+			foreach ( $tmp as & $value ) {
+				$value = strtr($i18n['nth_weekno'], array(
+					'%{n}' => $value
+				));
+			}
+			$parts['byweekno'] = strtr(
+				self::i18nSelect($i18n['byweekno'], count($this->byweekno)),
+				array(
+					'%{weeks}' => self::i18nList($tmp, $i18n['and'])
+				)
+			);
+		}
+
+		if ( $this->byyearday ) {
+			$selector = $this->freq > self::DAILY ? 'limit' : 'expand';
+			$tmp = $this->byyearday;
+			foreach ( $tmp as & $value ) {
+				$value = strtr(self::i18nSelect($i18n[$value>0?'nth_yearday':'-nth_yearday'],$value), array(
+					'%{n}' => abs($value)
+				));
+			}
+			$tmp = strtr($i18n['byyearday'][$selector], array(
+				'%{yeardays}' => self::i18nList($tmp, $i18n['and'])
+			));
+			// ... of the month
+			$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], self::YEARLY), array(
+				'%{x}' => $tmp
+			));
+			$parts['byyearday'] = $tmp;
+		}
+
+		if ( $this->bymonthday || $this->bymonthday_negative ) {
+			$selector = $this->freq > self::DAILY ? 'limit' : 'expand';
+			$parts['bymonthday'] = array();
+			if ( $this->bymonthday ) {
+				$tmp = $this->bymonthday;
+				foreach ( $tmp as & $value ) {
+					$value = strtr(self::i18nSelect($i18n['nth_monthday'],$value), array(
+						'%{n}' => $value
+					));
+				}
+				$tmp = strtr($i18n['bymonthday'][$selector], array(
+					'%{monthdays}' => self::i18nList($tmp, $i18n['and'])
+				));
+				// ... of the month
+				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], self::MONTHLY), array(
+					'%{x}' => $tmp
+				));
+				$parts['bymonthday'][] = $tmp;
+			}
+			if ( $this->bymonthday_negative ) {
+				$tmp = $this->bymonthday_negative;
+				foreach ( $tmp as & $value ) {
+					$value = strtr(self::i18nSelect($i18n['-nth_monthday'],-$value), array(
+						'%{n}' => -$value
+					));
+				}
+				$tmp = strtr($i18n['bymonthday'][$selector], array(
+					'%{monthdays}' => self::i18nList($tmp, $i18n['and'])
+				));
+				// ... of the month
+				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], self::MONTHLY), array(
+					'%{x}' => $tmp
+				));
+				$parts['bymonthday'][] = $tmp;
+			}
+			$parts['bymonthday'] = implode(' '.$i18n['and'].' ',$parts['bymonthday']);
+		}
+
+		if ( $this->byweekday || $this->byweekday_nth ) {
+			$parts['byweekday'] = array();
+			$selector = $this->freq >= self::DAILY ? 'limit' : 'expand';
+			if ( $this->byweekday ) {
+				$tmp = $this->byweekday;
+				foreach ( $tmp as & $value ) {
+					$value = $i18n['weekdays'][$value];
+				}
+				$parts['byweekday'][] = strtr($i18n['byweekday'][$selector], array(
+					'%{weekdays}' =>  self::i18nList($tmp, $i18n['and'])
+				));
+			}
+			if ( $this->byweekday_nth ) {
+				$tmp = $this->byweekday_nth;
+				foreach ( $tmp as & $value ) {
+					list($day, $n) = $value;
+					$value = strtr(self::i18nSelect($i18n[$n>0?'nth_weekday':'-nth_weekday'], $n), array(
+						'%{weekday}' => $i18n['weekdays'][$day],
+						'%{n}' => abs($n)
+					));
+				}
+				$tmp = strtr($i18n['byweekday'][$selector], array(
+					'%{weekdays}' => self::i18nList($tmp, $i18n['and'])
+				));
+				// ... of the year|month
+				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], $this->freq), array(
+					'%{x}' => $tmp
+				));
+				$parts['byweekday'][] = $tmp;
+			}
+			$parts['byweekday'] = implode(' '.$i18n['and'].' ',$parts['byweekday']);
+		}
+
+		if ( $this->byhour ) {
+
+		}
+
+		if ( $this->byminute ) {
+
+		}
+
+		if ( $this->bysecond ) {
+
+		}
+
+		if ( $this->bysetpos ) {
+
+		}
+
+		// from X
+		$parts['start'] = strtr($i18n['dtstart'], array(
+			'%{date}' => $formatter->format($this->dtstart)
+		));
+
+		// to X, or N times, or indefinitely
+		if ( ! $this->until && ! $this->count ) {
+			$parts['end'] = $i18n['infinite'];
+		}
+		elseif ( $this->until ) {
+			$parts['end'] = strtr($i18n['until'], array(
+				'%{date}' => $formatter->format($this->until)
+			));
+		}
+		elseif ( $this->count ) {
+			$parts['end'] = strtr(
+				self::i18nSelect($i18n['count'], $this->count),
+				array(
+					'%{count}' => $this->count
+				)
+			);
+		}
+
+		// $str = strtr('%{frequency}%{byday}%{start}%{end}', array(
+		// 	'%{frequency}' => $parts['frequency'],
+		// 	'%{start}' => $parts['start'],
+		// 	'%{end}' => $parts['end'],
+		// 	'%{byday}' => $parts['byday'],
+		// ));
+		$parts = array_filter($parts);
+		$str = implode(', ',$parts);
+		return $str;
+	}
+
 }

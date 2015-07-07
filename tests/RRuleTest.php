@@ -15,6 +15,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array(array('FREQ' => 'DAILY', 'INTERVAL' => -1)),
 			array(array('FREQ' => 'DAILY', 'UNTIL' => 'foobar')),
 			array(array('FREQ' => 'DAILY', 'COUNT' => -1)),
+			array(array('FREQ' => 'DAILY', 'UNTIL' => '2015-07-01', 'COUNT' => 1)),
 
 			// The BYDAY rule part MUST NOT be specified with a numeric value
 			// when the FREQ rule part is not set to MONTHLY or YEARLY.
