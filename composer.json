@@ -8,6 +8,9 @@
     "require": {
         "php": ">=5.3.0"
     },
+    "suggest": {
+        "ext-intl": "Intl extension is needed for humanReadable()"
+    },
     "autoload": {
         "classmap": ["src/"]
     }

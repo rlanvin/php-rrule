@@ -17,6 +17,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array(array('FREQ' => 'DAILY', 'COUNT' => -1)),
 			array(array('FREQ' => 'DAILY', 'UNTIL' => '2015-07-01', 'COUNT' => 1)),
 
+			array(array('FREQ' => 'YEARLY', 'BYDAY' => '1MO,X')),
 			// The BYDAY rule part MUST NOT be specified with a numeric value
 			// when the FREQ rule part is not set to MONTHLY or YEARLY.
 			array(array('FREQ' => 'DAILY', 'BYDAY' => array('1MO'))),
@@ -28,12 +29,14 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => 0)),
 			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => 32)),
 			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => -32)),
+			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => '1,A')),
 			// The BYMONTHDAY rule part MUST NOT be specified when the FREQ rule
 			// part is set to WEEKLY.
 			array(array('FREQ' => 'WEEKLY', 'BYMONTHDAY' => 1)),
 
 			array(array('FREQ' => 'YEARLY', 'BYYEARDAY' => 0)),
 			array(array('FREQ' => 'YEARLY', 'BYYEARDAY' => 367)),
+			array(array('FREQ' => 'YEARLY', 'BYYEARDAY' => '1,A')),
 			// The BYYEARDAY rule part MUST NOT be specified when the FREQ
 			// rule part is set to DAILY, WEEKLY, or MONTHLY.
 			array(array('FREQ' => 'DAILY', 'BYYEARDAY' => 1)),
@@ -43,6 +46,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			// BYSETPOS rule part MUST only be used in conjunction with another
 			// BYxxx rule part.
 			array(array('FREQ' => 'DAILY', 'BYSETPOS' => -1)),
+			array(array('FREQ' => 'DAILY', 'BYDAY' => 'MO', 'BYSETPOS' => '1,A')),
 		);
 	}
 
@@ -1574,7 +1578,6 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			),
 		);
 	}
-
 	/**
 	 * @dataProvider notOccurrences
 	 */
@@ -1585,6 +1588,47 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			$this->assertFalse($rule->occursAt($date), "Rule must not match $date");
 		}
 	}
+
+	public function rfcStrings() 
+	{
+		return array(
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=HOURLY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=1'),
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1'),
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=12;BYMINUTE=15,30'),
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR'),
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR'),
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1'),
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15'),
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15;BYSETPOS=-1'),
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15;BYSETPOS=-1,1'),
+			array(' DTSTART;TZID=America/New_York:19970512T090000
+			RRULE:FREQ=YEARLY;BYWEEKNO=20,30,40;BYDAY=MO'),
+			array(' DTSTART;TZID=America/New_York:19970512T090000
+			RRULE:FREQ=YEARLY;BYYEARDAY=1,-1,10,-50;BYDAY=MO')
+		);
+	}
+
+	/**
+	 * @dataProvider rfcStrings
+	 */
+	public function testRfcStrings($str)
+	{
+		$rule = new RRule($str);
+		// test that parsing the string produces the same result 
+		// as generating the string from a rule
+		$this->assertEquals($rule, new RRule($rule->rfcString()));
+	}
+
+
 
 	public function testIsLeapYear()
 	{

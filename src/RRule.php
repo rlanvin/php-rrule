@@ -270,6 +270,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		if ( $this->until && $this->count ) {
 			throw new \InvalidArgumentException('The UNTIL or COUNT rule parts MUST NOT occur in the same rule');
 		}
+
 		// infer necessary BYXXX rules from DTSTART, if not provided
 		if ( ! (not_empty($parts['BYWEEKNO']) || not_empty($parts['BYYEARDAY']) || not_empty($parts['BYMONTHDAY']) || not_empty($parts['BYDAY'])) ) {
 			switch ( $this->freq ) {
@@ -337,14 +338,15 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			$this->bymonthday = array();
 			$this->bymonthday_negative = array();
 			foreach ( $parts['BYMONTHDAY'] as $value ) {
+				$value = (int) $value;
 				if ( ! $value || $value < -31 || $value > 31 ) {
 					throw new \InvalidArgumentException('Invalid BYMONTHDAY value: '.$value.' (valid values are 1 to 31 or -31 to -1)');
 				}
 				if ( $value < 0 ) {
-					$this->bymonthday_negative[] = (int) $value;
+					$this->bymonthday_negative[] = $value;
 				}
 				else {
-					$this->bymonthday[] = (int) $value;
+					$this->bymonthday[] = $value;
 				}
 			}
 		}
@@ -360,11 +362,12 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 			$this->bysetpos = array();
 			foreach ( $parts['BYYEARDAY'] as $value ) {
+				$value = (int) $value;
 				if ( ! $value || $value < -366 || $value > 366 ) {
 					throw new \InvalidArgumentException('Invalid BYSETPOS value: '.$value.' (valid values are 1 to 366 or -366 to -1)');
 				}
 
-				$this->byyearday[] = (int) $value;
+				$this->byyearday[] = $value;
 			}
 		}
 
@@ -380,10 +383,11 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 			$this->byweekno = array();
 			foreach ( $parts['BYWEEKNO'] as $value ) {
+				$value = (int) $value;
 				if ( ! $value || $value < -53 || $value > 53 ) {
 					throw new \InvalidArgumentException('Invalid BYWEEKNO value: '.$value.' (valid values are 1 to 53 or -53 to -1)');
 				}
-				$this->byweekno[] = (int) $value;
+				$this->byweekno[] = $value;
 			}
 		}
 
@@ -396,10 +400,11 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 			$this->bymonth = array();
 			foreach ( $parts['BYMONTH'] as $value ) {
+				$value = (int) $value;
 				if ( $value < 1 || $value > 12 ) {
 					throw new \InvalidArgumentException('Invalid BYMONTH value: '.$value);
 				}
-				$this->bymonth[] = (int) $value;
+				$this->bymonth[] = $value;
 			}
 		}
 
@@ -417,11 +422,12 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 			$this->bysetpos = array();
 			foreach ( $parts['BYSETPOS'] as $value ) {
+				$value = (int) $value;
 				if ( ! $value || $value < -366 || $value > 366 ) {
 					throw new \InvalidArgumentException('Invalid BYSETPOS value: '.$value.' (valid values are 1 to 366 or -366 to -1)');
 				}
 
-				$this->bysetpos[] = (int) $value;
+				$this->bysetpos[] = $value;
 			}
 		}
 
@@ -432,10 +438,11 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 			$this->byhour = array();
 			foreach ( $parts['BYHOUR'] as $value ) {
+				$value = (int) $value;
 				if ( $value < 0 || $value > 23 ) {
 					throw new \InvalidArgumentException('Invalid BYHOUR value: '.$value);
 				}
-				$this->byhour[] = (int) $value;
+				$this->byhour[] = $value;
 			}
 
 			sort($this->byhour);
@@ -451,10 +458,11 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 			$this->byminute = array();
 			foreach ( $parts['BYMINUTE'] as $value ) {
+				$value = (int) $value;
 				if ( $value < 0 || $value > 59 ) {
 					throw new \InvalidArgumentException('Invalid BYMINUTE value: '.$value);
 				}
-				$this->byminute[] = (int) $value;
+				$this->byminute[] = $value;
 			}
 			sort($this->byminute);
 		}
@@ -469,13 +477,14 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 			$this->bysecond = array();
 			foreach ( $parts['BYSECOND'] as $value ) {
+				$value = (int) $value;
 				// yes, "60" is a valid value, in (very rare) cases on leap seconds
 				//  December 31, 2005 23:59:60 UTC is a valid date...
 				// so is 2012-06-30T23:59:60UTC
 				if ( $value < 0 || $value > 60 ) {
 					throw new \InvalidArgumentException('Invalid BYSECOND value: '.$value);
 				}
-				$this->bysecond[] = (int) $value;
+				$this->bysecond[] = $value;
 			}
 			sort($this->bysecond);
 		}
@@ -520,7 +529,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			);
 		}
 
-		$parts = [];
+		$parts = array();
 		foreach ( $this->rule as $key => $value ) {
 			if ( $key === 'DTSTART' ) {
 				continue;
@@ -1873,6 +1882,12 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 // i18n methods (could be moved into a separate class, since it's not always necessary)
 
+	/**
+	 * Stores translations once loaded (so we don't have to reload them all the time)
+	 */
+	static protected $i18n = array();
+	static protected $intl_loaded = null;
+
 	/** 
 	 * Select a translation in $array based on the value of $n
 	 * @return string
@@ -1917,165 +1932,95 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 	/**
 	 * Load a translation file in memory.
-	 * Will load the basic first (e.g. "en") and then the region-specific (e.g. "en_GB")
+	 * Will load the basic first (e.g. "en") and then the region-specific if any
+	 * (e.g. "en_GB"), merging as necessary.
+	 * So region-specific translation files don't need to redefine every strings.
 	 */
 	static protected function i18nLoad($locale)
 	{
-		return array(
-			'freq' => array(
-				self::YEARLY => array(
-					'1' => 'yearly',
-					'else' => 'every %{interval} years'
-				),
-				self::MONTHLY => array(
-					'1' => 'monthly',
-					'else' => 'every %{interval} months'
-				),
-				self::WEEKLY => array(
-					'1' => 'weekly',
-					'2' => 'every other week',
-					'else' => 'every %{interval} weeks'
-				),
-				self::DAILY => array(
-					'1' => 'daily',
-					'2' => 'every other day',
-					'else' => 'every %{interval} days'
-				),
-				self::HOURLY => array(
-					'1' => 'hourly',
-					'else' => 'every %{interval} hours'
-				),
-				self::MINUTELY => array(
-					'1' => 'minutely',
-					'else' => 'every %{interval} minutes'
-				),
-				self::SECONDLY => array(
-					'1' => 'secondly',
-					'else' => 'every %{interval} seconds'
-				),
-			),
-			'dtstart' => 'starting from %{date}',
-			'infinite' => 'forever',
-			'until' => 'until %{date}',
-			'count' => array(
-				'1' => 'one time',
-				'else' => '%{count} times'
-			),
-			'and' => 'and',
-			'bymonth' => array(
-				'limit' => 'only in %{months}',
-				'expand' => 'in %{months}',
-			),
-			'months' => array(
-				'January',
-				'February',
-				'March',
-				'April',
-				'May',
-				'June',
-				'July',
-				'August',
-				'September',
-				'October',
-				'November',
-				'December',
-			),
-			'byweekday' => array(
-				'limit' => 'only on %{weekdays}',
-				'expand' => 'on %{weekdays}',
-			),
-			'weekdays' => array(
-				1 => 'Monday',
-				2 => 'Tuesday',
-				3 => 'Wednesday',
-				4 => 'Thursday',
-				5 => 'Friday',
-				6 => 'Saturday',
-				7 => 'Sunday',
-			),
-			'nth_weekday' => array(
-				'1' => 'the first %{weekday}', // e.g. the first Monday
-				'2' => 'the second %{weekday}',
-				'3' => 'the third %{weekday}',
-				'else' => 'the %{n}th %{weekday}'
-			),
-			'-nth_weekday' => array(
-				'-1' => 'the last %{weekday}',
-				'-2' => 'the penultimate %{weekday}',
-				'-3' => 'the antepenultimate %{weekday}',
-				'else' => 'the %{n}th to the last %{weekday}'
-			),
-			'byweekno' => array(
-				'1' => 'on week %{weeks}',
-				'else' => 'on weeks number %{weeks}'
-			),
-			'nth_weekno' => '%{n}',
-			'bymonthday' => array(
-				'limit' => 'only on {%monthdays}',
-				'expand' => 'on %{monthdays}'
-			),
-			'nth_monthday' => array(
-				'1' => 'the 1st',
-				'2' => 'the 2nd',
-				'3' => 'the 3rd',
-				'21' => 'the 21st',
-				'22' => 'the 22nd',
-				'23' => 'the 23rd',
-				'31' => 'the 31st',
-				'else' => 'the %{n}th'
-			),
-			'-nth_monthday' => array(
-				'1' => 'the last day',
-				'2' => 'the penultimate day',
-				'3' => 'the antepenultimate day',
-				'21' => 'the 21st to the last day',
-				'22' => 'the 22nd to the last day',
-				'23' => 'the 23rd to the last day',
-				'31' => 'the 31st to the last day',
-				'else' => 'the %{n}th to the last day'
-			),
-			'byyearday' => array(
-				'limit' => 'only on {%yeardays}',
-				'expand' => 'on %{yeardays}'
-			),
-			'nth_yearday' => array(
-				'1' => 'the first day',
-				'2' => 'the second day',
-				'3' => 'the third day',
-				'else' => 'the %{n}th day'
-			),
-			'-nth_yearday' => array(
-				'-1' => 'the last day',
-				'-2' => 'the penultimate day',
-				'-3' => 'the antepenultimate day',
-				'else' => 'the %{n}th to the last day'
-			),
-			'x_of_the_y' => array(
-				self::YEARLY => '%{x} of the year',
-				self::MONTHLY => '%{x} of the month',
-			)
-		);
+		if ( ! preg_match('/^([a-z]{2})(_[A-Z]{2})?$/', $locale, $matches) ) {
+			throw new \InvalidArgumentException('The locale option does not look like a valid locale: '.$opt['locale']);
+		}
+
+		$files = array();
+		if ( isset($matches[2]) ) {
+			$files[] = $matches[1];
+		}
+		$files[] = $locale;
+
+		$result = array();
+		foreach ( $files as $file ) {
+			$path = __DIR__."/i18n/$file.php";
+			if ( isset(self::$i18n[$file]) ) {
+				$result = array_merge($result, self::$i18n[$file]);
+			}
+			elseif ( is_file($path) && is_readable($path) ) {
+				self::$i18n[$file] = include $path;
+				$result = array_merge($result, self::$i18n[$file]);
+			}
+			else {
+				self::$i18n[$file] = array();
+			}
+		}
+
+		if ( empty($result) ) {
+			throw new \InvalidArgumentException("Failed to load $locale");
+		}
+
+		return $result;
 	}
 
 	/**
 	 * Format a rule in a human readable string
+	 * intl extension is required.
 	 */
 	public function humanReadable(array $opt = array())
 	{
-		$opt = array_merge(array(
+		if ( self::$intl_loaded === null ) {
+			self::$intl_loaded = extension_loaded('intl');
+		}
+
+		$default_opt = array(
 			'locale' => \Locale::getDefault(),
-			'date_format' => \IntlDateFormatter::SHORT,
-			'time_format' => \IntlDateFormatter::SHORT,
 			'date_formatter' => null
-		), $opt);
+		);
+
+		if ( self::$intl_loaded ) {
+			$default_opt['date_format'] = \IntlDateFormatter::SHORT;
+			if ( $this->freq >= self::SECONDLY || not_empty($this->rule['BYSECOND']) ) {
+				$default_opt['time_format'] = \IntlDateFormatter::LONG;
+			}
+			elseif ( $this->freq >= self::HOURLY || not_empty($this->rule['BYHOUR']) || not_empty($this->rule['BYMINUTE']) ) {
+				$default_opt['time_format'] = \IntlDateFormatter::SHORT;
+			}
+			else {
+				$default_opt['time_format'] = \IntlDateFormatter::NONE;
+			}
+		}
+
+		$opt = array_merge($default_opt, $opt);
+
+		if ( $opt['date_formatter'] && ! is_callable($opt['date_formatter']) ) {
+			throw new \InvalidArgumentException('The option date_formatter must callable');
+		}
 
 		if ( ! $opt['date_formatter'] ) {
-			$formatter = \IntlDateFormatter::create(
-				$opt['locale'],
-				$opt['date_format'],
-				$opt['time_format'],
-				date_default_timezone_get() // XXX should be $this->something?
-			);
+			if ( self::$intl_loaded ) {
+				$formatter = \IntlDateFormatter::create(
+					$opt['locale'],
+					$opt['date_format'],
+					$opt['time_format'],
+					$this->dtstart->getTimezone()->getName()
+				);
+				$opt['date_formatter'] = function($date) use ($formatter) {
+					return $formatter->format($date);
+				};
+			}
+			else {
+				$opt['date_formatter'] = function($date) {
+					return $date->format('Y-m-d H:i:s');
+				};
+			}
 		}
 
 		$i18n = self::i18nLoad($opt['locale']);
@@ -2094,8 +2039,9 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		);
 
 		// Every (INTERVAL) FREQ...
+		$freq_str = strtolower(array_search($this->freq, self::$frequencies));
 		$parts['freq'] = strtr(
-			self::i18nSelect($i18n['freq'][$this->freq], $this->interval),
+			self::i18nSelect($i18n[$freq_str], $this->interval),
 			array(
 				'%{interval}' => $this->interval
 			)
@@ -2103,12 +2049,11 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 		// BYXXX rules
 		if ( $this->bymonth ) {
-			$selector = $this->freq > self::YEARLY ? 'limit' : 'expand';
 			$tmp = $this->bymonth;
 			foreach ( $tmp as & $value) {
 				$value = $i18n['months'][$value];
 			}
-			$parts['bymonth'] = strtr($i18n['bymonth'][$selector], array(
+			$parts['bymonth'] = strtr(self::i18nSelect($i18n['bymonth'], count($tmp)), array(
 				'%{months}' => self::i18nList($tmp, $i18n['and'])
 			));
 		}
@@ -2130,25 +2075,23 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		}
 
 		if ( $this->byyearday ) {
-			$selector = $this->freq > self::DAILY ? 'limit' : 'expand';
 			$tmp = $this->byyearday;
 			foreach ( $tmp as & $value ) {
 				$value = strtr(self::i18nSelect($i18n[$value>0?'nth_yearday':'-nth_yearday'],$value), array(
 					'%{n}' => abs($value)
 				));
 			}
-			$tmp = strtr($i18n['byyearday'][$selector], array(
+			$tmp = strtr(self::i18nSelect($i18n['byyearday'], count($tmp)), array(
 				'%{yeardays}' => self::i18nList($tmp, $i18n['and'])
 			));
 			// ... of the month
-			$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], self::YEARLY), array(
+			$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], 'yearly'), array(
 				'%{x}' => $tmp
 			));
 			$parts['byyearday'] = $tmp;
 		}
 
 		if ( $this->bymonthday || $this->bymonthday_negative ) {
-			$selector = $this->freq > self::DAILY ? 'limit' : 'expand';
 			$parts['bymonthday'] = array();
 			if ( $this->bymonthday ) {
 				$tmp = $this->bymonthday;
@@ -2157,11 +2100,11 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 						'%{n}' => $value
 					));
 				}
-				$tmp = strtr($i18n['bymonthday'][$selector], array(
+				$tmp = strtr(self::i18nSelect($i18n['bymonthday'], count($tmp)), array(
 					'%{monthdays}' => self::i18nList($tmp, $i18n['and'])
 				));
 				// ... of the month
-				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], self::MONTHLY), array(
+				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], 'monthly'), array(
 					'%{x}' => $tmp
 				));
 				$parts['bymonthday'][] = $tmp;
@@ -2169,31 +2112,30 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			if ( $this->bymonthday_negative ) {
 				$tmp = $this->bymonthday_negative;
 				foreach ( $tmp as & $value ) {
-					$value = strtr(self::i18nSelect($i18n['-nth_monthday'],-$value), array(
+					$value = strtr(self::i18nSelect($i18n['-nth_monthday'],$value), array(
 						'%{n}' => -$value
 					));
 				}
-				$tmp = strtr($i18n['bymonthday'][$selector], array(
+				$tmp = strtr(self::i18nSelect($i18n['bymonthday'], count($tmp)), array(
 					'%{monthdays}' => self::i18nList($tmp, $i18n['and'])
 				));
 				// ... of the month
-				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], self::MONTHLY), array(
+				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], 'monthly'), array(
 					'%{x}' => $tmp
 				));
 				$parts['bymonthday'][] = $tmp;
 			}
-			$parts['bymonthday'] = implode(' '.$i18n['and'].' ',$parts['bymonthday']);
+			$parts['bymonthday'] = implode(' '.$i18n['and'],$parts['bymonthday']);
 		}
 
 		if ( $this->byweekday || $this->byweekday_nth ) {
 			$parts['byweekday'] = array();
-			$selector = $this->freq >= self::DAILY ? 'limit' : 'expand';
 			if ( $this->byweekday ) {
 				$tmp = $this->byweekday;
 				foreach ( $tmp as & $value ) {
 					$value = $i18n['weekdays'][$value];
 				}
-				$parts['byweekday'][] = strtr($i18n['byweekday'][$selector], array(
+				$parts['byweekday'][] = strtr(self::i18nSelect($i18n['byweekday'], count($tmp)), array(
 					'%{weekdays}' =>  self::i18nList($tmp, $i18n['and'])
 				));
 			}
@@ -2206,37 +2148,70 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 						'%{n}' => abs($n)
 					));
 				}
-				$tmp = strtr($i18n['byweekday'][$selector], array(
+				$tmp = strtr(self::i18nSelect($i18n['byweekday'], count($tmp)), array(
 					'%{weekdays}' => self::i18nList($tmp, $i18n['and'])
 				));
 				// ... of the year|month
-				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], $this->freq), array(
+				$tmp = strtr(self::i18nSelect($i18n['x_of_the_y'], $freq_str), array(
 					'%{x}' => $tmp
 				));
 				$parts['byweekday'][] = $tmp;
 			}
-			$parts['byweekday'] = implode(' '.$i18n['and'].' ',$parts['byweekday']);
+			$parts['byweekday'] = implode(' '.$i18n['and'],$parts['byweekday']);
 		}
 
-		if ( $this->byhour ) {
-
+		if ( not_empty($this->rule['BYHOUR']) ) {
+			$tmp = $this->byhour;
+			foreach ( $tmp as &$value) {
+				$value = strtr($i18n['nth_hour'], array(
+					'%{n}' => $value
+				));
+			}
+			$parts['byhour'] = strtr(self::i18nSelect($i18n['byhour'],count($tmp)), array(
+				'%{hours}' => self::i18nList($tmp, $i18n['and'])
+			));
 		}
 
-		if ( $this->byminute ) {
-
+		if ( not_empty($this->rule['BYMINUTE']) ) {
+			$tmp = $this->byminute;
+			foreach ( $tmp as &$value) {
+				$value = strtr($i18n['nth_minute'], array(
+					'%{n}' => $value
+				));
+			}
+			$parts['byminute'] = strtr(self::i18nSelect($i18n['byminute'],count($tmp)), array(
+				'%{minutes}' => self::i18nList($tmp, $i18n['and'])
+			));
 		}
 
-		if ( $this->bysecond ) {
-
+		if ( not_empty($this->rule['BYSECOND']) ) {
+			$tmp = $this->bysecond;
+			foreach ( $tmp as &$value) {
+				$value = strtr($i18n['nth_second'], array(
+					'%{n}' => $value
+				));
+			}
+			$parts['bysecond'] = strtr(self::i18nSelect($i18n['bysecond'],count($tmp)), array(
+				'%{seconds}' => self::i18nList($tmp, $i18n['and'])
+			));
 		}
 
 		if ( $this->bysetpos ) {
-
+			$tmp = $this->bysetpos;
+			foreach ( $tmp as & $value ) {
+				$value = strtr(self::i18nSelect($i18n[$value>0?'nth_setpos':'-nth_setpos'],$value), array(
+					'%{n}' => abs($value)
+				));
+			}
+			$tmp = strtr(self::i18nSelect($i18n['bysetpos'], count($tmp)), array(
+				'%{setpos}' => self::i18nList($tmp, $i18n['and'])
+			));
+			$parts['bysetpos'] = $tmp;
 		}
 
 		// from X
 		$parts['start'] = strtr($i18n['dtstart'], array(
-			'%{date}' => $formatter->format($this->dtstart)
+			'%{date}' => $opt['date_formatter']($this->dtstart)
 		));
 
 		// to X, or N times, or indefinitely
@@ -2245,7 +2220,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		}
 		elseif ( $this->until ) {
 			$parts['end'] = strtr($i18n['until'], array(
-				'%{date}' => $formatter->format($this->until)
+				'%{date}' => $opt['date_formatter']($this->until)
 			));
 		}
 		elseif ( $this->count ) {
@@ -2264,7 +2239,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		// 	'%{byday}' => $parts['byday'],
 		// ));
 		$parts = array_filter($parts);
-		$str = implode(', ',$parts);
+		$str = implode('',$parts);
 		return $str;
 	}
 

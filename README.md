@@ -28,6 +28,9 @@ foreach ( $rrule as $occurrence ) {
 // Tue 01 Sep 2015
 // Thu 01 Oct 2015
 // Sun 01 Nov 2015
+
+echo $rrule->humanReadable(),"\n";
+// monthly on the 1st of the month, starting from 01/06/2015, 6 times
 ```
 
 Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
@@ -35,6 +38,7 @@ Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wik
 ## Requirements
 
 - PHP >= 5.3
+- [intl extension](http://php.net/manual/en/book.intl.php) is recommended for `humanReadable()` but not strictly required
 
 ## Installation
 
@@ -63,6 +67,14 @@ require 'vendor/autoload.php';
 
 You can just download `src/RRule.php` and require it.
 
+## Documentation
+
+Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
+
+## Contribution
+
+Feel free to contribute! Just create a new issue or a new pull request.
+
 ## Note
 
 I started this library because I wasn't happy with the existing implementations
@@ -79,9 +91,6 @@ respect of the RFC. This version is a bit strictier and will not accept many
 non-compliant combinations of rule parts, that the python version otherwise accepts.
 There are also some additional features in this version.
 
-## Documentation
-
-Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
 
 ## License
 
