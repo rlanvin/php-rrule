@@ -1964,7 +1964,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		}
 
 		if ( empty($result) ) {
-			throw new \InvalidArgumentException("Failed to load $locale");
+			throw new \InvalidArgumentException("Failed to load translations for '$locale'");
 		}
 
 		return $result;
@@ -2048,7 +2048,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		);
 
 		// BYXXX rules
-		if ( $this->bymonth ) {
+		if ( not_empty($this->rule['BYMONTH']) ) {
 			$tmp = $this->bymonth;
 			foreach ( $tmp as & $value) {
 				$value = $i18n['months'][$value];
@@ -2058,7 +2058,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			));
 		}
 
-		if ( $this->byweekno ) {
+		if ( not_empty($this->rule['BYWEEKNO']) ) {
 			// XXX negative week number are not great here
 			$tmp = $this->byweekno;
 			foreach ( $tmp as & $value ) {
@@ -2074,7 +2074,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			);
 		}
 
-		if ( $this->byyearday ) {
+		if ( not_empty($this->rule['BYYEARDAY']) ) {
 			$tmp = $this->byyearday;
 			foreach ( $tmp as & $value ) {
 				$value = strtr(self::i18nSelect($i18n[$value>0?'nth_yearday':'-nth_yearday'],$value), array(
@@ -2091,7 +2091,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			$parts['byyearday'] = $tmp;
 		}
 
-		if ( $this->bymonthday || $this->bymonthday_negative ) {
+		if ( not_empty($this->rule['BYMONTHDAY']) ) {
 			$parts['bymonthday'] = array();
 			if ( $this->bymonthday ) {
 				$tmp = $this->bymonthday;
@@ -2128,7 +2128,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			$parts['bymonthday'] = implode(' '.$i18n['and'],$parts['bymonthday']);
 		}
 
-		if ( $this->byweekday || $this->byweekday_nth ) {
+		if ( not_empty($this->rule['BYDAY']) ) {
 			$parts['byweekday'] = array();
 			if ( $this->byweekday ) {
 				$tmp = $this->byweekday;
