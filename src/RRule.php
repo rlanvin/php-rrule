@@ -1939,7 +1939,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	static protected function i18nLoad($locale)
 	{
 		if ( ! preg_match('/^([a-z]{2})(_[A-Z]{2})?$/', $locale, $matches) ) {
-			throw new \InvalidArgumentException('The locale option does not look like a valid locale: '.$opt['locale']);
+			throw new \InvalidArgumentException('The locale option does not look like a valid locale: '.$locale);
 		}
 
 		$files = array();
