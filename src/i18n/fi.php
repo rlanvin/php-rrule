@@ -34,20 +34,20 @@ return array(
 		'else' => '%{count} päivän välein'
 	),
 	'hourly' => array(
-		'1' => 'hourly',
-		'else' => 'every %{interval} hours'
+		'1' => 'joka tunti',
+		'else' => 'joka %{interval} tunti'
 	),
 	'minutely' => array(
-		'1' => 'minutely',
-		'else' => 'every %{interval} minutes'
+		'1' => 'joka minuutti',
+		'else' => 'joka %{interval} minuutti'
 	),
 	'secondly' => array(
-		'1' => 'secondly',
-		'else' => 'every %{interval} seconds'
+		'1' => 'joka sekunti',
+		'else' => 'joka %{interval} sekunti'
 	),
 	'dtstart' => ', alkaen %{date}',
-	'infinite' => ', ikuisesti',
-	'until' => ', loppuu %{date}',
+	'infinite' => ', jatkuvasti',
+	'until' => ', %{date} asti',
 	'count' => array(
 		'1' => ', kerran',
 		'else' => ', %{count} kertaa'
@@ -83,78 +83,54 @@ return array(
 		7 => 'sunnuntaina',
 	),
 	'nth_weekday' => array(
-		'1' => 'the first %{weekday}', // e.g. the first Monday
-		'2' => 'the second %{weekday}',
-		'3' => 'the third %{weekday}',
-		'else' => 'the %{n}th %{weekday}'
+		'else' => '%{n}. %{weekday}'
 	),
 	'-nth_weekday' => array(
-		'-1' => 'the last %{weekday}', // e.g. the last Monday
-		'-2' => 'the penultimate %{weekday}',
-		'-3' => 'the antepenultimate %{weekday}',
-		'else' => 'the %{n}th to the last %{weekday}'
+		'-1' => 'viimeinen %{weekday}', // e.g. the last Monday
+		'-2' => 'toiseksi viimeinen %{weekday}',
+		'else' => '%{n}:ksi viimeinen %{weekday}'
 	),
 	'byweekno' => array(
-		'1' => ' on week %{weeks}',
-		'else' => ' on weeks number %{weeks}'
+		'1' => ' viikkona %{weeks}',
+		'else' => ' viikkoina %{weeks}'
 	),
 	'nth_weekno' => '%{n}',
-	'bymonthday' => ' %{monthdays} päivinä',
+	'bymonthday' => ' %{monthdays} päivä',
 	'nth_monthday' => array(
 		'else' => '%{n}.'
 	),
 	'-nth_monthday' => array(
-		'-1' => 'the last day',
-		'-2' => 'the penultimate day',
-		'-3' => 'the antepenultimate day',
-		'-21' => 'the 21st to the last day',
-		'-22' => 'the 22nd to the last day',
-		'-23' => 'the 23rd to the last day',
-		'-31' => 'the 31st to the last day',
-		'else' => 'the %{n}th to the last day'
+		'-1' => 'viimeinen',
+		'else' => '%{n}:ksi viimeinen'
 	),
 	'byyearday' => array(
-		'1' => ' on %{yeardays} day',
-		'else' => ' on %{yeardays} days'
+		'else' => ' %{yeardays} päivä'
 	),
 	'nth_yearday' => array(
-		'1' => 'the first',
-		'2' => 'the second',
-		'3' => 'the third',
-		'else' => 'the %{n}th'
+		'else' => '%{n}.'
 	),
 	'-nth_yearday' => array(
-		'-1' => 'the last',
-		'-2' => 'the penultimate',
-		'-3' => 'the antepenultimate',
-		'else' => 'the %{n}th to the last'
+		'-1' => 'viimeinen',
+		'else' => '%{n}:ksi viimeinen'
 	),
 	'byhour' => array(
-		'1' => ' at %{hours}',
-		'else' => ' at %{hours}'
+		'else' => ' klo. %{hours}'
 	),
-	'nth_hour' => '%{n}h',
+	'nth_hour' => '%{n}',
 	'byminute' => array(
-		'1' => ' at minute %{minutes}',
-		'else' => ' at minutes %{minutes}'
+		'else' => ', minuutteina %{minutes}'
 	),
 	'nth_minute' => '%{n}',
 	'bysecond' => array(
-		'1' => ' at second %{seconds}',
-		'else' => ' at seconds %{seconds}'
+		'else' => ', sekunteina %{seconds}'
 	),
 	'nth_second' => '%{n}',
-	'bysetpos' => ', but only %{setpos} instance of this set',
+	'bysetpos' => ', mutta vain %{setpos} tapaus edellä mainituista',
 	'nth_setpos' => array(
-		'1' => 'the first',
-		'2' => 'the second',
-		'3' => 'the third',
-		'else' => 'the %{n}th'
+		'else' => '%{n}.'
 	),
 	'-nth_setpos' => array(
-		'-1' => 'the last',
-		'-2' => 'the penultimate',
-		'-3' => 'the antepenultimate',
-		'else' => 'the %{n}th to the last'
+		'-1' => 'viimeinen',
+		'else' => '%{n}:ksi viimeinen'
 	)
 );
