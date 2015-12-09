@@ -984,7 +984,8 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 */
 	static public function parseDate($date)
 	{
-		if ( ! $date instanceof \DateTime ) {
+		// DateTimeInterface is only on PHP 5.5+, and includes DateTimeImmutable
+		if ( ! $date instanceof \DateTime && ! $date instanceof \DateTimeInterface ) {
 			try {
 				if ( is_integer($date) ) {
 					$date = \DateTime::createFromFormat('U',$date);
@@ -994,7 +995,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 				}
 			} catch (\Exception $e) {
 				throw new \InvalidArgumentException(
-					'Failed to parse the date "$date"'
+					"Failed to parse the date"
 				);
 			}
 		}
