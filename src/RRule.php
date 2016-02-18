@@ -980,7 +980,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 * Convert any date into a DateTime object.
 	 * @throws InvalidArgumentException on error
 	 * @param mixed $date
-	 * @return DaeTime
+	 * @return DateTime
 	 */
 	static public function parseDate($date)
 	{
