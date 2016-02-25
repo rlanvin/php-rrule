@@ -944,12 +944,12 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 	public function offsetSet($offset, $value)
 	{
-		throw new LogicException('Setting a Date in a RRule is not supported');
+		throw new \LogicException('Setting a Date in a RRule is not supported');
 	}
 
 	public function offsetUnset($offset)
 	{
-		throw new LogicException('Unsetting a Date in a RRule is not supported');
+		throw new \LogicException('Unsetting a Date in a RRule is not supported');
 	}
 
 // Countable interface
