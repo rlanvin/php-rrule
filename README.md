@@ -44,12 +44,12 @@ Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wik
 
 The recommended way is to install the lib [through Composer](http://getcomposer.org/).
 
-Just add this to your `composer.json` file:
+Just add this to your `composer.json` file (change the version by the release you want, or use dev-master for the development version):
 
 ```JSON
 {
     "require": {
-        "rlanvin/php-rrule": "dev-master"
+        "rlanvin/php-rrule": "1.*"
     }
 }
 ```
@@ -66,6 +66,8 @@ require 'vendor/autoload.php';
 ### Alternative method
 
 You can just download `src/RRule.php` and require it.
+
+However be sure to come back regulary and check for updates.
 
 ## Documentation
 
