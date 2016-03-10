@@ -56,6 +56,8 @@ Just add this to your `composer.json` file (change the version by the release yo
 
 Then run `composer install` or `composer update`.
 
+Or just run `composer require "rlanvin/php-rrule" "1.*"` for it to be automatically installed and included in your  `composer.json`
+
 Now you can use the autoloader, and you will have access to the library:
 
 ```php
