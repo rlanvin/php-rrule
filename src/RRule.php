@@ -1519,7 +1519,8 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 							if ( ! isset($filtered_set[$tmp]) ) {
 								$occurrence = \DateTime::createFromFormat(
 									'Y z',
-									"$year $yearday"
+									"$year $yearday",
+									$this->dtstart->getTimezone()
 								);
 								$occurrence->setTime($time[0], $time[1], $time[2]);
 								$filtered_set[$tmp] = $occurrence;
@@ -1554,7 +1555,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			else {
 				// normal loop, without BYSETPOS
 				while ( ($yearday = current($dayset)) !== false ) {
-					$occurrence = \DateTime::createFromFormat('Y z', "$year $yearday");
+					$occurrence = \DateTime::createFromFormat('Y z', "$year $yearday",$this->dtstart->getTimezone());
 
 					while ( ($time = current($timeset)) !== false ) {
 						$occurrence->setTime($time[0], $time[1], $time[2]);
