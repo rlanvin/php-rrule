@@ -1266,13 +1266,13 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 *
 	 * This method is a generator that works for PHP 5.3/5.4 (using static variables)
 	 *
-	 * The main idea is : a brute force made fast by not relying on date() functions
+	 * The main idea is: a brute force made fast by not relying on date() functions
 	 * 
 	 * There is one big loop that examines every interval of the given frequency
 	 * (so every day, every week, every month or every year), constructs an
 	 * array of all the yeardays of the interval (for daily frequencies, the array
 	 * only has one element, for weekly 7, and so on), and then filters out any
-	 * day that do no match BYXXX elements.
+	 * day that do no match BYXXX parts.
 	 *
 	 * The algorithm does not try to be "smart" in calculating the increment of
 	 * the loop. That is, for a rule like "every day in January for 10 years"
@@ -1287,7 +1287,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 *
 	 * Another quirk of this approach is that because the granularity is by day,
 	 * higher frequencies (hourly, minutely and secondly) have to have
-	 * their own special loops within the main loop, making the all thing quite
+	 * their own special loops within the main loop, making the whole thing quite
 	 * convoluted.
 	 * Moreover, at such frequencies, the brute-force approach starts to really
 	 * suck. For example, a rule like
@@ -1305,6 +1305,8 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 * attempt to jump to the next weekday (BYDAY) or next monthday (BYMONTHDAY)
 	 * (I don't know yet which one first), and then if that results in a change of
 	 * month, attempt to jump to the next BYMONTH, and so on.
+	 *
+	 * @param $reset (bool) Whether to restart the iteration, or keep going
 	 * @return \DateTime|null
 	 */
 	protected function iterate($reset = false)
