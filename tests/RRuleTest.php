@@ -1654,13 +1654,47 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($rule, new RRule($rule->rfcString()));
 	}
 
-
-
 	public function testIsLeapYear()
 	{
 		$this->assertFalse(\RRule\is_leap_year(1700));
 		$this->assertFalse(\RRule\is_leap_year(1800));
 		$this->assertFalse(\RRule\is_leap_year(1900));
 		$this->assertTrue(\RRule\is_leap_year(2000));
+	}
+
+	public function testTimezoneIsKeptIdentical()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'yearly',
+			'bymonthday' => '31,30',
+			'count' => 3,
+			'dtstart' => date_create('2015-07-01 09:00:00')
+		));
+
+		$this->assertEquals(date_create('2015-07-30 09:00:00'), $rrule[0]);
+
+		$rrule = new RRule(array(
+			'freq' => 'yearly',
+			'bymonthday' => '31,30',
+			'count' => 3,
+			'dtstart' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+		));
+
+		$this->assertEquals(date_create('2015-07-30 09:00:00', new DateTimeZone('Australia/Sydney')), $rrule[0]);
+
+		$rrule = new RRule(array(
+			'freq' => 'yearly',
+			'bymonthday' => '31,30',
+			'count' => 3,
+			'dtstart' => date_create('2015-07-01 09:00:00', new DateTimeZone('Europe/Helsinki'))
+		));
+
+		$this->assertEquals(date_create('2015-07-30 09:00:00', new DateTimeZone('Europe/Helsinki')), $rrule[0]);
+
+		// using a rfc string
+		$rrule = new RRule('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR');
+
+		$this->assertEquals(date_create('1997-09-01 09:00:00', new DateTimeZone('America/New_York')), $rrule[0]);
 	}
 }
