@@ -6,8 +6,8 @@
 
 ### Fixed
 
-- Ensure the results are returned in the same timezone as DTSTART (#6)
-- LogicException namespacing bug (#3)
+- Ensure the results are returned in the same timezone as DTSTART. #6
+- LogicException namespacing bug. #3
 
 ## 1.0.0 - 2016-03-02
 
