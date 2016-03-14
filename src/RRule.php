@@ -628,6 +628,10 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	}
 
 	/**
+	 * Return all the occurrences in an array.
+	 *
+	 * For finite rules only.
+	 *
 	 * @return array
 	 */
 	public function getOccurrences()
@@ -649,6 +653,11 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	}
 
 	/**
+	 * Return an array of all occurrences between two dates.
+	 *
+	 * @param date|null $begin Can be null to return all occurrences before $end
+	 * @param date|null $end   Can be null to return all occurrences after $begin
+	 *
 	 * @return array
 	 */
 	public function getOccurrencesBetween($begin, $end)
