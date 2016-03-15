@@ -12,6 +12,8 @@
         "ext-intl": "Intl extension is needed for humanReadable()"
     },
     "autoload": {
-        "classmap": ["src/"]
+        "psr-4": {
+            "RRule\\": "src/"
+        }
     }
 }
