@@ -1352,6 +1352,20 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 */
 	protected function iterate($reset = false)
 	{
+		// for readability's sake, and because scope of the variables should be local anyway
+		$year = & $this->_year;
+		$month = & $this->_month;
+		$day = & $this->_day;
+		$hour = & $this->_hour;
+		$minute = & $this->_minute;
+		$second = & $this->_second;
+		$dayset = & $this->_dayset;
+		$masks = & $this->_masks;
+		$timeset = & $this->_timeset;
+		$dtstart = & $this->_dtstart;
+		$total = & $this->_total;
+		$use_cache = & $this->_use_cache;
+
 		if ( $reset ) {
 			$this->_year = $this->_month = $this->_day = null;
 			$this->_hour = $this->_minute = $this->_second = null;
@@ -1363,82 +1377,82 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		}
 
 		// go through the cache first
-		if ( $this->_use_cache ) {
+		if ( $use_cache ) {
 			while ( ($occurrence = current($this->cache)) !== false ) {
 				// echo "Cache hit\n";
-				$this->_dtstart = $occurrence;
+				$dtstart = $occurrence;
 				next($this->cache);
-				$this->_total += 1;
+				$total += 1;
 				return $occurrence;
 			}
 			reset($this->cache);
 			// now set use_cache to false to skip the all thing on next iteration
 			// and start filling the cache instead
-			$this->_use_cache = false;
+			$use_cache = false;
 			// if the cache as been used up completely and we now there is nothing else
-			if ( $this->_total === $this->total ) {
+			if ( $total === $this->total ) {
 				// echo "Cache used up, nothing else to compute\n";
 				return null;
 			}
 			// echo "Cache used up with occurrences remaining\n";
-			if ( $this->_dtstart ) {
+			if ( $dtstart ) {
 				// so we skip the last occurrence of the cache
 				if ( $this->freq === self::SECONDLY ) {
-					$this->_dtstart->modify('+'.$this->interval.'second');
+					$dtstart->modify('+'.$this->interval.'second');
 				}
 				else {
-					$this->_dtstart->modify('+1second');
+					$dtstart->modify('+1second');
 				}
 			}
 		}
 
-		// stop once $this->_total has reached COUNT
-		if ( $this->count && $this->_total >= $this->count ) {
-			$this->total = $this->_total;
+		// stop once $total has reached COUNT
+		if ( $this->count && $total >= $this->count ) {
+			$this->total = $total;
 			return null;
 		}
 
-		if ( $this->_dtstart === null ) {
-			$this->_dtstart = clone $this->dtstart;
+		if ( $dtstart === null ) {
+			$dtstart = clone $this->dtstart;
 		}
 
-		if ( $this->_year === null ) {
+		if ( $year === null ) {
 			if ( $this->freq === self::WEEKLY ) {
 				// we align the start date to the WKST, so we can then
 				// simply loop by adding +7 days. The Python lib does some
 				// calculation magic at the end of the loop (when incrementing)
 				// to realign on first pass.
-				$tmp = clone $this->_dtstart;
+				$tmp = clone $dtstart;
 				$tmp->modify('-'.pymod($this->dtstart->format('N') - $this->wkst,7).'days');
-				list($this->_year,$this->_month,$this->_day,$this->_hour,$this->_minute,$this->_second) = explode(' ',$tmp->format('Y n j G i s'));
+				list($year,$month,$day,$hour,$minute,$second) = explode(' ',$tmp->format('Y n j G i s'));
 				unset($tmp);
 			}
 			else {
-				list($this->_year,$this->_month,$this->_day,$this->_hour,$this->_minute,$this->_second) = explode(' ',$this->_dtstart->format('Y n j G i s'));
+				list($year,$month,$day,$hour,$minute,$second) = explode(' ',$dtstart->format('Y n j G i s'));
 			}
 			// remove leading zeros
-			$this->_minute = (int) $this->_minute;
-			$this->_second = (int) $this->_second;
+			$minute = (int) $minute;
+			$second = (int) $second;
 		}
 
 		// we initialize the timeset
-		if ( $this->_timeset == null ) {
+		if ( $timeset == null ) {
 			if ( $this->freq < self::HOURLY ) {
 				// daily, weekly, monthly or yearly
 				// we don't need to calculate a new timeset
-				$this->_timeset = $this->timeset;
+				$timeset = $this->timeset;
 			}
 			else {
 				// initialize empty if it's not going to occurs on the first iteration
 				if (
-					($this->freq >= self::HOURLY && $this->byhour && ! in_array($this->_hour, $this->byhour))
-					|| ($this->freq >= self::MINUTELY && $this->byminute && ! in_array($this->_minute, $this->byminute))
-					|| ($this->freq >= self::SECONDLY && $this->bysecond && ! in_array($this->_second, $this->bysecond))
+					($this->freq >= self::HOURLY && $this->byhour && ! in_array($hour, $this->byhour))
+					|| ($this->freq >= self::MINUTELY && $this->byminute && ! in_array($minute, $this->byminute))
+					|| ($this->freq >= self::SECONDLY && $this->bysecond && ! in_array($second, $this->bysecond))
 				) {
-					$this->_timeset = array();
+					$timeset = array();
 				}
 				else {
-					$this->_timeset = $this->getTimeSet($this->_hour, $this->_minute, $this->_second);
+					$timeset = $this->getTimeSet($hour, $minute, $second);
 				}
 			}
 		}
@@ -1449,97 +1463,97 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			// 1. get an array of all days in the next interval (day, month, week, etc.)
 			// we filter out from this array all days that do not match the BYXXX conditions
 			// to speed things up, we use days of the year (day numbers) instead of date
-			if ( $this->_dayset === null ) {
+			if ( $dayset === null ) {
 				// rebuild the various masks and converters
 				// these arrays will allow fast date operations
 				// without relying on date() methods
-				if ( empty($this->_masks) || $this->_masks['year'] != $this->_year || $this->_masks['month'] != $this->_month ) {
-					$this->_masks = array('year' => '','month'=>'');
+				if ( empty($masks) || $masks['year'] != $year || $masks['month'] != $month ) {
+					$masks = array('year' => '','month'=>'');
 					// only if year has changed
-					if ( $this->_masks['year'] != $this->_year ) {
-						$this->_masks['leap_year'] = is_leap_year($this->_year);
-						$this->_masks['year_len'] = 365 + (int) $this->_masks['leap_year'];
-						$this->_masks['next_year_len'] = 365 + is_leap_year($this->_year + 1);
-						$this->_masks['weekday_of_1st_yearday'] = date_create($this->_year."-01-01 00:00:00")->format('N');
-						$this->_masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $this->_masks['weekday_of_1st_yearday']-1);
-						if ( $this->_masks['leap_year'] ) {
-							$this->_masks['yearday_to_month'] = self::$MONTH_MASK_366;
-							$this->_masks['yearday_to_monthday'] = self::$MONTHDAY_MASK_366;
-							$this->_masks['yearday_to_monthday_negative'] = self::$NEGATIVE_MONTHDAY_MASK_366;
-							$this->_masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH_366;
+					if ( $masks['year'] != $year ) {
+						$masks['leap_year'] = is_leap_year($year);
+						$masks['year_len'] = 365 + (int) $masks['leap_year'];
+						$masks['next_year_len'] = 365 + is_leap_year($year + 1);
+						$masks['weekday_of_1st_yearday'] = date_create($year."-01-01 00:00:00")->format('N');
+						$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
+						if ( $masks['leap_year'] ) {
+							$masks['yearday_to_month'] = self::$MONTH_MASK_366;
+							$masks['yearday_to_monthday'] = self::$MONTHDAY_MASK_366;
+							$masks['yearday_to_monthday_negative'] = self::$NEGATIVE_MONTHDAY_MASK_366;
+							$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH_366;
 						}
 						else {
-							$this->_masks['yearday_to_month'] = self::$MONTH_MASK;
-							$this->_masks['yearday_to_monthday'] = self::$MONTHDAY_MASK;
-							$this->_masks['yearday_to_monthday_negative'] = self::$NEGATIVE_MONTHDAY_MASK;
-							$this->_masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH;
+							$masks['yearday_to_month'] = self::$MONTH_MASK;
+							$masks['yearday_to_monthday'] = self::$MONTHDAY_MASK;
+							$masks['yearday_to_monthday_negative'] = self::$NEGATIVE_MONTHDAY_MASK;
+							$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH;
 						}
 						if ( $this->byweekno ) {
-							$this->buildWeeknoMask($this->_year, $this->_month, $this->_day, $this->_masks);
+							$this->buildWeeknoMask($year, $month, $day, $masks);
 						}
 					}
 					// everytime month or year changes
 					if ( $this->byweekday_nth ) {
-						$this->buildNthWeekdayMask($this->_year, $this->_month, $this->_day, $this->_masks);
+						$this->buildNthWeekdayMask($year, $month, $day, $masks);
 					}
-					$this->_masks['year'] = $this->_year;
-					$this->_masks['month'] = $this->_month;
+					$masks['year'] = $year;
+					$masks['month'] = $month;
 				}
 
 				// calculate the current set
-				$this->_dayset = $this->getDaySet($this->_year, $this->_month, $this->_day, $this->_masks);
+				$dayset = $this->getDaySet($year, $month, $day, $masks);
 
 				$filtered_set = array();
 
-				foreach ( $this->_dayset as $this->_yearday ) {
-					if ( $this->bymonth && ! in_array($this->_masks['yearday_to_month'][$this->_yearday], $this->bymonth) ) {
+				foreach ( $dayset as $yearday ) {
+					if ( $this->bymonth && ! in_array($masks['yearday_to_month'][$yearday], $this->bymonth) ) {
 						continue;
 					}
 
-					if ( $this->byweekno && ! isset($this->_masks['yearday_is_in_weekno'][$this->_yearday]) ) {
+					if ( $this->byweekno && ! isset($masks['yearday_is_in_weekno'][$yearday]) ) {
 						continue;
 					}
 
 					if ( $this->byyearday ) {
-						if ( $this->_yearday < $this->_masks['year_len'] ) {
-							if ( ! in_array($this->_yearday + 1, $this->byyearday) && ! in_array(- $this->_masks['year_len'] + $this->_yearday,$this->byyearday) ) {
+						if ( $yearday < $masks['year_len'] ) {
+							if ( ! in_array($yearday + 1, $this->byyearday) && ! in_array(- $masks['year_len'] + $yearday,$this->byyearday) ) {
 								continue;
 							}
 						}
-						else { // if ( ($this->_yearday >= $this->_masks['year_len']
-							if ( ! in_array($this->_yearday + 1 - $this->_masks['year_len'], $this->byyearday) && ! in_array(- $this->_masks['next_year_len'] + $this->_yearday - $mask['year_len'], $this->byyearday) ) {
+						else { // if ( ($yearday >= $masks['year_len']
+							if ( ! in_array($yearday + 1 - $masks['year_len'], $this->byyearday) && ! in_array(- $masks['next_year_len'] + $yearday - $mask['year_len'], $this->byyearday) ) {
 								continue;
 							}
 						}
 					}
 
 					if ( ($this->bymonthday || $this->bymonthday_negative)
-						&& ! in_array($this->_masks['yearday_to_monthday'][$this->_yearday], $this->bymonthday)
-						&& ! in_array($this->_masks['yearday_to_monthday_negative'][$this->_yearday], $this->bymonthday_negative) ) {
+						&& ! in_array($masks['yearday_to_monthday'][$yearday], $this->bymonthday)
+						&& ! in_array($masks['yearday_to_monthday_negative'][$yearday], $this->bymonthday_negative) ) {
 						continue;
 					}
 
-					if ( $this->byweekday && ! in_array($this->_masks['yearday_to_weekday'][$this->_yearday], $this->byweekday) ) {
+					if ( $this->byweekday && ! in_array($masks['yearday_to_weekday'][$yearday], $this->byweekday) ) {
 						continue;
 					}
 
-					if ( $this->byweekday_nth && ! isset($this->_masks['yearday_is_nth_weekday'][$this->_yearday]) ) {
+					if ( $this->byweekday_nth && ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
 						continue;
 					}
 
-					$filtered_set[] = $this->_yearday;
+					$filtered_set[] = $yearday;
 				}
 
-				$this->_dayset = $filtered_set;
+				$dayset = $filtered_set;
 
 				// if BYSETPOS is set, we need to expand the timeset to filter by pos
 				// so we make a special loop to return while generating
-				if ( $this->bysetpos && $this->_timeset ) {
+				if ( $this->bysetpos && $timeset ) {
 					$filtered_set = array();
 					foreach ( $this->bysetpos as $pos ) {
-						$n = count($this->_timeset);
+						$n = count($timeset);
 						if ( $pos < 0 ) {
-							$pos = $n * count($this->_dayset) + $pos;
+							$pos = $n * count($dayset) + $pos;
 						}
 						else {
 							$pos = $pos - 1;
@@ -1547,15 +1561,15 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 
 						$div = (int) ($pos / $n); // daypos
 						$mod = $pos % $n; // timepos
-						if ( isset($this->_dayset[$div]) && isset($this->_timeset[$mod]) ) {
-							$this->_yearday = $this->_dayset[$div];
-							$time = $this->_timeset[$mod];
+						if ( isset($dayset[$div]) && isset($timeset[$mod]) ) {
+							$yearday = $dayset[$div];
+							$time = $timeset[$mod];
 							// used as array key to ensure uniqueness
-							$tmp = $this->_year.':'.$this->_yearday.':'.$time[0].':'.$time[1].':'.$time[2];
+							$tmp = $year.':'.$yearday.':'.$time[0].':'.$time[1].':'.$time[2];
 							if ( ! isset($filtered_set[$tmp]) ) {
 								$occurrence = \DateTime::createFromFormat(
 									'Y z',
-									"$this->_year $this->_yearday",
+									"$year $yearday",
 									$this->dtstart->getTimezone()
 								);
 								$occurrence->setTime($time[0], $time[1], $time[2]);
@@ -1564,25 +1578,25 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 						}
 					}
 					sort($filtered_set);
-					$this->_dayset = $filtered_set;
+					$dayset = $filtered_set;
 				}
 			}
 
 			// 2. loop, generate a valid date, and return the result (fake "yield")
 			// at the same time, we check the end condition and return null if
 			// we need to stop
-			if ( $this->bysetpos && $this->_timeset ) {
-				while ( ($occurrence = current($this->_dayset)) !== false ) {
+			if ( $this->bysetpos && $timeset ) {
+				while ( ($occurrence = current($dayset)) !== false ) {
 
 					// consider end conditions
 					if ( $this->until && $occurrence > $this->until ) {
-						$this->total = $this->_total; // save total for count() cache
+						$this->total = $total; // save total for count() cache
 						return null;
 					}
 
-					next($this->_dayset);
-					if ( $occurrence >= $this->_dtstart ) { // ignore occurrences before DTSTART
-						$this->_total += 1;
+					next($dayset);
+					if ( $occurrence >= $dtstart ) { // ignore occurrences before DTSTART
+						$total += 1;
 						$this->cache[] = $occurrence;
 						return $occurrence; // yield
 					}
@@ -1590,57 +1604,57 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 			}
 			else {
 				// normal loop, without BYSETPOS
-				while ( ($this->_yearday = current($this->_dayset)) !== false ) {
-					$occurrence = \DateTime::createFromFormat('Y z', "$this->_year $this->_yearday",$this->dtstart->getTimezone());
+				while ( ($yearday = current($dayset)) !== false ) {
+					$occurrence = \DateTime::createFromFormat('Y z', "$year $yearday",$this->dtstart->getTimezone());
 
-					while ( ($time = current($this->_timeset)) !== false ) {
+					while ( ($time = current($timeset)) !== false ) {
 						$occurrence->setTime($time[0], $time[1], $time[2]);
 						// consider end conditions
 						if ( $this->until && $occurrence > $this->until ) {
-							$this->total = $this->_total; // save total for count() cache
+							$this->total = $total; // save total for count() cache
 							return null;
 						}
 
-						next($this->_timeset);
-						if ( $occurrence >= $this->_dtstart ) { // ignore occurrences before DTSTART
-							$this->_total += 1;
+						next($timeset);
+						if ( $occurrence >= $dtstart ) { // ignore occurrences before DTSTART
+							$total += 1;
 							$this->cache[] = $occurrence;
 							return $occurrence; // yield
 						}
 					}
-					reset($this->_timeset);
-					next($this->_dayset);
+					reset($timeset);
+					next($dayset);
 				}
 			}
 
 			// 3. we reset the loop to the next interval
-			$this->_days_increment = 0;
+			$days_increment = 0;
 			switch ( $this->freq ) {
 				case self::YEARLY:
-					// we do not care about $this->_month or $this->_day not existing,
+					// we do not care about $month or $day not existing,
 					// they are not used in yearly frequency
-					$this->_year = $this->_year + $this->interval;
+					$year = $year + $this->interval;
 					break;
 				case self::MONTHLY:
 					// we do not care about the day of the month not existing
 					// it is not used in monthly frequency
-					$this->_month = $this->_month + $this->interval;
-					if ( $this->_month > 12 ) {
-						$div = (int) ($this->_month / 12);
-						$mod = $this->_month % 12;
-						$this->_month = $mod;
-						$this->_year = $this->_year + $div;
-						if ( $this->_month == 0 ) {
-							$this->_month = 12;
-							$this->_year = $this->_year - 1;
+					$month = $month + $this->interval;
+					if ( $month > 12 ) {
+						$div = (int) ($month / 12);
+						$mod = $month % 12;
+						$month = $mod;
+						$year = $year + $div;
+						if ( $month == 0 ) {
+							$month = 12;
+							$year = $year - 1;
 						}
 					}
 					break;
 				case self::WEEKLY:
-					$this->_days_increment = $this->interval*7;
+					$days_increment = $this->interval*7;
 					break;
 				case self::DAILY:
-					$this->_days_increment = $this->interval;
+					$days_increment = $this->interval;
 					break;
 
 				// For the time frequencies, things are a little bit different.
@@ -1651,121 +1665,121 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 				// call the DateTime method at the very end.
 
 				case self::HOURLY:
-					if ( empty($this->_dayset) ) {
+					if ( empty($dayset) ) {
 						// an empty set means that this day has been filtered out
 						// by one of the BYXXX rule. So there is no need to
 						// examine it any further, we know nothing is going to
 						// occur anyway.
 						// so we jump to one iteration right before next day
-						$this->_hour += ((int) ((23 - $this->_hour) / $this->interval)) * $this->interval;
+						$hour += ((int) ((23 - $hour) / $this->interval)) * $this->interval;
 					}
 
 					$found = false;
 					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::HOURLY]; $j++ ) {
-						$this->_hour += $this->interval;
-						$div = (int) ($this->_hour / 24);
-						$mod = $this->_hour % 24;
+						$hour += $this->interval;
+						$div = (int) ($hour / 24);
+						$mod = $hour % 24;
 						if ( $div ) {
-							$this->_hour = $mod;
-							$this->_days_increment += $div;
+							$hour = $mod;
+							$days_increment += $div;
 						}
-						if ( ! $this->byhour || in_array($this->_hour, $this->byhour)) {
+						if ( ! $this->byhour || in_array($hour, $this->byhour)) {
 							$found = true;
 							break;
 						}
 					}
 
 					if ( ! $found ) {
-						$this->total = $this->_total; // save total for count cache
+						$this->total = $total; // save total for count cache
 						return null; // stop the iterator
 					}
 
-					$this->_timeset = $this->getTimeSet($this->_hour, $this->_minute, $this->_second);
+					$timeset = $this->getTimeSet($hour, $minute, $second);
 					break;
 				case self::MINUTELY:
-					if ( empty($this->_dayset) ) {
-						$this->_minute += ((int) ((1439 - ($this->_hour*60+$this->_minute)) / $this->interval)) * $this->interval;
+					if ( empty($dayset) ) {
+						$minute += ((int) ((1439 - ($hour*60+$minute)) / $this->interval)) * $this->interval;
 					}
 
 					$found = false;
 					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::MINUTELY]; $j++ ) {
-						$this->_minute += $this->interval;
-						$div = (int) ($this->_minute / 60);
-						$mod = $this->_minute % 60;
+						$minute += $this->interval;
+						$div = (int) ($minute / 60);
+						$mod = $minute % 60;
 						if ( $div ) {
-							$this->_minute = $mod;
-							$this->_hour += $div;
-							$div = (int) ($this->_hour / 24);
-							$mod = $this->_hour % 24;
+							$minute = $mod;
+							$hour += $div;
+							$div = (int) ($hour / 24);
+							$mod = $hour % 24;
 							if ( $div ) {
-								$this->_hour = $mod;
-								$this->_days_increment += $div;
+								$hour = $mod;
+								$days_increment += $div;
 							}
 						}
-						if ( (! $this->byhour || in_array($this->_hour, $this->byhour)) &&
-						(! $this->byminute || in_array($this->_minute, $this->byminute)) ) {
+						if ( (! $this->byhour || in_array($hour, $this->byhour)) &&
+						(! $this->byminute || in_array($minute, $this->byminute)) ) {
 							$found = true;
 							break;
 						}
 					}
 
 					if ( ! $found ) {
-						$this->total = $this->_total; // save total for count cache
+						$this->total = $total; // save total for count cache
 						return null; // stop the iterator
 					}
 
-					$this->_timeset = $this->getTimeSet($this->_hour, $this->_minute, $this->_second);
+					$timeset = $this->getTimeSet($hour, $minute, $second);
 					break;
 				case self::SECONDLY:
-					if ( empty($this->_dayset) ) {
-						$this->_second += ((int) ((86399 - ($this->_hour*3600 + $this->_minute*60 + $this->_second)) / $this->interval)) * $this->interval;
+					if ( empty($dayset) ) {
+						$second += ((int) ((86399 - ($hour*3600 + $minute*60 + $second)) / $this->interval)) * $this->interval;
 					}
 
 					$found = false;
 					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::SECONDLY]; $j++ ) {
-						$this->_second += $this->interval;
-						$div = (int) ($this->_second / 60);
-						$mod = $this->_second % 60;
+						$second += $this->interval;
+						$div = (int) ($second / 60);
+						$mod = $second % 60;
 						if ( $div ) {
-							$this->_second = $mod;
-							$this->_minute += $div;
-							$div = (int) ($this->_minute / 60);
-							$mod = $this->_minute % 60;
+							$second = $mod;
+							$minute += $div;
+							$div = (int) ($minute / 60);
+							$mod = $minute % 60;
 							if ( $div ) {
-								$this->_minute = $mod;
-								$this->_hour += $div;
-								$div = (int) ($this->_hour / 24);
-								$mod = $this->_hour % 24;
+								$minute = $mod;
+								$hour += $div;
+								$div = (int) ($hour / 24);
+								$mod = $hour % 24;
 								if ( $div ) {
-									$this->_hour = $mod;
-									$this->_days_increment += $div;
+									$hour = $mod;
+									$days_increment += $div;
 								}
 							}
 						}
-						if ( ( ! $this->byhour || in_array($this->_hour, $this->byhour) )
-							&& ( ! $this->byminute || in_array($this->_minute, $this->byminute) ) 
-							&& ( ! $this->bysecond || in_array($this->_second, $this->bysecond) ) ) {
+						if ( ( ! $this->byhour || in_array($hour, $this->byhour) )
+							&& ( ! $this->byminute || in_array($minute, $this->byminute) ) 
+							&& ( ! $this->bysecond || in_array($second, $this->bysecond) ) ) {
 							$found = true;
 							break;
 						}
 					}
 
 					if ( ! $found ) {
-						$this->total = $this->_total; // save total for count cache
+						$this->total = $total; // save total for count cache
 						return null; // stop the iterator
 					}
 
-					$this->_timeset = $this->getTimeSet($this->_hour, $this->_minute, $this->_second);
+					$timeset = $this->getTimeSet($hour, $minute, $second);
 					break;
 			}
 			// here we take a little shortcut from the Python version, by using DateTime
-			if ( $this->_days_increment ) {
-				list($this->_year,$this->_month,$this->_day) = explode('-',date_create("$this->_year-$this->_month-$this->_day")->modify("+ $this->_days_increment days")->format('Y-n-j'));
+			if ( $days_increment ) {
+				list($year,$month,$day) = explode('-',date_create("$year-$month-$day")->modify("+ $days_increment days")->format('Y-n-j'));
 			}
-			$this->_dayset = null; // reset the loop
+			$dayset = null; // reset the loop
 		}
 
-		$this->total = $this->_total; // save total for count cache
+		$this->total = $total; // save total for count cache
 		return null; // stop the iterator
 	}
 

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fix bug preventing the iteration of multiple instances of RRule at the same time
+
 ## [1.0.1] - 2016-03-11
 
 ### Fixed

@@ -224,49 +224,57 @@ class RSet implements \Iterator, \ArrayAccess, \Countable
 	 */
 	protected function iterate($reset = false)
 	{
+		$rlist = & $this->_rlist;
+		$rlist_iterator = & $this->_rlist_iterator;
+		$exlist = & $this->_exlist;
+		$exlist_iterator = & $this->_exlist_iterator;
+		$previous_occurrence = & $this->_previous_occurrence;
+		$total = & $this->_total;
+
 		if ( $reset ) {
 			$this->_rlist = $this->_rlist_iterator = null;
 			$this->_exlist = $this->_exlist_iterator = null;
 			$this->_previous_occurrence = null;
+			$this->_total = 0;
 		}
 
-		if ( $this->_rlist === null ) {
+		if ( $rlist === null ) {
 			// rrules + rdate
-			$this->_rlist = new \SplMinHeap();
-			$this->_rlist_iterator = new \MultipleIterator(\MultipleIterator::MIT_NEED_ANY);
-			$this->_rlist_iterator->attachIterator(new \ArrayIterator($this->rdates));
+			$rlist = new \SplMinHeap();
+			$rlist_iterator = new \MultipleIterator(\MultipleIterator::MIT_NEED_ANY);
+			$rlist_iterator->attachIterator(new \ArrayIterator($this->rdates));
 			foreach ( $this->rrules as $rrule ) {
-				$this->_rlist_iterator->attachIterator($rrule);
+				$rlist_iterator->attachIterator($rrule);
 			}
-			$this->_rlist_iterator->rewind();
+			$rlist_iterator->rewind();
 
 			// exrules + exdate
-			$this->_exlist = new \SplMinHeap();
-			$this->_exlist_iterator = new \MultipleIterator(\MultipleIterator::MIT_NEED_ANY);
+			$exlist = new \SplMinHeap();
+			$exlist_iterator = new \MultipleIterator(\MultipleIterator::MIT_NEED_ANY);
 
-			$this->_exlist_iterator->attachIterator(new \ArrayIterator($this->exdates));
+			$exlist_iterator->attachIterator(new \ArrayIterator($this->exdates));
 			foreach ( $this->exrules as $rrule ) {
-				$this->_exlist_iterator->attachIterator($rrule);
+				$exlist_iterator->attachIterator($rrule);
 			}
-			$this->_exlist_iterator->rewind();
+			$exlist_iterator->rewind();
 		}
 
 		while ( true ) {
-			foreach ( $this->_rlist_iterator->current() as $date ) {
+			foreach ( $rlist_iterator->current() as $date ) {
 				if ( $date !== null ) {
-					$this->_rlist->insert($date);
+					$rlist->insert($date);
 				}
 			}
-			$this->_rlist_iterator->next(); // advance the iterator for the next call
+			$rlist_iterator->next(); // advance the iterator for the next call
 
-			if ( $this->_rlist->isEmpty() ) {
+			if ( $rlist->isEmpty() ) {
 				break; // exit the loop to stop the iterator
 			}
 
-			$occurrence = $this->_rlist->top();
-			$this->_rlist->extract(); // remove the occurence from the heap
+			$occurrence = $rlist->top();
+			$rlist->extract(); // remove the occurence from the heap
 
-			if ( $occurrence == $this->_previous_occurrence ) {
+			if ( $occurrence == $previous_occurrence ) {
 				continue; // skip, was already considered
 			}
 
@@ -276,20 +284,20 @@ class RSet implements \Iterator, \ArrayAccess, \Countable
 			// as occurence (in which case it is discarded)
 			$exclude = false;
 			while ( true ) {
-				foreach ( $this->_exlist_iterator->current() as $date ) {
+				foreach ( $exlist_iterator->current() as $date ) {
 					if ( $date !== null ) {
-						$this->_exlist->insert($date);
+						$exlist->insert($date);
 					}
 				}
-				$this->_exlist_iterator->next(); // advance the iterator for the next call
+				$exlist_iterator->next(); // advance the iterator for the next call
 
-				if ( $this->_exlist->isEmpty() ) {
-					break; // break this loop only
+				if ( $exlist->isEmpty() ) {
+					break 1; // break this loop only
 				}
 
-				$exdate = $this->_exlist->top();
+				$exdate = $exlist->top();
 				if ( $exdate < $occurrence ) {
-					$this->_exlist->extract();
+					$exlist->extract();
 					continue;
 				}
 				elseif ( $exdate == $occurrence ) {
@@ -301,17 +309,17 @@ class RSet implements \Iterator, \ArrayAccess, \Countable
 				}
 			}
 
-			$this->_previous_occurrence = $occurrence;
+			$previous_occurrence = $occurrence;
 
 			if ( $exclude ) {
 				continue;
 			}
 
-			$this->_total += 1;
+			$total += 1;
 			return $occurrence; // = yield
 		}
 
-		$this->total = $this->_total; // save total for count cache
+		$this->total = $total; // save total for count cache
 		return null; // stop the iterator
 	}
 }
