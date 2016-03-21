@@ -83,7 +83,7 @@ function is_leap_year($year)
  * @see https://tools.ietf.org/html/rfc5545
  * @see https://labix.org/python-dateutil
  */
-class RRule implements \Iterator, \ArrayAccess, \Countable
+class RRule implements RRuleInterface
 {
 	const SECONDLY = 7;
 	const MINUTELY = 6;
@@ -628,6 +628,29 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		return $this;
 	}
 
+///////////////////////////////////////////////////////////////////////////////
+// RRule interface
+
+	/**
+	 * Return true if the rrule has an end condition, false otherwise
+	 *
+	 * @return bool
+	 */
+	public function isFinite()
+	{
+		return $this->count || $this->until;
+	}
+
+	/**
+	 * Return true if the rrule has no end condition (infite)
+	 *
+	 * @return bool
+	 */
+	public function isInfinite()
+	{
+		return ! $this->count && ! $this->until;
+	}
+
 	/**
 	 * Return all the occurrences in an array.
 	 *
@@ -637,7 +660,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 */
 	public function getOccurrences()
 	{
-		if ( ! $this->count && ! $this->until ) {
+		if ( $this->isInfinite() ) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
 
@@ -670,7 +693,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 		if ( $end !== null ) {
 			$end = self::parseDate($end);
 		}
-		elseif ( ! $this->count && ! $this->until ) {
+		elseif ( $this->isInfinite() ) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
 
@@ -975,7 +998,7 @@ class RRule implements \Iterator, \ArrayAccess, \Countable
 	 */
 	public function count()
 	{
-		if ( ! $this->count && ! $this->until ) {
+		if ( $this->isInfinite() ) {
 			throw new \LogicException('Cannot count an infinite recurrence rule.');
 		}
 

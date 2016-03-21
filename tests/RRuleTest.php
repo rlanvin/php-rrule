@@ -4,6 +4,39 @@ use RRule\RRule;
 
 class RRuleTest extends PHPUnit_Framework_TestCase
 {
+	public function testIsFinite()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'yearly'
+		));
+		$this->assertTrue($rrule->isInfinite());
+		$this->assertFalse($rrule->isFinite());
+
+		$rrule = new RRule(array(
+			'freq' => 'yearly',
+			'count' => 10
+		));
+		$this->assertFalse($rrule->isInfinite());
+		$this->assertTrue($rrule->isFinite());
+	}
+
+	public function testIsLeapYear()
+	{
+		$this->assertFalse(\RRule\is_leap_year(1700));
+		$this->assertFalse(\RRule\is_leap_year(1800));
+		$this->assertFalse(\RRule\is_leap_year(1900));
+		$this->assertTrue(\RRule\is_leap_year(2000));
+	}
+
+	public function testCountable()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'yearly',
+			'count' => 10
+		));
+		$this->assertEquals(10, count($rrule));
+	}
+
 	/**
 	 * These rules are invalid according to the RFC
 	 */
@@ -179,7 +212,6 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
-
 	/**
 	 * MONTHY rules, mostly taken from the Python test suite
 	 */
@@ -313,6 +345,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				date_create('1997-09-09 18:00:00')))
 		);
 	}
+
 	/**
 	 * @dataProvider weeklyRules
 	 */
@@ -379,6 +412,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		);
 	}
+
 	/**
 	 * @dataProvider dailyRules
 	 */
@@ -1654,14 +1688,6 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($rule, new RRule($rule->rfcString()));
 	}
 
-	public function testIsLeapYear()
-	{
-		$this->assertFalse(\RRule\is_leap_year(1700));
-		$this->assertFalse(\RRule\is_leap_year(1800));
-		$this->assertFalse(\RRule\is_leap_year(1900));
-		$this->assertTrue(\RRule\is_leap_year(2000));
-	}
-
 	public function testTimezoneIsKeptIdentical()
 	{
 		$rrule = new RRule(array(
@@ -1697,4 +1723,5 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals(date_create('1997-09-01 09:00:00', new DateTimeZone('America/New_York')), $rrule[0]);
 	}
+
 }

@@ -14,7 +14,7 @@ namespace RRule;
 /**
  * Recurrence set
  */
-class RSet implements \Iterator, \ArrayAccess, \Countable
+class RSet implements RRuleInterface
 {
 	protected $rdates = array();
 	protected $rrules = array();
@@ -22,27 +22,38 @@ class RSet implements \Iterator, \ArrayAccess, \Countable
 	protected $exdates = array();
 	protected $exrules = array();
 
+	// cache variable
+	protected $total = null;
+	protected $infinite = null;
+	protected $cache = array();
+
 	public function __construct()
 	{
 
 	}
 
+	/**
+	 * Add a RRule (or another RSet)
+	 */
 	public function addRRule($rrule)
 	{
 		if ( is_string($rrule) || is_array($rrule) ) {
 			$rrule = new RRule($rrule);
 		}
-		elseif ( ! $rrule instanceof \Iterator ) {
-			throw new \InvalidArgumentException('The rule must be a string, an array, an instance of RRule or an Iterator');
+		elseif ( ! $rrule instanceof RRuleInterface ) {
+			throw new \InvalidArgumentException('The rule must be a string, an array, or implement RRuleInterface');
 		}
 
 		// cloning because I want to iterate it without being disturbed
 		$this->rrules[] = clone $rrule;
 
+		$this->clearCache();
+
 		return $this;
 	}
 
 	/**
+	 * Add a RRule with exclusion rules.
 	 * In RFC 2445 but deprecated in RFC 5545
 	 */
 	public function addExRule($rrule)
@@ -50,17 +61,22 @@ class RSet implements \Iterator, \ArrayAccess, \Countable
 		if ( is_string($rrule) || is_array($rrule) ) {
 			$rrule = new RRule($rrule);
 		}
-		elseif ( ! $rrule instanceof \Iterator ) {
-			throw new \InvalidArgumentException('The rule must be a string, an array, an instance of RRule or an Iterator');
+		elseif ( ! $rrule instanceof RRuleInterface ) {
+			throw new \InvalidArgumentException('The rule must be a string, an array or implement RRuleInterface');
 		}
 
 		// cloning because I want to iterate it without being disturbed
 		$this->exrules[] = clone $rrule;
 
+		$this->clearCache();
+
 		return $this;
 	}
 
-	public function addRDate($date)
+	/**
+	 * Add a RDATE (renamed Date for simplicy, since we don't support full RDATE syntax at the moment)
+	 */
+	public function addDate($date)
 	{
 		try {
 			$this->rdates[] = RRule::parseDate($date);
@@ -70,9 +86,14 @@ class RSet implements \Iterator, \ArrayAccess, \Countable
 			);
 		}
 
+		$this->clearCache();
+
 		return $this;
 	}
 
+	/**
+	 * Add a EXDATE
+	 */
 	public function addExDate($date)
 	{
 		try {
@@ -83,18 +104,66 @@ class RSet implements \Iterator, \ArrayAccess, \Countable
 			);
 		}
 
+		$this->clearCache();
+
 		return $this;
+	}
+
+	/**
+	 * Clear the cache. Do NOT use while the class is iterating
+	 * @return $this
+	 */
+	public function clearCache()
+	{
+		$this->total = null;
+		$this->infinite = null;
+		$this->cache = array();
+		return $this;
+	}
+
+///////////////////////////////////////////////////////////////////////////////
+// RRule interface
+
+	public function isFinite()
+	{
+		return ! $this->isInfinite();
+	}
+
+	public function isInfinite()
+	{
+		if ( $this->infinite === null ) {
+			$this->infinite = false;
+			foreach ( $this->rrules as $rrule ) {
+				if ( $rrule->isInfinite() ) {
+					$this->infinite = true;
+					break;
+				}
+			}
+		}
+		return $this->infinite;
 	}
 
 	public function getOccurrences()
 	{
-		// TODO: need a wait to test the presence of infinite RRULE
+		if ( $this->isInfinite() ) {
+			throw new \LogicException('Cannot get all occurrences of an infinite recurrence set.');
+		}
 
 		$res = array();
 		foreach ( $this as $occurrence ) {
 			$res[] = $occurrence;
 		}
 		return $res;
+	}
+
+	public function getOccurrencesBetween($begin, $end)
+	{
+		throw new \Exception(__METHOD__.' is unimplemented');
+	}
+
+	public function occursAt($date)
+	{
+		throw new \Exception(__METHOD__.' is unimplemented');
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
