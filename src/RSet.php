@@ -204,13 +204,13 @@ class RSet implements RRuleInterface
 
 	public function offsetExists($offset)
 	{
-	throw new \Exception(__METHOD__.' is unimplemented');
-		// return is_numeric($offset) && $offset >= 0 && $offset < count($this);
+		return is_numeric($offset) && $offset >= 0 && $offset < count($this);
 	}
 
 	public function offsetGet($offset)
 	{
-		throw new \Exception(__METHOD__.' is unimplemented');
+		// TODO: Cache
+
 		// if ( isset($this->cache[$offset]) ) {
 		// 	// found in cache
 		// 	return $this->cache[$offset];
@@ -220,30 +220,28 @@ class RSet implements RRuleInterface
 		// 	return null;
 		// }
 
-		// // not in cache and cache not complete, we have to loop to find it
-		// $i = 0;
-		// foreach ( $this as $occurrence ) {
-		// 	if ( $i == $offset ) {
-		// 		return $occurrence;
-		// 	}
-		// 	$i++;
-		// 	if ( $i > $offset ) {
-		// 		break;
-		// 	}
-		// }
-		// return null;
+		// not in cache and cache not complete, we have to loop to find it
+		$i = 0;
+		foreach ( $this as $occurrence ) {
+			if ( $i == $offset ) {
+				return $occurrence;
+			}
+			$i++;
+			if ( $i > $offset ) {
+				break;
+			}
+		}
+		return null;
 	}
 
 	public function offsetSet($offset, $value)
 	{
-		throw new \Exception(__METHOD__.' is unimplemented');
-		// throw new \LogicException('Setting a Date in a RRule is not supported');
+		throw new \LogicException('Setting a Date in a RSet is not supported (use addDate)');
 	}
 
 	public function offsetUnset($offset)
 	{
-		throw new \Exception(__METHOD__.' is unimplemented');
-		// throw new \LogicException('Unsetting a Date in a RRule is not supported');
+		throw new \LogicException('Unsetting a Date in a RSet is not supported (use addDate)');
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -257,16 +255,15 @@ class RSet implements RRuleInterface
 	 */
 	public function count()
 	{
-		throw new \Exception(__METHOD__.' is unimplemented');
-		// if ( ! $this->count && ! $this->until ) {
-		// 	throw new \LogicException('Cannot count an infinite recurrence rule.');
-		// }
+		if ( $this->isInfinite() ) {
+			throw new \LogicException('Cannot count an infinite recurrence set.');
+		}
 
-		// if ( $this->total === null ) {
-		// 	foreach ( $this as $occurrence ) {}
-		// }
+		if ( $this->total === null ) {
+			foreach ( $this as $occurrence ) {}
+		}
 
-		// return $this->total;
+		return $this->total;
 	}
 
 ///////////////////////////////////////////////////////////////////////////////

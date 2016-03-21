@@ -115,7 +115,57 @@ class RSetTest extends PHPUnit_Framework_TestCase
 
 	public function testCountable()
 	{
-		// TODO
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$rset->addExdate('1997-09-04 09:00:00');
+		$rset->addExdate('1997-09-11 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00');
+
+		$this->assertEquals(3, count($rset));
+	}
+
+	public function testOffsetExists()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$rset->addExdate('1997-09-04 09:00:00');
+		$rset->addExdate('1997-09-11 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00');
+
+		$this->assertTrue(isset($rset[0]));
+		$this->assertTrue(isset($rset[1]));
+		$this->assertTrue(isset($rset[2]));
+		$this->assertFalse(isset($rset[3]));
+	}
+
+	public function testOffsetGet()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00:00')
+		));
+		$rset->addExdate('1997-09-04 09:00:00');
+		$rset->addExdate('1997-09-11 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00');
+
+// var_dump($rset->getOccurrences());
+		$this->assertEquals(date_create('1997-09-02 09:00:00'), $rset[0]);
+		$this->assertEquals(date_create('1997-09-09 09:00:00'), $rset[1]);
+		$this->assertEquals(date_create('1997-09-16 09:00:00'), $rset[2]);
+		$this->assertEquals(null, $rset[3]);
 	}
 
 	public function testRSetInRset()

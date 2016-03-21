@@ -1419,6 +1419,7 @@ class RRule implements RRuleInterface
 			}
 			// echo "Cache used up with occurrences remaining\n";
 			if ( $dtstart ) {
+				$dtstart = clone $dtstart; // since DateTime is not immutable, avoid any problem
 				// so we skip the last occurrence of the cache
 				if ( $this->freq === self::SECONDLY ) {
 					$dtstart->modify('+'.$this->interval.'second');
@@ -1628,7 +1629,11 @@ class RRule implements RRuleInterface
 			else {
 				// normal loop, without BYSETPOS
 				while ( ($yearday = current($dayset)) !== false ) {
-					$occurrence = \DateTime::createFromFormat('Y z', "$year $yearday",$this->dtstart->getTimezone());
+					$occurrence = \DateTime::createFromFormat(
+						'Y z',
+						"$year $yearday",
+						$this->dtstart->getTimezone()
+					);
 
 					while ( ($time = current($timeset)) !== false ) {
 						$occurrence->setTime($time[0], $time[1], $time[2]);

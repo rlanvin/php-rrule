@@ -4,39 +4,6 @@ use RRule\RRule;
 
 class RRuleTest extends PHPUnit_Framework_TestCase
 {
-	public function testIsFinite()
-	{
-		$rrule = new RRule(array(
-			'freq' => 'yearly'
-		));
-		$this->assertTrue($rrule->isInfinite());
-		$this->assertFalse($rrule->isFinite());
-
-		$rrule = new RRule(array(
-			'freq' => 'yearly',
-			'count' => 10
-		));
-		$this->assertFalse($rrule->isInfinite());
-		$this->assertTrue($rrule->isFinite());
-	}
-
-	public function testIsLeapYear()
-	{
-		$this->assertFalse(\RRule\is_leap_year(1700));
-		$this->assertFalse(\RRule\is_leap_year(1800));
-		$this->assertFalse(\RRule\is_leap_year(1900));
-		$this->assertTrue(\RRule\is_leap_year(2000));
-	}
-
-	public function testCountable()
-	{
-		$rrule = new RRule(array(
-			'freq' => 'yearly',
-			'count' => 10
-		));
-		$this->assertEquals(10, count($rrule));
-	}
-
 	/**
 	 * These rules are invalid according to the RFC
 	 */
@@ -1724,4 +1691,65 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(date_create('1997-09-01 09:00:00', new DateTimeZone('America/New_York')), $rrule[0]);
 	}
 
+	public function testIsFinite()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'yearly'
+		));
+		$this->assertTrue($rrule->isInfinite());
+		$this->assertFalse($rrule->isFinite());
+
+		$rrule = new RRule(array(
+			'freq' => 'yearly',
+			'count' => 10
+		));
+		$this->assertFalse($rrule->isInfinite());
+		$this->assertTrue($rrule->isFinite());
+	}
+
+	public function testIsLeapYear()
+	{
+		$this->assertFalse(\RRule\is_leap_year(1700));
+		$this->assertFalse(\RRule\is_leap_year(1800));
+		$this->assertFalse(\RRule\is_leap_year(1900));
+		$this->assertTrue(\RRule\is_leap_year(2000));
+	}
+
+	public function testCountable()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'yearly',
+			'count' => 10
+		));
+		$this->assertEquals(10, count($rrule));
+	}
+
+	public function testOffsetExists()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 3,
+			'byday' => 'TU,TH',
+			'dtstart' => '2007-01-01'
+		));
+		$this->assertTrue(isset($rrule[0]));
+		$this->assertTrue(isset($rrule[1]));
+		$this->assertTrue(isset($rrule[2]));
+		$this->assertFalse(isset($rrule[3]));
+	}
+
+	public function testOffsetGet()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 3,
+			'byday' => 'TU,TH',
+			'dtstart' => '2007-01-01'
+		));
+
+		$this->assertEquals(date_create('2007-01-02'), $rrule[0]);
+		$this->assertEquals(date_create('2007-01-04'), $rrule[1]);
+		$this->assertEquals(date_create('2007-01-09'), $rrule[2]);
+		$this->assertEquals(null, $rrule[4]);
+	}
 }
