@@ -5,27 +5,7 @@ use RRule\RRule;
 
 class RSetTest extends PHPUnit_Framework_TestCase
 {
-	public function testIsInfinite()
-	{
-		$rset = new RSet();
-		$this->assertFalse($rset->isInfinite());
-		$this->assertTrue($rset->isFinite());
-
-		$rset->addRRule(array(
-			'FREQ' => 'YEARLY',
-			'COUNT' => 10
-		));
-		$this->assertFalse($rset->isInfinite());
-		$this->assertTrue($rset->isFinite());
-
-		$rset->addRRule(array(
-			'FREQ' => 'YEARLY'
-		));
-		$this->assertTrue($rset->isInfinite());
-		$this->assertFalse($rset->isFinite());
-	}
-
-	public function testAddRRule()
+	public function testCombineRRule()
 	{
 		$rset = new RSet();
 		$rset->addRRule(array(
@@ -46,9 +26,12 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			date_create('1997-09-04 09:00'),
 			date_create('1997-09-09 09:00')
 		), $rset->getOccurrences());
+
+		$this->assertEquals(date_create('1997-09-04 09:00'),$rset[1]);
+		$this->assertEquals(array(date_create('1997-09-04 09:00')),$rset->getOccurrencesBetween('1997-09-04 00:00', '1997-09-05 00:00'));
 	}
 
-	public function testAddDate()
+	public function testCombineRRuleAndDate()
 	{
 		$rset = new RSet();
 		$rset->addRRule(array(
@@ -64,9 +47,12 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			date_create('1997-09-04 09:00'),
 			date_create('1997-09-09 09:00')
 		), $rset->getOccurrences());
+
+		$this->assertEquals(date_create('1997-09-04 09:00'),$rset[1]);
+		$this->assertEquals(array(date_create('1997-09-04 09:00')),$rset->getOccurrencesBetween('1997-09-04 00:00', '1997-09-05 00:00'));
 	}
 
-	public function testAddExRule()
+	public function testCombineRRuleAndExRule()
 	{
 		$rset = new RSet();
 		$rset->addRRule(array(
@@ -86,9 +72,12 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			date_create('1997-09-09 09:00'),
 			date_create('1997-09-16 09:00')
 		), $rset->getOccurrences());
+
+		$this->assertEquals(date_create('1997-09-09 09:00'),$rset[1]);
+		$this->assertEquals(array(date_create('1997-09-16 09:00')),$rset->getOccurrencesBetween('1997-09-16 00:00', '1997-09-17 00:00'));
 	}
 
-	public function testAddExDate()
+	public function testCombineRRuleAndExDate()
 	{
 		$rset = new RSet();
 		$rset->addRRule(array(
@@ -106,11 +95,111 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			date_create('1997-09-09 09:00'),
 			date_create('1997-09-16 09:00')
 		), $rset->getOccurrences());
+
+		$this->assertEquals(date_create('1997-09-09 09:00'),$rset[1]);
+		$this->assertEquals(array(date_create('1997-09-16 09:00')),$rset->getOccurrencesBetween('1997-09-16 00:00', '1997-09-17 00:00'));
 	}
 
-	public function testAddDateAndExRule()
+	public function testCombineEverything()
 	{
 		// TODO
+	}
+
+///////////////////////////////////////////////////////////////////////////////
+// Other tests
+
+	public function testIsInfinite()
+	{
+		$rset = new RSet();
+		$this->assertFalse($rset->isInfinite());
+		$this->assertTrue($rset->isFinite());
+
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 10
+		));
+		$this->assertFalse($rset->isInfinite());
+		$this->assertTrue($rset->isFinite());
+
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY'
+		));
+		$this->assertTrue($rset->isInfinite());
+		$this->assertFalse($rset->isFinite());
+	}
+
+	public function testModifyResetCache()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU,TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$this->assertEquals(array(
+			date_create('1997-09-02 09:00'),
+			date_create('1997-09-04 09:00'),
+			date_create('1997-09-09 09:00'),
+			date_create('1997-09-11 09:00'),
+			date_create('1997-09-16 09:00'),
+			date_create('1997-09-18 09:00')
+		), $rset->getOccurrences());
+
+		$r = new ReflectionObject($rset);
+		$cache = $r->getProperty('cache');
+		$cache->setAccessible('true');
+		$this->assertNotEmpty($cache->getValue($rset), 'Cache is not empty');
+
+		$rset->addExRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 3,
+			'BYDAY' => 'TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$this->assertEmpty($cache->getValue($rset), 'Cache has been emptied by addExRule');
+
+		$this->assertEquals(array(
+			date_create('1997-09-02 09:00'),
+			date_create('1997-09-09 09:00'),
+			date_create('1997-09-16 09:00')
+		), $rset->getOccurrences(), 'Iteration works');
+	}
+
+	public function testPartialCache()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU,TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$rset->addExRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 3,
+			'BYDAY' => 'TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+
+		foreach ( $rset as $occurrence ) {
+			$this->assertEquals(date_create('1997-09-02 09:00'), $occurrence);
+			break;
+		}
+
+		$r = new ReflectionObject($rset);
+		$cache = $r->getProperty('cache');
+		$cache->setAccessible('true');
+		$this->assertNotEmpty($cache->getValue($rset), 'Cache is not empty (partially filled)');
+
+		$this->assertEquals(date_create('1997-09-02 09:00'), $rset[0], 'Partial cache is returned');
+		$this->assertEquals(date_create('1997-09-09 09:00'), $rset[1], 'Next occurrence is calculated correctly');
+
+		$this->assertEquals(array(
+			date_create('1997-09-02 09:00'),
+			date_create('1997-09-09 09:00'),
+			date_create('1997-09-16 09:00')
+		), $rset->getOccurrences(), 'Iteration works');
 	}
 
 	public function testCountable()
@@ -161,7 +250,6 @@ class RSetTest extends PHPUnit_Framework_TestCase
 		$rset->addExdate('1997-09-11 09:00:00');
 		$rset->addExdate('1997-09-18 09:00:00');
 
-// var_dump($rset->getOccurrences());
 		$this->assertEquals(date_create('1997-09-02 09:00:00'), $rset[0]);
 		$this->assertEquals(date_create('1997-09-09 09:00:00'), $rset[1]);
 		$this->assertEquals(date_create('1997-09-16 09:00:00'), $rset[2]);
