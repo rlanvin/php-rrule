@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- New class `RRule\RSet` (recurrence set) that can combine multiple RRULE, EXRULE, RDATE and EXDATE. [#7](https://github.com/rlanvin/php-rrule/issues/7)
+- New interface `RRule\RRuleInterface` to unify `RRule` and `RSet`
+- New methods: `isFinite()`, `isInfinite()`
+
+### Fixed
+
 - Fix bug preventing the iteration of multiple instances of RRule at the same time
 
 ## [1.0.1] - 2016-03-11
