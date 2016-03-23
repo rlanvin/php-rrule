@@ -720,16 +720,6 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * Alias of occursAt
-	 * Because I think both are correct in English, aren't they?
-	 * @return bool
-	 */
-	public function occursOn($date)
-	{
-		return $this->occursAt($date);
-	}
-
-	/**
 	 * Return true if $date is an occurrence of the rule.
 	 *
 	 * This method will attempt to determine the result programmatically.
