@@ -80,6 +80,7 @@ class RSet implements RRuleInterface
 	{
 		try {
 			$this->rdates[] = RRule::parseDate($date);
+			sort($this->rdates);
 		} catch (\Exception $e) {
 			throw new \InvalidArgumentException(
 				'Failed to parse RDATE - it must be a valid date, timestamp or \DateTime object'
@@ -98,6 +99,7 @@ class RSet implements RRuleInterface
 	{
 		try {
 			$this->exdates[] = RRule::parseDate($date);
+			sort($this->exdates);
 		} catch (\Exception $e) {
 			throw new \InvalidArgumentException(
 				'Failed to parse EXDATE - it must be a valid date, timestamp or \DateTime object'

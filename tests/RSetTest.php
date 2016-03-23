@@ -39,6 +39,19 @@ class RSetTest extends PHPUnit_Framework_TestCase
 		$this->assertFalse($rset->occursAt('1997-09-03 09:00'));
 	}
 
+	public function testCombineRDate()
+	{
+		$rset =new RSet();
+		$rset->addDate(date_create('1997-09-09 09:00')); // adding out of order
+		$rset->addDate('1997-09-04 09:00');
+		$rset->addDate('1997-09-04 09:00'); // adding a duplicate
+
+		$this->assertEquals(array(
+			date_create('1997-09-04 09:00'),
+			date_create('1997-09-09 09:00')
+		), $rset->getOccurrences(), 'occurrences are ordered and deduplicated');
+	}
+
 	public function testCombineRRuleAndDate()
 	{
 		$rset = new RSet();
@@ -112,7 +125,7 @@ class RSetTest extends PHPUnit_Framework_TestCase
 		));
 		$rset->addExdate('1997-09-04 09:00:00');
 		$rset->addExdate('1997-09-11 09:00:00');
-		$rset->addExdate('1997-09-18 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00'); // adding out of order
 
 		$this->assertEquals(array(
 			date_create('1997-09-02 09:00'),
