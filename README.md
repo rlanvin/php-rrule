@@ -65,11 +65,10 @@ Now you can use the autoloader, and you will have access to the library:
 require 'vendor/autoload.php';
 ```
 
-### Alternative method
+### Alternative method (not recommended)
 
-You can just download `src/RRule.php` and require it.
-
-However be sure to come back regulary and check for updates.
+- Download [the latest release](https://github.com/rlanvin/php-rrule/releases/latest)
+- Put the files in a folder that is autoloaded, or `inclure` or `require` them
 
 ## Documentation
 
@@ -94,7 +93,6 @@ The lib differs from the python version in various aspects, notably in the
 respect of the RFC. This version is a bit strictier and will not accept many
 non-compliant combinations of rule parts, that the python version otherwise accepts.
 There are also some additional features in this version.
-
 
 ## License
 
