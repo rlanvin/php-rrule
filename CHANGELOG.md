@@ -11,6 +11,7 @@
 ### Fixed
 
 - Fix bug preventing the iteration of multiple instances of RRule at the same time
+- Fix various bugs causing corruption of the cache in some circumstances (related to DateTime object being mutable)
 
 ## [1.0.1] - 2016-03-11
 

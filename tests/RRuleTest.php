@@ -1787,4 +1787,63 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(date_create('2007-01-09'), $rrule[2]);
 		$this->assertEquals(null, $rrule[4]);
 	}
+
+	public function testDateTimeMutableReferenceBug()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 10,
+			'dtstart' => '2007-01-01'
+		));
+
+		// offsetGet
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0]);
+		$rrule[0]->modify('+1 day');
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with offsetGet (uncached)');
+		$rrule[0]->modify('+1 day');
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with offsetGet (cached)');
+
+		// iterate
+		$rrule->clearCache();
+		foreach ( $rrule as $occurrence ) {
+			break;
+		}
+		$this->assertEquals(date_create('2007-01-01'), $occurrence);
+		$occurrence->modify('+1 day');
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with foreach (uncached)'); 
+
+		foreach ( $rrule as $occurrence ) {
+			break;
+		}
+		$this->assertEquals(date_create('2007-01-01'), $occurrence);
+		$occurrence->modify('+1 day');
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with foreach (cached)'); 
+
+		// getOccurences
+		$occurrences = $rrule->getOccurrences();
+		$this->assertEquals(date_create('2007-01-01'), $occurrences[0]);
+		$occurrences[0]->modify('+1 day');
+		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (uncached version)');
+
+		$occurrences = $rrule->getOccurrences();
+		$this->assertEquals(date_create('2007-01-01'), $occurrences[0]);
+		$occurrences[0]->modify('+1 day');
+		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (cached version)');
+
+		// getOccurrencesBetween
+		$occurrences = $rrule->getOccurrencesBetween(null, null);
+		$this->assertEquals(date_create('2007-01-01'), $occurrences[0]);
+		$occurrences[0]->modify('+1 day');
+		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (uncached version)');
+
+		$occurrences = $rrule->getOccurrencesBetween(null, null);
+		$this->assertEquals(date_create('2007-01-01'), $occurrences[0]);
+		$occurrences[0]->modify('+1 day');
+		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (cached version)');
+
+	}
 }

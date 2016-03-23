@@ -666,7 +666,11 @@ class RRule implements RRuleInterface
 
 		// cached version already computed
 		if ( $this->total !== null ) {
-			return $this->cache;
+			$res = array();
+			foreach ( $this->cache as $occurrence ) {
+				$res[] = clone $occurrence; // we have to clone because DateTime is not immutable
+			}
+			return $res;
 		}
 
 		$res = array();
@@ -710,7 +714,7 @@ class RRule implements RRuleInterface
 			if ( $end !== null && $occurrence > $end ) {
 				break;
 			}
-			$res[] = $occurrence;
+			$res[] = clone $occurrence;
 		}
 		return $res;
 	}
@@ -956,7 +960,7 @@ class RRule implements RRuleInterface
 	{
 		if ( isset($this->cache[$offset]) ) {
 			// found in cache
-			return $this->cache[$offset];
+			return clone $this->cache[$offset];
 		}
 		elseif ( $this->total !== null ) {
 			// cache complete and not found in cache
@@ -1406,7 +1410,7 @@ class RRule implements RRuleInterface
 				$dtstart = $occurrence;
 				next($this->cache);
 				$total += 1;
-				return $occurrence;
+				return clone $occurrence; // since DateTime is not immutable, avoid any problem
 			}
 			reset($this->cache);
 			// now set use_cache to false to skip the all thing on next iteration
@@ -1622,7 +1626,7 @@ class RRule implements RRuleInterface
 					if ( $occurrence >= $dtstart ) { // ignore occurrences before DTSTART
 						$total += 1;
 						$this->cache[] = $occurrence;
-						return $occurrence; // yield
+						return clone $occurrence; // yield
 					}
 				}
 			}
@@ -1647,7 +1651,7 @@ class RRule implements RRuleInterface
 						if ( $occurrence >= $dtstart ) { // ignore occurrences before DTSTART
 							$total += 1;
 							$this->cache[] = $occurrence;
-							return $occurrence; // yield
+							return clone $occurrence; // yield
 						}
 					}
 					reset($timeset);
