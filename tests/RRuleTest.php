@@ -1616,6 +1616,9 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
+///////////////////////////////////////////////////////////////////////////////
+// Other tests
+
 	public function rfcStrings() 
 	{
 		return array(
@@ -1689,6 +1692,38 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR');
 
 		$this->assertEquals(date_create('1997-09-01 09:00:00', new DateTimeZone('America/New_York')), $rrule[0]);
+	}
+
+	public function testOccursAtTakeTimezoneIntoAccount()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 365,
+			'dtstart' => date_create('2015-07-01 09:00:00')
+		));
+		$this->assertTrue($rrule->occursAt('2015-07-02 09:00:00'), 'When timezone is not specified, it takes the default timezone');
+
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 365,
+			'dtstart' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+		));
+		$this->assertTrue($rrule->occursAt(date_create('2015-07-02 09:00:00',new DateTimeZone('Australia/Sydney'))));
+		$this->assertTrue($rrule->occursAt(date_create('2015-07-01 23:00:00',new DateTimeZone('UTC'))), 'Timezone is converted');
+
+		$this->assertFalse($rrule->occursAt('2015-07-02 09:00:00'), 'When passed a string, default timezone is used for creating the DateTime');
+
+		// test with DST
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 365,
+			'dtstart' => date_create('2015-07-01 09:00:00', new DateTimeZone('Europe/Helsinki'))
+		));
+		$this->assertTrue($rrule->occursAt(date_create('2015-07-02 09:00:00',new DateTimeZone('Europe/Helsinki'))));
+		$this->assertTrue($rrule->occursAt(date_create('2015-07-02 06:00:00',new DateTimeZone('UTC'))), 'During summer time, Europe/Helsinki is UTC+3');
+
+		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 09:00:00',new DateTimeZone('Europe/Helsinki'))));
+		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 07:00:00',new DateTimeZone('UTC'))), 'During winter time, Europe/Helsinki is UTC+2');
 	}
 
 	public function testIsFinite()
