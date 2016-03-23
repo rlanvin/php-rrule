@@ -204,7 +204,49 @@ class RSet implements RRuleInterface
 
 	public function occursAt($date)
 	{
-		throw new \Exception(__METHOD__.' is unimplemented');
+		$date = RRule::parseDate($date);
+
+		if ( in_array($date, $this->cache) ) {
+			// in the cache (whether cache is complete or not)
+			return true;
+		}
+		elseif ( $this->total !== null ) {
+			// cache complete and not in cache
+			return false;
+		}
+
+		// test if it *should* occur (before exclusion)
+		$occurs = false;
+		foreach ( $this->rdates as $rdate ) {
+			if ( $rdate == $date ) {
+				$occurs = true;
+				break;
+			}
+		}
+		if ( ! $occurs ) {
+			foreach ( $this->rrules as $rrule ) {
+				if ( $rrule->occursAt($date) ) {
+					$occurs = true;
+					break;
+				}
+			}
+		}
+
+		// if it should occur, test if it's excluded
+		if ( $occurs ) {
+			foreach ( $this->exdates as $exdate ) {
+				if ( $exdate == $date ) {
+					return false;
+				}
+			}
+			foreach ( $this->exrules as $exrule ) {
+				if ( $exrule->occursAt($date) ) {
+					return false;
+				}
+			}
+		}
+
+		return $occurs;
 	}
 
 ///////////////////////////////////////////////////////////////////////////////

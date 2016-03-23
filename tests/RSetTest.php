@@ -29,6 +29,14 @@ class RSetTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals(date_create('1997-09-04 09:00'),$rset[1]);
 		$this->assertEquals(array(date_create('1997-09-04 09:00')),$rset->getOccurrencesBetween('1997-09-04 00:00', '1997-09-05 00:00'));
+
+		$this->assertTrue($rset->occursAt('1997-09-02 09:00'));
+		$this->assertFalse($rset->occursAt('1997-09-03 09:00'));
+
+		$rset->clearCache();
+
+		$this->assertTrue($rset->occursAt('1997-09-02 09:00'));
+		$this->assertFalse($rset->occursAt('1997-09-03 09:00'));
 	}
 
 	public function testCombineRRuleAndDate()
@@ -50,6 +58,14 @@ class RSetTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals(date_create('1997-09-04 09:00'),$rset[1]);
 		$this->assertEquals(array(date_create('1997-09-04 09:00')),$rset->getOccurrencesBetween('1997-09-04 00:00', '1997-09-05 00:00'));
+
+		$this->assertTrue($rset->occursAt('1997-09-04 09:00'));
+		$this->assertFalse($rset->occursAt('1997-09-03 09:00'));
+
+		$rset->clearCache();
+
+		$this->assertTrue($rset->occursAt('1997-09-04 09:00'));
+		$this->assertFalse($rset->occursAt('1997-09-03 09:00'));
 	}
 
 	public function testCombineRRuleAndExRule()
@@ -75,6 +91,14 @@ class RSetTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals(date_create('1997-09-09 09:00'),$rset[1]);
 		$this->assertEquals(array(date_create('1997-09-16 09:00')),$rset->getOccurrencesBetween('1997-09-16 00:00', '1997-09-17 00:00'));
+
+		$this->assertTrue($rset->occursAt('1997-09-09 09:00'));
+		$this->assertFalse($rset->occursAt('1997-09-04 09:00'));
+
+		$rset->clearCache();
+
+		$this->assertTrue($rset->occursAt('1997-09-09 09:00'));
+		$this->assertFalse($rset->occursAt('1997-09-04 09:00'));
 	}
 
 	public function testCombineRRuleAndExDate()
@@ -98,6 +122,14 @@ class RSetTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals(date_create('1997-09-09 09:00'),$rset[1]);
 		$this->assertEquals(array(date_create('1997-09-16 09:00')),$rset->getOccurrencesBetween('1997-09-16 00:00', '1997-09-17 00:00'));
+
+		$this->assertTrue($rset->occursAt('1997-09-02 09:00'));
+		$this->assertFalse($rset->occursAt('1997-09-04 09:00'));
+
+		$rset->clearCache();
+
+		$this->assertTrue($rset->occursAt('1997-09-02 09:00'));
+		$this->assertFalse($rset->occursAt('1997-09-04 09:00'));
 	}
 
 	public function testCombineEverything()
