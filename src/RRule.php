@@ -732,7 +732,9 @@ class RRule implements RRuleInterface
 	 */
 	public function occursAt($date)
 	{
-		$date = self::parseDate($date)->setTimezone($this->dtstart->getTimezone());
+		$date = self::parseDate($date);
+		// convert timezone to dtstart timezone for comparison
+		$date->setTimezone($this->dtstart->getTimezone());
 
 		if ( in_array($date, $this->cache) ) {
 			// in the cache (whether cache is complete or not)
@@ -1441,7 +1443,7 @@ class RRule implements RRuleInterface
 				// calculation magic at the end of the loop (when incrementing)
 				// to realign on first pass.
 				$tmp = clone $dtstart;
-				$tmp->modify('-'.pymod($this->dtstart->format('N') - $this->wkst,7).'days');
+				$tmp->modify('-'.pymod($dtstart->format('N') - $this->wkst,7).'days');
 				list($year,$month,$day,$hour,$minute,$second) = explode(' ',$tmp->format('Y n j G i s'));
 				unset($tmp);
 			}

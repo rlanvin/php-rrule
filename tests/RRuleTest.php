@@ -2,6 +2,10 @@
 
 use RRule\RRule;
 
+// make sure that the tests are run in the same timezone everywhere
+// Europe/Helsinki has DST
+date_default_timezone_set('Europe/Helsinki');
+
 class RRuleTest extends PHPUnit_Framework_TestCase
 {
 	/**
@@ -258,8 +262,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02'
 		), $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -324,8 +337,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02'
 		), $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -391,8 +413,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02'
 		), $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -507,8 +538,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02 09:00:00'
 		), $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -623,8 +663,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'DTSTART' => '1997-09-02 09:00:00'
 		), $rule));
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -746,6 +795,10 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$rule->clearCache();
 		foreach ( $occurrences as $date ) {
 			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -1340,8 +1393,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	{
 		$rule = new RRule($rule);
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), 'RRule occurs at: '.$date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -1548,8 +1610,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	{
 		$rule = new RRule($rule);
 		$this->assertEquals($occurrences, $rule->getOccurrences());
+		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ( $occurrences as $date ) {
-			$this->assertTrue($rule->occursAt($date), 'RRule occurs at: '.$date->format('r'));
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
+		}
+		$rule->clearCache();
+		foreach ( $occurrences as $date ) {
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
+		}
+		$rule->clearCache();
+		for ( $i = 0; $i < count($occurrences); $i++ ) {
+			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
 		}
 	}
 
@@ -1709,9 +1780,20 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'dtstart' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
 		));
 		$this->assertTrue($rrule->occursAt(date_create('2015-07-02 09:00:00',new DateTimeZone('Australia/Sydney'))));
-		$this->assertTrue($rrule->occursAt(date_create('2015-07-01 23:00:00',new DateTimeZone('UTC'))), 'Timezone is converted');
+		$this->assertTrue($rrule->occursAt(date_create('2015-07-01 23:00:00',new DateTimeZone('UTC'))), 'Timezone is converted for comparison (cached)');
+		$rrule->clearCache();
+		$this->assertTrue($rrule->occursAt(date_create('2015-07-01 23:00:00',new DateTimeZone('UTC'))), 'Timezone is converted for comparison (uncached)');
 
+		$rrule->clearCache();
 		$this->assertFalse($rrule->occursAt('2015-07-02 09:00:00'), 'When passed a string, default timezone is used for creating the DateTime');
+
+		$rrule->clearCache();
+		$this->assertTrue($rrule->occursAt('Wed, 01 Jul 2015 09:00:00 +1000'), 'When passed a string with timezone, timezone is kept (uncached)');
+		$this->assertTrue($rrule->occursAt('Wed, 01 Jul 2015 09:00:00 +1000'), 'When passed a string with timezone, timezone is kept (cached)');
+
+		$rrule->clearCache();
+		$this->assertTrue($rrule->occursAt('2015-07-01T09:00:00+10:00'), 'When passed a string with timezone, timezone is kept (uncached)');
+		$this->assertTrue($rrule->occursAt('2015-07-01T09:00:00+10:00'), 'When passed a string with timezone, timezone is kept (cached)');
 
 		// test with DST
 		$rrule = new RRule(array(
@@ -1720,10 +1802,14 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			'dtstart' => date_create('2015-07-01 09:00:00', new DateTimeZone('Europe/Helsinki'))
 		));
 		$this->assertTrue($rrule->occursAt(date_create('2015-07-02 09:00:00',new DateTimeZone('Europe/Helsinki'))));
-		$this->assertTrue($rrule->occursAt(date_create('2015-07-02 06:00:00',new DateTimeZone('UTC'))), 'During summer time, Europe/Helsinki is UTC+3');
+		$this->assertTrue($rrule->occursAt(date_create('2015-07-02 06:00:00',new DateTimeZone('UTC'))), 'During summer time, Europe/Helsinki is UTC+3 (cached)');
+		$rrule->clearCache();
+		$this->assertTrue($rrule->occursAt(date_create('2015-07-02 06:00:00',new DateTimeZone('UTC'))), 'During summer time, Europe/Helsinki is UTC+3 (uncached)');
 
 		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 09:00:00',new DateTimeZone('Europe/Helsinki'))));
-		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 07:00:00',new DateTimeZone('UTC'))), 'During winter time, Europe/Helsinki is UTC+2');
+		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 07:00:00',new DateTimeZone('UTC'))), 'During winter time, Europe/Helsinki is UTC+2 (cached)');
+		$rrule->clearCache();
+		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 07:00:00',new DateTimeZone('UTC'))), 'During winter time, Europe/Helsinki is UTC+2 (uncached)');
 	}
 
 	public function testIsFinite()

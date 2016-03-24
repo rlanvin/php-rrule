@@ -11,7 +11,9 @@
 ### Fixed
 
 - Fix bug preventing the iteration of multiple instances of RRule at the same time
-- Fix various bugs causing corruption of the cache in some circumstances (related to DateTime object being mutable)
+- Fix occursAt failing when the date passed was a different timezone [#8](https://github.com/rlanvin/php-rrule/pull/8)
+- Fix bug at WEEKLY frequency with a partially filled cache in some circumstances
+- Fix various reference bugs causing corruption of the cache in some circumstances (related to DateTime object being mutable)
 
 ### Removed
 
