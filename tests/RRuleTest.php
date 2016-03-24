@@ -1876,6 +1876,17 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 	public function testDateTimeMutableReferenceBug()
 	{
+		$date = date_create('2007-01-01');
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 10,
+			'dtstart' => $date
+		));
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0]);
+		$date->modify('+1day');
+		$rrule->clearCache();
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible of dtstart');
+
 		$rrule = new RRule(array(
 			'freq' => 'daily',
 			'count' => 10,

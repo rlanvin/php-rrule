@@ -1032,6 +1032,9 @@ class RRule implements RRuleInterface
 				);
 			}
 		}
+		else {
+			$date = clone $date; // avoid reference problems
+		}
 		return $date;
 	}
 
