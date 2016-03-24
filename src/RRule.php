@@ -732,7 +732,7 @@ class RRule implements RRuleInterface
 	 */
 	public function occursAt($date)
 	{
-		$date = self::parseDate($date);
+		$date = self::parseDate($date)->setTimezone($this->dtstart->getTimezone());
 
 		if ( in_array($date, $this->cache) ) {
 			// in the cache (whether cache is complete or not)
