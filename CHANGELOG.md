@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2016-03-30
+
 ### Added
 
 - New class `RRule\RSet` (recurrence set) that can combine multiple RRULE, EXRULE, RDATE and EXDATE. [#7](https://github.com/rlanvin/php-rrule/issues/7)
@@ -32,5 +34,6 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/rlanvin/php-rrule/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/rlanvin/php-rrule/compare/v1.0.0...v1.0.1
