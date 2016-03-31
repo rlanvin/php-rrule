@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Dutch translation (NL) [#9](https://github.com/rlanvin/php-rrule/pull/9)
+
 ## [1.1.0] - 2016-03-30
 
 ### Added
