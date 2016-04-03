@@ -1943,4 +1943,88 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (cached version)');
 
 	}
+
+	/**
+	 * Providing a set of valid locales to call RRule::i18nLoad() with
+	 *
+	 * @return array
+	 */
+	public function validFallbackLocales()
+	{
+		return array(
+			array('en'),
+			array('fr'),
+			array('en_US'),
+			array('en_US_POSIX'),
+			array('en_US.utf-8'),
+		);
+	}
+
+	/**
+	 * Test that the RRule::i18nLoad() does not fail when provided with valid locales
+	 *
+	 * @dataProvider validFallbackLocales
+	 */
+	public function testHumanReadable($fallback)
+	{
+		$date = date_create('2007-01-01');
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 10,
+			'dtstart' => $date
+		));
+
+		$reflector = new ReflectionClass('RRule\RRule');
+
+		// Force RRule::$intl_loaded to false, to test fallback locales
+		$property = $reflector->getProperty('intl_loaded');
+		$property->setAccessible(true);
+		$property->setValue($rrule, false);
+
+		$method = $reflector->getMethod('humanReadable');
+		$result = $method->invokeArgs($rrule, array(array('locale' => 'xx', 'fallback' => $fallback)));
+		$this->assertNotEmpty($result);
+	}
+
+	/**
+	 * Providing a set of invalid locales to call RRule::i18nLoad() with
+	 *
+	 * @return array
+	 */
+	public function invalidFallbackLocales()
+	{
+		return array(
+			array('xx', 'eng'),
+			array('xx', 'invalid'),
+			array('xx', null),
+			array(null, null),
+			array(null, 'en_US._wr!ng'),
+		);
+	}
+
+	/**
+	 * Tests that the RRule::i18nLoad() fails as expected on invalid $locale settings
+	 *
+	 * @dataProvider invalidFallbackLocales
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testHumanReadableFails($locale, $fallback)
+	{
+		$date = date_create('2007-01-01');
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 10,
+			'dtstart' => $date
+		));
+
+		$reflector = new ReflectionClass('RRule\RRule');
+
+		// Force RRule::$intl_loaded to false, to test fallback locales
+		$property = $reflector->getProperty('intl_loaded');
+		$property->setAccessible(true);
+		$property->setValue($rrule, false);
+
+		$method = $reflector->getMethod('humanReadable');
+		$method->invokeArgs($rrule, array(array('locale' => $locale, 'fallback' => $fallback)));
+	}
 }

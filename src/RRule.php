@@ -2016,10 +2016,16 @@ class RRule implements RRuleInterface
 	 * Will load the basic first (e.g. "en") and then the region-specific if any
 	 * (e.g. "en_GB"), merging as necessary.
 	 * So region-specific translation files don't need to redefine every strings.
+	 *
+	 * @param string      $locale
+	 * @param string|null $fallback
+	 *
+	 * @return array
+	 * @throws \InvalidArgumentException
 	 */
-	static protected function i18nLoad($locale)
+	static protected function i18nLoad($locale, $fallback = null)
 	{
-		if ( ! preg_match('/^([a-z]{2})(_[A-Z]{2})?$/', $locale, $matches) ) {
+		if ( ! preg_match('/^([a-z]{2})(_[A-Z]{2})?(?:_[A-Z]*)?(?:\.[a-zA-Z\-0-8]*)?$/', $locale, $matches) ) {
 			throw new \InvalidArgumentException('The locale option does not look like a valid locale: '.$locale);
 		}
 
@@ -2045,6 +2051,9 @@ class RRule implements RRuleInterface
 		}
 
 		if ( empty($result) ) {
+			if (!is_null($fallback)) {
+				return self::i18nLoad($fallback);
+			}
 			throw new \InvalidArgumentException("Failed to load translations for '$locale'");
 		}
 
@@ -2054,6 +2063,10 @@ class RRule implements RRuleInterface
 	/**
 	 * Format a rule in a human readable string
 	 * intl extension is required.
+	 *
+	 * @param array  $opt
+	 *
+	 * @return string
 	 */
 	public function humanReadable(array $opt = array())
 	{
@@ -2061,9 +2074,17 @@ class RRule implements RRuleInterface
 			self::$intl_loaded = extension_loaded('intl');
 		}
 
+		$locale = setlocale(LC_MESSAGES, 0);
+		if ( self::$intl_loaded ) {
+			$locale = \Locale::getDefault();
+		} else if ($locale == 'C') {
+			$locale = 'en';
+		}
+
 		$default_opt = array(
-			'locale' => \Locale::getDefault(),
-			'date_formatter' => null
+			'locale' => $locale,
+			'date_formatter' => null,
+			'fallback' => 'en',
 		);
 
 		if ( self::$intl_loaded ) {
@@ -2104,7 +2125,7 @@ class RRule implements RRuleInterface
 			}
 		}
 
-		$i18n = self::i18nLoad($opt['locale']);
+		$i18n = self::i18nLoad($opt['locale'], $opt['fallback']);
 
 		$parts = array(
 			'freq' => '',
@@ -2323,5 +2344,4 @@ class RRule implements RRuleInterface
 		$str = implode('',$parts);
 		return $str;
 	}
-
 }

@@ -4,7 +4,12 @@
 
 ### Added
 
+- Support for fallback locale when using `RRule::humanReadable()` [#11](https://github.com/rlanvin/php-rrule/pull/11)
 - Dutch translation (NL) [#9](https://github.com/rlanvin/php-rrule/pull/9)
+
+### Fixed
+
+- Fixed fatal error Locale class not found when intl extension is not loaded [#11](https://github.com/rlanvin/php-rrule/pull/11)
 
 ## [1.1.0] - 2016-03-30
 
