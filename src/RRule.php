@@ -2025,7 +2025,7 @@ class RRule implements RRuleInterface
 	 */
 	static protected function i18nLoad($locale, $fallback = null)
 	{
-		if ( ! preg_match('/^([a-z]{2})(_[A-Z]{2})?(?:_[A-Z]*)?(?:\.[a-zA-Z\-0-8]*)?$/', $locale, $matches) ) {
+		if ( ! preg_match('/^([a-z]{2})(?:(?:_|-)[A-Z][a-z]+)?(?:(?:_|-)([A-Z]{2}))?(?:(?:_|-)[A-Z]*)?(?:\.[a-zA-Z\-0-9]*)?$/', $locale, $matches) ) {
 			throw new \InvalidArgumentException('The locale option does not look like a valid locale: '.$locale);
 		}
 
@@ -2054,7 +2054,7 @@ class RRule implements RRuleInterface
 			if (!is_null($fallback)) {
 				return self::i18nLoad($fallback);
 			}
-			throw new \InvalidArgumentException("Failed to load translations for '$locale'");
+			throw new \RuntimeException("Failed to load translations for '$locale'");
 		}
 
 		return $result;
@@ -2074,11 +2074,14 @@ class RRule implements RRuleInterface
 			self::$intl_loaded = extension_loaded('intl');
 		}
 
-		$locale = setlocale(LC_MESSAGES, 0);
+		// attempt to detect default locale
 		if ( self::$intl_loaded ) {
 			$locale = \Locale::getDefault();
-		} else if ($locale == 'C') {
-			$locale = 'en';
+		} else {
+			$locale = setlocale(LC_MESSAGES, 0);
+			if ($locale == 'C') {
+				$locale = 'en';
+			}
 		}
 
 		$default_opt = array(

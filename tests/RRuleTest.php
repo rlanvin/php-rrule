@@ -1944,28 +1944,57 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 	}
 
+///////////////////////////////////////////////////////////////////////////////
+// Human readable string conversion
+
 	/**
 	 * Providing a set of valid locales to call RRule::i18nLoad() with
 	 *
 	 * @return array
 	 */
-	public function validFallbackLocales()
+	public function validLocales()
 	{
 		return array(
+			// 2 characters language code
 			array('en'),
 			array('fr'),
+			// with region and underscore
 			array('en_US'),
-			array('en_US_POSIX'),
 			array('en_US.utf-8'),
+			array('en_US_POSIX'),
+			// with a dash
+			array('en-US'),
+			array('en-Hant-TW'), // real locale is zh-Hant-TW, but since we don't have a "zh" file, we just use en
 		);
 	}
 
 	/**
-	 * Test that the RRule::i18nLoad() does not fail when provided with valid locales
+	 * Test that RRule::i18nLoad() does not throw an exception with valid locales.
 	 *
-	 * @dataProvider validFallbackLocales
+	 * @dataProvider validLocales
 	 */
-	public function testHumanReadable($fallback)
+	public function testI18nLoad($locale)
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 10,
+			'dtstart' => '2007-01-01'
+		));
+
+		$reflector = new ReflectionClass('RRule\RRule');
+		$method = $reflector->getMethod('i18nLoad');
+		$method->setAccessible(true);
+
+		$result = $method->invokeArgs($rrule, array($locale));
+		$this->assertNotEmpty($result);
+	}
+
+	/**
+	 * Test that the RRule::i18nLoad() does not fail when provided with valid fallback locales
+	 *
+	 * @dataProvider validLocales
+	 */
+	public function testI18nLoadFallback($fallback)
 	{
 		$date = date_create('2007-01-01');
 		$rrule = new RRule(array(
@@ -1976,13 +2005,11 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		$reflector = new ReflectionClass('RRule\RRule');
 
-		// Force RRule::$intl_loaded to false, to test fallback locales
-		$property = $reflector->getProperty('intl_loaded');
-		$property->setAccessible(true);
-		$property->setValue($rrule, false);
+		$method = $reflector->getMethod('i18nLoad');
+		$method->setAccessible(true);
 
-		$method = $reflector->getMethod('humanReadable');
-		$result = $method->invokeArgs($rrule, array(array('locale' => 'xx', 'fallback' => $fallback)));
+		// $result = $method->invokeArgs($rrule, array(array('locale' => 'xx', 'fallback' => $fallback)));
+		$result = $method->invokeArgs($rrule, array('xx', $fallback));
 		$this->assertNotEmpty($result);
 	}
 
@@ -1991,24 +2018,22 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	 *
 	 * @return array
 	 */
-	public function invalidFallbackLocales()
+	public function invalidLocales()
 	{
 		return array(
-			array('xx', 'eng'),
-			array('xx', 'invalid'),
-			array('xx', null),
-			array(null, null),
-			array(null, 'en_US._wr!ng'),
+			array('eng'),
+			array('invalid'),
+			array('en_US._wr!ng'),
 		);
 	}
 
 	/**
 	 * Tests that the RRule::i18nLoad() fails as expected on invalid $locale settings
 	 *
-	 * @dataProvider invalidFallbackLocales
+	 * @dataProvider invalidLocales
 	 * @expectedException \InvalidArgumentException
 	 */
-	public function testHumanReadableFails($locale, $fallback)
+	public function testI18nLoadFails($locale)
 	{
 		$date = date_create('2007-01-01');
 		$rrule = new RRule(array(
@@ -2019,12 +2044,68 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		$reflector = new ReflectionClass('RRule\RRule');
 
-		// Force RRule::$intl_loaded to false, to test fallback locales
+		$method = $reflector->getMethod('i18nLoad');
+		$method->setAccessible(true);
+		$method->invokeArgs($rrule, array($locale, 'en')); // even with a valid fallback it should fail
+	}
+
+	/**
+	 * Tests that the RRule::i18nLoad() fails as expected on invalid $fallback settings
+	 *
+	 * @dataProvider invalidLocales
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testI18nLoadFallbackFails($locale)
+	{
+		$date = date_create('2007-01-01');
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 10,
+			'dtstart' => $date
+		));
+
+		$reflector = new ReflectionClass('RRule\RRule');
+
+		$method = $reflector->getMethod('i18nLoad');
+		$method->setAccessible(true);
+		$method->invokeArgs($rrule, array('xx', $locale));
+	}
+
+	/**
+	 * @expectedException RuntimeException
+	 */
+	public function testHumanReadableRuntimeException()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 10,
+			'dtstart' => '2007-01-01'
+		));
+		$rrule->humanReadable(array(
+			'locale' => 'xx',
+			'fallback' => 'xx'
+		));
+	}
+
+	/** 
+	 * Test that humanReadable works
+	 */
+	public function testHumanReadable()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 10,
+			'dtstart' => '2007-01-01'
+		));
+
+		$reflector = new ReflectionClass('RRule\RRule');
+
+		// Force RRule::$intl_loaded to false, to test setlocale()
 		$property = $reflector->getProperty('intl_loaded');
 		$property->setAccessible(true);
 		$property->setValue($rrule, false);
 
-		$method = $reflector->getMethod('humanReadable');
-		$method->invokeArgs($rrule, array(array('locale' => $locale, 'fallback' => $fallback)));
+		setlocale(LC_MESSAGES, 'C');
+		$this->assertNotEmpty($rrule->humanReadable(array('fallback' => null)), 'C locale is converted to "en"');
 	}
 }
