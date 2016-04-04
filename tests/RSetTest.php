@@ -150,6 +150,28 @@ class RSetTest extends PHPUnit_Framework_TestCase
 		// TODO
 	}
 
+	public function testCombineMultipleTimezones()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'DAILY',
+			'COUNT' => 2,
+			'DTSTART' => date_create('2000-01-02 09:00', new DateTimeZone('Europe/Paris'))
+		));
+		$rset->addRRule(array(
+			'FREQ' => 'DAILY',
+			'COUNT' => 2,
+			'DTSTART' => date_create('2000-01-02 09:00', new DateTimeZone('Europe/Helsinki'))
+		));
+
+		$this->assertEquals(array(
+			date_create('2000-01-02 09:00', new DateTimeZone('Europe/Helsinki')),
+			date_create('2000-01-02 09:00', new DateTimeZone('Europe/Paris')),
+			date_create('2000-01-03 09:00', new DateTimeZone('Europe/Helsinki')),
+			date_create('2000-01-03 09:00', new DateTimeZone('Europe/Paris'))
+		), $rset->getOccurrences());
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Other tests
 
