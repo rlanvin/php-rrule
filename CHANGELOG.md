@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2016-04-09
+
 ### Added
 
 - Support for fallback locale when using `RRule::humanReadable()` [#11](https://github.com/rlanvin/php-rrule/pull/11)
@@ -9,7 +11,7 @@
 
 ### Fixed
 
-- Fixed fatal error Locale class not found when intl extension is not loaded [#11](https://github.com/rlanvin/php-rrule/pull/11)
+- Fixed fatal error Locale class not found when intl extension is not loaded [#10](https://github.com/rlanvin/php-rrule/issues/10)
 
 ## [1.1.0] - 2016-03-30
 
@@ -43,6 +45,7 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/rlanvin/php-rrule/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/rlanvin/php-rrule/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/rlanvin/php-rrule/compare/v1.0.0...v1.0.1
