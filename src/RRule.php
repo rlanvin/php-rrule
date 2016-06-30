@@ -519,11 +519,17 @@ class RRule implements RRuleInterface
 	 * Format a rule according to RFC 5545
 	 * @return string
 	 */
-	public function rfcString()
+	public function rfcString($include_timezone = true)
 	{
 		$str = '';
 		if ( $this->rule['DTSTART'] ) {
-			if ( $this->dtstart->getTimeZone()->getName() == 'Z' ) {
+			if ( ! $include_timezone ) {
+				$str = sprintf(
+					"DTSTART:%s\nRRULE:",
+					$this->dtstart->format('Ymd\THis')
+				);
+			}
+			elseif ( $this->dtstart->getTimeZone()->getName() == 'Z' ) {
 				$str = sprintf(
 					"DTSTART:%s\nRRULE:",
 					$this->dtstart->format('Ymd\THis\Z')
@@ -550,10 +556,18 @@ class RRule implements RRuleInterface
 				continue;
 			}
 			if ( $key === 'UNTIL' && $value ) {
-				// according to the RFC, UNTIL must be in UTC
-				$tmp = clone $this->until;
-				$tmp->setTimezone(new \DateTimeZone('UTC'));
-				$parts[] = 'UNTIL='.$tmp->format('Ymd\THis\Z');
+				if ( ! $include_timezone ) {
+					$tmp = clone $this->until;
+					// put until on the same timezone as DTSTART
+					$tmp->setTimeZone($this->dtstart->getTimezone());
+					$parts[] = 'UNTIL='.$tmp->format('Ymd\THis');
+				}
+				else {
+					// according to the RFC, UNTIL must be in UTC
+					$tmp = clone $this->until;
+					$tmp->setTimezone(new \DateTimeZone('UTC'));
+					$parts[] = 'UNTIL='.$tmp->format('Ymd\THis\Z');
+				}
 				continue;
 			}
 			if ( $value ) {

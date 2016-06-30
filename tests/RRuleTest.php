@@ -1786,6 +1786,29 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals("DTSTART:19970512T090000Z\nRRULE:FREQ=YEARLY", $rule->rfcString());
 	}
 
+	public function rfcStringsWithoutTimezone()
+	{
+		return array(
+			array(
+				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY",
+				"DTSTART:19970901T090000\nRRULE:FREQ=DAILY",
+			),
+			array(
+				"DTSTART;TZID=Europe/Paris:19970901T090000\nRRULE:FREQ=DAILY;UNTIL=19970902T070000Z",
+				"DTSTART:19970901T090000\nRRULE:FREQ=DAILY;UNTIL=19970902T090000",
+			),
+		);
+	}
+
+	/**
+	 * @dataProvider rfcStringsWithoutTimezone
+	 */
+	public function testRfcStringWithoutTimezone($str, $expected_str)
+	{
+		$rule = new RRule($str);
+		$this->assertEquals($expected_str, $rule->rfcString(false));
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Timezone
 
