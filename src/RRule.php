@@ -571,6 +571,9 @@ class RRule implements RRuleInterface
 
 		$string = trim($string);
 
+		$dtstart_type = 'date';
+		$rfc_date_regexp = '/\d{6}(T\d{6})?Z?/'; // a bit loose
+
 		foreach ( explode("\n", $string) as $line ) {
 			$line = trim($line);
 			if ( strpos($line,':') === false ) {
@@ -586,7 +589,7 @@ class RRule implements RRuleInterface
 			array_splice($tmp,0,1);
 			foreach ( $tmp as $pair ) {
 				if ( strpos($pair,'=') === false ) {
-					throw new \InvalidArgumentException('Failed to parse RFC string, invlaid property parameters: '.$pair);
+					throw new \InvalidArgumentException('Failed to parse RFC string, invalid property parameters: '.$pair);
 				}
 				list($key,$value) = explode('=',$pair);
 				$property_params[$key] = $value;
@@ -595,8 +598,35 @@ class RRule implements RRuleInterface
 			switch ( $property_name ) {
 				case 'DTSTART':
 					$tmp = null;
+					if ( ! preg_match($rfc_date_regexp, $property_value) ) {
+						throw new \InvalidArgumentException(
+							'Invalid DTSTART property: date or date time format incorrect'
+						);
+					}
 					if ( isset($property_params['TZID']) ) {
+						// TZID must only be specified if this is a date-time (see section 3.3.4 & 3.3.5 of RFC 5545)
+						if ( strpos($property_value, 'T') === false ) {
+							throw new \InvalidArgumentException(
+								'Invalid DTSTART property: TZID should not be specified if there is no time component'
+							);
+						}
+						// The "TZID" property parameter MUST NOT be applied to DATE-TIME
+						// properties whose time values are specified in UTC.
+						if ( strpos($property_value, 'Z') !== false ) {
+							throw new \InvalidArgumentException(
+								'Invalid DTSTART property: TZID must not be applied when time is specified in UTC'
+							);
+						}
+						$dtstart_type = 'tzid';
 						$tmp = new \DateTimeZone($property_params['TZID']);
+					}
+					elseif ( strpos($property_value, 'T') !== false ) {
+						if ( strpos($property_value, 'Z') === false ) {
+							$dtstart_type = 'localtime'; // no timezone
+						}
+						else {
+							$dtstart_type = 'utc';
+						}
 					}
 					$parts['DTSTART'] = new \DateTime($property_value, $tmp);
 					break;
@@ -604,6 +634,36 @@ class RRule implements RRuleInterface
 					foreach ( explode(';',$property_value) as $pair ) {
 						list($key, $value) = explode('=', $pair);
 						if ( $key === 'UNTIL' ) {
+							if ( ! preg_match($rfc_date_regexp, $value) ) {
+								throw new \InvalidArgumentException(
+									'Invalid DTSTART property: date or date time format incorrect'
+								);
+							}
+							switch ( $dtstart_type ) {
+								case 'date':
+									if ( strpos($value, 'T') !== false) {
+										throw new \InvalidArgumentException(
+											'Invalid UNTIL property: The value of the UNTIL rule part MUST be a date if DTSTART is a date.'
+										);
+									}
+									break;
+								case 'localtime':
+									if ( strpos($value, 'T') === false || strpos($value, 'Z') !== false ) {
+										throw new \InvalidArgumentException(
+											'Invalid UNTIL property: if the "DTSTART" property is specified as a date with local time, then the UNTIL rule part MUST also be specified as a date with local time'
+										);
+									}
+									break;
+								case 'tzid':
+								case 'utc':
+									if ( strpos($value, 'T') === false || strpos($value, 'Z') === false ) {
+										throw new \InvalidArgumentException(
+											'Invalid UNTIL property: if the "DTSTART" property is specified as a date with UTC time or a date with local time and time zone reference, then the UNTIL rule part MUST be specified as a date with UTC time.'
+										);
+									}
+									break;
+							}
+								
 							$value = new \DateTime($value);
 						}
 						$parts[$key] = $value;

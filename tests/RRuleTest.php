@@ -15,6 +15,8 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	{
 		return array(
 			array(array()),
+			array(array('FOOBAR' => 'DAILY')),
+
 			array(array('FREQ' => 'foobar')),
 			array(array('FREQ' => 'DAILY', 'INTERVAL' => -1)),
 			array(array('FREQ' => 'DAILY', 'UNTIL' => 'foobar')),
@@ -1688,7 +1690,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
-// Other tests
+// RFC Strings
 
 	public function rfcStrings() 
 	{
@@ -1713,8 +1715,14 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15;BYSETPOS=-1,1'),
 			array(' DTSTART;TZID=America/New_York:19970512T090000
 			RRULE:FREQ=YEARLY;BYWEEKNO=20,30,40;BYDAY=MO'),
-			array(' DTSTART;TZID=America/New_York:19970512T090000
-			RRULE:FREQ=YEARLY;BYYEARDAY=1,-1,10,-50;BYDAY=MO')
+			array('DTSTART;TZID=America/New_York:19970512T090000
+			RRULE:FREQ=YEARLY;BYYEARDAY=1,-1,10,-50;BYDAY=MO'),
+			array('DTSTART:19970512T090000Z
+			RRULE:FREQ=YEARLY'),
+			array('DTSTART:19970512T090000
+			RRULE:FREQ=YEARLY'),
+			array('DTSTART:19970512
+			RRULE:FREQ=YEARLY'),
 		);
 	}
 
@@ -1724,10 +1732,55 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	public function testRfcStrings($str)
 	{
 		$rule = new RRule($str);
+
 		// test that parsing the string produces the same result 
 		// as generating the string from a rule
 		$this->assertEquals($rule, new RRule($rule->rfcString()));
 	}
+
+	public function invalidRfcStrings()
+	{
+		return array(
+			// test invalid date formats
+			array('DTSTART:2006-06-24
+			RRULE:FREQ=DAILY'),
+			array('DTSTART:2006-06-24 12:00:00
+			RRULE:FREQ=DAILY'),
+			array('DTSTART:20060624
+			RRULE:FREQ=DAILY;UNTIL=2006-06-24'),
+
+			// test combinations of DTSTART and UNTIL which are invalid
+			array('DTSTART;TZID=Australia/Sydney:20160624
+			RRULE:FREQ=DAILY;INTERVAL=1;UNTIL=20160628'),
+			array('DTSTART;TZID=America/New_York:19970512T090000Z
+			RRULE:FREQ=YEARLY'),
+			array('DTSTART;TZID=America/New_York:19970512T090000
+			RRULE:FREQ=YEARLY;UNTIL=19970512'),
+			array('DTSTART;TZID=America/New_York:19970512T090000
+			RRULE:FREQ=YEARLY;UNTIL=19970512T090000'),
+			array('DTSTART:19970512T090000
+			RRULE:FREQ=YEARLY;UNTIL=19970512'),
+			array('DTSTART:19970512T090000Z
+			RRULE:FREQ=YEARLY;UNTIL=19970512'),
+			array('DTSTART:19970512
+			RRULE:FREQ=YEARLY;UNTIL=19970512T090000'),
+			array('DTSTART:19970512
+			RRULE:FREQ=YEARLY;UNTIL=19970512T090000Z'),
+
+		);
+	}
+
+	/**
+	 * @expectedException InvalidArgumentException 
+	 * @dataProvider invalidRfcStrings
+	 */
+	public function testInvalidRfcStrings($str)
+	{
+		$rule = new RRule($str);
+	}
+
+///////////////////////////////////////////////////////////////////////////////
+// Timezone
 
 	public function testTimezoneIsKeptIdentical()
 	{
@@ -1811,6 +1864,56 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$rrule->clearCache();
 		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 07:00:00',new DateTimeZone('UTC'))), 'During winter time, Europe/Helsinki is UTC+2 (uncached)');
 	}
+
+	public function rulesWithMismatchedTimezones()
+	{
+		return array(
+			array(
+				array('DTSTART' => new DateTime('20160624Z'),'FREQ' => 'DAILY','INTERVAL' => 1,'UNTIL' => '20160628'),
+				array(
+					date_create('20160624Z'),
+					date_create('20160625Z'),
+					date_create('20160626Z'),
+					date_create('20160627Z'),
+					// date_create('20160628Z') // will not return this due to timezone mismatch (unless default timezone is utc)
+				)
+			),
+			array(
+				array('DTSTART' => new DateTime('20160624Z'),'FREQ' => 'DAILY','INTERVAL' => 1,'UNTIL' => '28-06-2016'),
+				array(
+					date_create('20160624Z'),
+					date_create('20160625Z'),
+					date_create('20160626Z'),
+					date_create('20160627Z'),
+					// date_create('20160628Z')  // will not return this due to timezone mismatch (unless default timezone is utc)
+				)
+			),
+			array(
+				array('DTSTART' => new DateTime('20160624Z'),'FREQ' => 'DAILY','INTERVAL' => 1,'UNTIL' => new DateTime('20160628', new DateTimeZone('Europe/Paris'))),
+				array(
+					date_create('20160624Z'),
+					date_create('20160625Z'),
+					date_create('20160626Z'),
+					date_create('20160627Z'),
+					// date_create('20160628Z') // will not return this due to timezone mismatch (unless default timezone is utc)
+				)
+			)
+		);
+	}
+
+	/**
+	 * Test bug issue #13
+	 * @see https://github.com/rlanvin/php-rrule/issues/13
+	 * @dataProvider rulesWithMismatchedTimezones
+	 */
+	public function testRulesWithMismatchedTimezones($rule, $occurrences)
+	{
+		$rrule = new RRule($rule);
+		$this->assertEquals($occurrences, $rrule->getOccurrences(), 'Mismatched timezones makes for strange results');
+	}
+
+///////////////////////////////////////////////////////////////////////////////
+// Other tests
 
 	public function testIsFinite()
 	{
@@ -2084,7 +2187,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$rrule->humanReadable(array(
 			'locale' => 'xx',
 			'fallback' => 'xx'
-		));
+		)); // the locales are correctly formatted, but not such file exist, so this should throw a RuntimeException
 	}
 
 	/** 
