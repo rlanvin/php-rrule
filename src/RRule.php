@@ -523,11 +523,19 @@ class RRule implements RRuleInterface
 	{
 		$str = '';
 		if ( $this->rule['DTSTART'] ) {
-			$str = sprintf(
-				"DTSTART;TZID=%s:%s\nRRULE:",
-				$this->dtstart->getTimezone()->getName(),
-				$this->dtstart->format('Ymd\THis')
-			);
+			if ( $this->dtstart->getTimeZone()->getName() == 'Z' ) {
+				$str = sprintf(
+					"DTSTART:%s\nRRULE:",
+					$this->dtstart->format('Ymd\THis\Z')
+				);
+			}
+			else {
+				$str = sprintf(
+					"DTSTART;TZID=%s:%s\nRRULE:",
+					$this->dtstart->getTimezone()->getName(),
+					$this->dtstart->format('Ymd\THis')
+				);
+			}
 		}
 
 		$parts = array();
@@ -542,8 +550,7 @@ class RRule implements RRuleInterface
 				continue;
 			}
 			if ( $key === 'UNTIL' && $value ) {
-				// for a reason that I do not understand, UNTIL seems to always
-				// be in UTC (even when DTSTART includes TZID)
+				// according to the RFC, UNTIL must be in UTC
 				$tmp = clone $this->until;
 				$tmp->setTimezone(new \DateTimeZone('UTC'));
 				$parts[] = 'UNTIL='.$tmp->format('Ymd\THis\Z');

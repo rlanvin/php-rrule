@@ -1779,6 +1779,13 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$rule = new RRule($str);
 	}
 
+	public function testRfcStringWithUTC()
+	{
+		$rule = new RRule('DTSTART:19970512T090000Z
+			RRULE:FREQ=YEARLY');
+		$this->assertEquals("DTSTART:19970512T090000Z\nRRULE:FREQ=YEARLY", $rule->rfcString());
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Timezone
 
