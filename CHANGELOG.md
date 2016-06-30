@@ -2,12 +2,21 @@
 
 ## [Unreleased]
 
+### Added
+
+- Spanish translation (es) [#12](https://github.com/rlanvin/php-rrule/pull/12)
+- `$include_timezone` parameter to `RRule::rfcString()` to produce a RFC string without timezone information
+
+### Fixed
+
+- `RRule::parseRfcString()` is strictier and will not accept invalid `DTSTART` and `UNTIL` formats (use the array syntax in the constructor with `DateTime` objects if you need to create rules with complex combinations of timezones). [#13](https://github.com/rlanvin/php-rrule/issues/13)
+
 ## [1.2.0] - 2016-04-09
 
 ### Added
 
 - Support for fallback locale when using `RRule::humanReadable()` [#11](https://github.com/rlanvin/php-rrule/pull/11)
-- Dutch translation (NL) [#9](https://github.com/rlanvin/php-rrule/pull/9)
+- Dutch translation (nl) [#9](https://github.com/rlanvin/php-rrule/pull/9)
 
 ### Fixed
 
