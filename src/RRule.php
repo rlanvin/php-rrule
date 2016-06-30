@@ -12,8 +12,11 @@
 namespace RRule;
 
 /**
- * Check that a variable is not empty. 0 and '0' are considered NOT empty
+ * Check that a variable is not empty.
  *
+ * 0 and '0' are considered NOT empty.
+ *
+ * @param mixed $var Variable to be checked
  * @return bool
  */
 function not_empty($var)
@@ -22,8 +25,7 @@ function not_empty($var)
 }
 
 /**
- * closure/goog/math/math.js:modulo
- * Copyright 2006 The Closure Library Authors.
+ * Python-like modulo.
  *
  * The % operator in PHP returns the remainder of a / b, but differs from
  * some other languages in that the result will have the same sign as the
@@ -38,6 +40,8 @@ function not_empty($var)
  * @return int $a % $b where the result is between 0 and $b
  *   (either 0 <= x < $b
  *     or $b < x <= 0, depending on the sign of $b).
+ *
+ * @copyright 2006 The Closure Library Authors.
  */
 function pymod($a, $b)
 {
@@ -49,6 +53,8 @@ function pymod($a, $b)
 
 /**
  * Check is a year is a leap year.
+ *
+ * @param int $year The year to be checked.
  * @return bool
  */
 function is_leap_year($year)
@@ -71,17 +77,17 @@ function is_leap_year($year)
  *
  * Some useful terms to understand the algorithms and variables naming:
  *
- * yearday = day of the year, from 0 to 365 (on leap years) - date('z')
- * weekday = day of the week (ISO-8601), from 1 (MO) to 7 (SU) - date('N')
- * monthday = day of the month, from 1 to 31
- * wkst = week start, the weekday (1 to 7) which is the first day of week.
- *        Default is Monday (1). In some countries it's Sunday (7).
- * weekno = number of the week in the year (ISO-8601)
+ * - yearday = day of the year, from 0 to 365 (on leap years) - date('z')
+ * - weekday = day of the week (ISO-8601), from 1 (MO) to 7 (SU) - date('N')
+ * - monthday = day of the month, from 1 to 31
+ * - wkst = week start, the weekday (1 to 7) which is the first day of week.
+ *          Default is Monday (1). In some countries it's Sunday (7).
+ * - weekno = number of the week in the year (ISO-8601)
  *
  * CAREFUL with this bug: https://bugs.php.net/bug.php?id=62476
  *
- * @see https://tools.ietf.org/html/rfc5545
- * @see https://labix.org/python-dateutil
+ * @link https://tools.ietf.org/html/rfc5545
+ * @link https://labix.org/python-dateutil
  */
 class RRule implements RRuleInterface
 {
@@ -93,7 +99,9 @@ class RRule implements RRuleInterface
 	const MONTHLY = 2;
 	const YEARLY = 1;
 
-	// frequency names
+	/**
+	 * @var array frequency names
+	 */
 	public static $frequencies = array(
 		'SECONDLY' => self::SECONDLY,
 		'MINUTELY' => self::MINUTELY,
@@ -104,7 +112,9 @@ class RRule implements RRuleInterface
 		'YEARLY' => self::YEARLY
 	);
 
-	// weekdays numbered from 1 (ISO-8601 or date('N'))
+	/** 
+	 * @var array weekdays numbered from 1 (ISO-8601 or date('N'))
+	 */
 	public static $week_days = array(
 		'MO' => 1,
 		'TU' => 2,
@@ -115,7 +125,9 @@ class RRule implements RRuleInterface
 		'SU' => 7
 	);
 
-	// original rule
+	/**
+	 * @var array original rule
+	 */
 	protected $rule = array(
 		'DTSTART' => null,
 		'FREQ' => null,
@@ -166,6 +178,8 @@ class RRule implements RRuleInterface
 	 * There is no setter after the class has been instanciated,
 	 * because in order to validate some BYXXX parts, we need to know
 	 * the value of some other parts (FREQ or other BXXX parts).
+	 *
+	 * @param mixed $parts An assoc array of parts, or a RFC string.
 	 */
 	public function __construct($parts)
 	{
@@ -510,6 +524,12 @@ class RRule implements RRuleInterface
 		}
 	}
 
+	/**
+	 * Magic string converter.
+	 *
+	 * @see RRule::rfcString()
+	 * @return a rfc string
+	 */
 	public function __toString()
 	{
 		return $this->rfcString();
@@ -517,6 +537,8 @@ class RRule implements RRuleInterface
 
 	/**
 	 * Format a rule according to RFC 5545
+	 *
+	 * @param bool $include_timezone Wether to generate a rule with timezone identifier on DTSTART (and UNTIL) or not.
 	 * @return string
 	 */
 	public function rfcString($include_timezone = true)
@@ -584,7 +606,11 @@ class RRule implements RRuleInterface
 
 	/**
 	 * Take a RFC 5545 string and returns an array (to be given to the constructor)
+	 *
+	 * @param string $string The rule to be parsed
 	 * @return array
+	 *
+	 * @throws \InvalidArgumentException on error
 	 */
 	static public function parseRfcString($string)
 	{
@@ -699,7 +725,10 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * Clear the cache. Do NOT use while the class is iterating
+	 * Clear the cache.
+	 *
+	 * It isn't recommended to use this method while iterating.
+	 *
 	 * @return $this
 	 */
 	public function clearCache()
@@ -733,11 +762,9 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * Return all the occurrences in an array.
+	 * Return all the occurrences in an array of \DateTime.
 	 *
-	 * For finite rules only.
-	 *
-	 * @return array
+	 * @return array An array of \DateTime objects
 	 */
 	public function getOccurrences()
 	{
@@ -762,12 +789,11 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * Return an array of all occurrences between two dates.
+	 * Return all the ocurrences after a date, before a date, or between two dates.
 	 *
-	 * @param date|null $begin Can be null to return all occurrences before $end
-	 * @param date|null $end   Can be null to return all occurrences after $begin
-	 *
-	 * @return array
+	 * @param mixed $begin Can be null to return all occurrences before $end
+	 * @param mixed $end Can be null to return all occurrences after $begin
+	 * @return array An array of \DateTime objects
 	 */
 	public function getOccurrencesBetween($begin, $end)
 	{
@@ -801,7 +827,7 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * Return true if $date is an occurrence of the rule.
+	 * Return true if $date is an occurrence.
 	 *
 	 * This method will attempt to determine the result programmatically.
 	 * However depending on the BYXXX rule parts that have been set, it might
@@ -809,6 +835,7 @@ class RRule implements RRuleInterface
 	 * through all occurrences until $date. This will incurr some performance
 	 * penalty.
 	 *
+	 * @param mixed $date
 	 * @return bool
 	 */
 	public function occursAt($date)
@@ -991,31 +1018,48 @@ class RRule implements RRuleInterface
 // Note: if cache is complete, we could probably avoid completely calling iterate()
 // and instead iterate directly on the $this->cache array
 
+	/** @internal */
 	protected $current = 0;
+	/** @internal */
 	protected $key = 0;
 
+	/**
+	 * @internal
+	 */
 	public function rewind()
 	{
 		$this->current = $this->iterate(true);
 		$this->key = 0;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function current()
 	{
 		return $this->current;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function key()
 	{
 		return $this->key;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function next()
 	{
 		$this->current = $this->iterate();
 		$this->key += 1;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function valid()
 	{
 		return $this->current !== null;
@@ -1024,11 +1068,17 @@ class RRule implements RRuleInterface
 ///////////////////////////////////////////////////////////////////////////////
 // ArrayAccess interface
 
+	/**
+	 * @internal
+	 */
 	public function offsetExists($offset)
 	{
 		return is_numeric($offset) && $offset >= 0 && $offset < count($this);
 	}
 
+	/**
+	 * @internal
+	 */
 	public function offsetGet($offset)
 	{
 		if ( isset($this->cache[$offset]) ) {
@@ -1054,11 +1104,17 @@ class RRule implements RRuleInterface
 		return null;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function offsetSet($offset, $value)
 	{
 		throw new \LogicException('Setting a Date in a RRule is not supported');
 	}
 
+	/**
+	 * @internal
+	 */
 	public function offsetUnset($offset)
 	{
 		throw new \LogicException('Unsetting a Date in a RRule is not supported');
@@ -1071,6 +1127,7 @@ class RRule implements RRuleInterface
 	 * Returns the number of occurrences in this rule. It will have go
 	 * through the whole recurrence, if this hasn't been done before, which
 	 * introduces a performance penality.
+	 *
 	 * @return int
 	 */
 	public function count()
@@ -1087,14 +1144,16 @@ class RRule implements RRuleInterface
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
-// private methods
+// Internal methods
 // where all the magic happens
 
 	/**
 	 * Convert any date into a DateTime object.
-	 * @throws InvalidArgumentException on error
+	 *
 	 * @param mixed $date
-	 * @return DateTime
+	 * @return \DateTime
+	 *
+	 * @throws \InvalidArgumentException on error
 	 */
 	static public function parseDate($date)
 	{
@@ -1120,8 +1179,13 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * This method returns an array of days of the year (numbered from 0 to 365)
+	 * Return an array of days of the year (numbered from 0 to 365)
 	 * of the current timeframe (year, month, week, day) containing the current date
+	 *
+	 * @param int $year
+	 * @param int $month
+	 * @param int $day
+	 * @param array $masks
 	 * @return array
 	 */
 	protected function getDaySet($year, $month, $day, array $masks)
@@ -1163,13 +1227,19 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * Some serious magic is happening here.
-	 * This method will calculate the yeardays corresponding to each Nth weekday
+	 * Calculate the yeardays corresponding to each Nth weekday
 	 * (in BYDAY rule part).
+	 *
 	 * For example, in Jan 1998, in a MONTHLY interval, "1SU,-1SU" (first Sunday
 	 * and last Sunday) would be transformed into [3=>true,24=>true] because
 	 * the first Sunday of Jan 1998 is yearday 3 (counting from 0) and the
 	 * last Sunday of Jan 1998 is yearday 24 (counting from 0).
+	 *
+	 * @param int $year
+	 * @param int $month
+	 * @param int $day
+	 * @param array $masks
+	 *
 	 * @return null (modifies $mask parameter)
 	 */
 	protected function buildNthWeekdayMask($year, $month, $day, array & $masks)
@@ -1224,12 +1294,18 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * More serious magic.
-	 * This method calculates the yeardays corresponding to the week number
+	 * Calculate the yeardays corresponding to the week number
 	 * (in the WEEKNO rule part).
+	 *
 	 * Because weeks can cross year boundaries (that is, week #1 can start the
 	 * previous year, and week 52/53 can continue till the next year), the
 	 * algorithm is quite long.
+	 *
+	 * @param int $year
+	 * @param int $month
+	 * @param int $day
+	 * @param array $masks
+	 *
 	 * @return null (modifies $mask)
 	 */
 	protected function buildWeeknoMask($year, $month, $day, array & $masks)
@@ -1341,13 +1417,20 @@ class RRule implements RRuleInterface
 
 
 	/**
-	 * This builds an array of every time of the day that matches the BYXXX time
-	 * criteria. It will only process $this->frequency at one time. So:
+	 * Build an array of every time of the day that matches the BYXXX time
+	 * criteria.
+	 *
+	 * It will only process $this->frequency at one time. So:
 	 * - for HOURLY frequencies it builds the minutes and second of the given hour
 	 * - for MINUTELY frequencies it builds the seconds of the given minute
 	 * - for SECONDLY frequencies, it returns an array with one element
 	 * 
 	 * This method is called everytime an increment of at least one hour is made.
+	 *
+	 * @param int $hour
+	 * @param int $minute
+	 * @param int $second
+	 *
 	 * @return array
 	 */
 	protected function getTimeSet($hour, $minute, $second)
@@ -1378,31 +1461,42 @@ class RRule implements RRuleInterface
 		}
 	}
 
-	/**
-	 * Variables for iterate() method, that will persist to allow iterate()
-	 * to resume where it stopped. For PHP >= 5.5, these would be local variables
-	 * inside a generator method using yield. However since we are compatible with
-	 * PHP 5.3 and 5.4, they have to be implemented this way.
-	 *
-	 * The original implementation used static local variables inside the class
-	 * method, which I think was cleaner scope-wise, but sadly this didn't work
-	 * when multiple instances of RRule existed and are iterated at the same time
-	 * (such as in a ruleset)
-	 *
-	 * DO NOT USE OUTSIDE OF iterate()
-	 */
+	// Variables for iterate() method, that will persist to allow iterate()
+	// to resume where it stopped. For PHP >= 5.5, these would be local variables
+	// inside a generator method using yield. However since we are compatible with
+	// PHP 5.3 and 5.4, they have to be implemented this way.
+	//
+	// The original implementation used static local variables inside the class
+	// method, which I think was cleaner scope-wise, but sadly this didn't work
+	// when multiple instances of RRule existed and are iterated at the same time
+	// (such as in a ruleset)
+	//
+	// DO NOT USE OUTSIDE OF iterate()
+
+	/** @internal */
 	private $_year = null;
+	/** @internal */
 	private $_month = null;
+	/** @internal */
 	private $_day = null;
+	/** @internal */
 	private $_hour = null;
+	/** @internal */
 	private $_minute = null;
+	/** @internal */
 	private $_second = null;
 
+	/** @internal */
 	private $_dayset = null;
+	/** @internal */
 	private $_masks = null;
+	/** @internal */
 	private $_timeset = null;
+	/** @internal */
 	private $_dtstart = null;
+	/** @internal */
 	private $_total = 0;
+	/** @internal */
 	private $_use_cache = true;
 
 	/**
@@ -1895,6 +1989,9 @@ class RRule implements RRuleInterface
 // constants
 // Every mask is 7 days longer to handle cross-year weekly periods.
 
+	/** 
+	 * @var array
+	 */
 	protected static $MONTH_MASK = array(
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
@@ -1911,6 +2008,9 @@ class RRule implements RRuleInterface
 		1,1,1,1,1,1,1
 	);
 
+	/** 
+	 * @var array
+	 */
 	protected static $MONTH_MASK_366 = array(
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
@@ -1927,6 +2027,9 @@ class RRule implements RRuleInterface
 		1,1,1,1,1,1,1
 	);
 
+	/** 
+	 * @var array
+	 */
 	protected static $MONTHDAY_MASK = array(
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,
@@ -1943,6 +2046,9 @@ class RRule implements RRuleInterface
 		1,2,3,4,5,6,7
 	);
 
+	/** 
+	 * @var array
+	 */
 	protected static $MONTHDAY_MASK_366 = array(
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,
@@ -1959,6 +2065,9 @@ class RRule implements RRuleInterface
 		1,2,3,4,5,6,7
 	);
 
+	/** 
+	 * @var array
+	 */
 	protected static $NEGATIVE_MONTHDAY_MASK = array(
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
@@ -1975,6 +2084,9 @@ class RRule implements RRuleInterface
 		-31,-30,-29,-28,-27,-26,-25
 	);
 
+	/** 
+	 * @var array
+	 */
 	protected static $NEGATIVE_MONTHDAY_MASK_366 = array(
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
@@ -1991,6 +2103,9 @@ class RRule implements RRuleInterface
 		-31,-30,-29,-28,-27,-26,-25
 	);
 
+	/** 
+	 * @var array
+	 */
 	protected static $WEEKDAY_MASK = array(
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
@@ -2005,15 +2120,22 @@ class RRule implements RRuleInterface
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7
 	);
 
+	/** 
+	 * @var array
+	 */
 	protected static $LAST_DAY_OF_MONTH_366 = array(
 		0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366
 	);
 
+	/** 
+	 * @var array
+	 */
 	protected static $LAST_DAY_OF_MONTH = array(
 		0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
 	);
 
 	/**
+	 * @var array
 	 * Maximum number of cycles after which a calendar repeats itself. This
 	 * is used to detect infinite loop: if no occurrence has been found 
 	 * after this numbers of cycles, we can abort.
@@ -2052,6 +2174,12 @@ class RRule implements RRuleInterface
 
 	/** 
 	 * Select a translation in $array based on the value of $n
+	 *
+	 * Used for selecting plural forms.
+	 *
+	 * @param mixed $array Array with multiple forms or a string
+	 * @param string $n
+	 *
 	 * @return string
 	 */
 	static protected function i18nSelect($array, $n)
@@ -2073,7 +2201,11 @@ class RRule implements RRuleInterface
 
 	/**
 	 * Create a comma-separated list, with the last item added with an " and "
-	 * Example : Monday, Tuesday and Friday
+	 * Example: Monday, Tuesday and Friday
+	 *
+	 * @param array $array
+	 * @param string $and Translation for "and"
+	 *
 	 * @return string
 	 */
 	static protected function i18nList(array $array, $and = 'and')

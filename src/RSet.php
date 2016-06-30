@@ -16,17 +16,46 @@ namespace RRule;
  */
 class RSet implements RRuleInterface
 {
+	/**
+	 * @var array List of RDATE (single dates)
+	 */
 	protected $rdates = array();
+
+	/**
+	 * @var array List of RRULE
+	 */
 	protected $rrules = array();
 
+	/**
+	 * @var array List of EXDATE (single dates to be excluded)
+	 */
 	protected $exdates = array();
+
+	/**
+	 * @var array List of EXRULES (single rules to be excluded)
+	 */
 	protected $exrules = array();
 
 	// cache variable
+
+	/**
+	 * @var int|null Cache for the total number of occurrences
+	 */
 	protected $total = null;
+
+	/**
+	 * @var int|null Cache for the finite status of the RSet
+	 */
 	protected $infinite = null;
+
+	/**
+	 * @var array Cache for all the occurrences
+	 */
 	protected $cache = array();
 
+	/**
+	 * Constructor
+	 */
 	public function __construct()
 	{
 
@@ -34,6 +63,9 @@ class RSet implements RRuleInterface
 
 	/**
 	 * Add a RRule (or another RSet)
+	 *
+	 * @param mixed $rrule an instance of RRuleInterface or something that can be transformed into a RRule (string or array)
+	 * @return $this
 	 */
 	public function addRRule($rrule)
 	{
@@ -55,6 +87,9 @@ class RSet implements RRuleInterface
 	/**
 	 * Add a RRule with exclusion rules.
 	 * In RFC 2445 but deprecated in RFC 5545
+	 *
+	 * @param mixed $rrule an instance of RRuleInterface or something that can be transformed into a RRule (string or array)
+	 * @return $this
 	 */
 	public function addExRule($rrule)
 	{
@@ -75,6 +110,9 @@ class RSet implements RRuleInterface
 
 	/**
 	 * Add a RDATE (renamed Date for simplicy, since we don't support full RDATE syntax at the moment)
+	 *
+	 * @param mixed $date a valid date representation or a \DateTime object
+	 * @return $this
 	 */
 	public function addDate($date)
 	{
@@ -94,6 +132,9 @@ class RSet implements RRuleInterface
 
 	/**
 	 * Add a EXDATE
+	 *
+	 * @param mixed $date a valid date representation or a \DateTime object
+	 * @return $this
 	 */
 	public function addExDate($date)
 	{
@@ -112,7 +153,8 @@ class RSet implements RRuleInterface
 	}
 
 	/**
-	 * Clear the cache. Do NOT use while the class is iterating
+	 * Clear the cache.
+	 * Do NOT use while the class is iterating.
 	 * @return $this
 	 */
 	public function clearCache()
@@ -132,11 +174,21 @@ class RSet implements RRuleInterface
 ///////////////////////////////////////////////////////////////////////////////
 // RRule interface
 
+	/**
+	 * Return true if the rrule has an end condition, false otherwise
+	 *
+	 * @return bool
+	 */
 	public function isFinite()
 	{
 		return ! $this->isInfinite();
 	}
 
+	/**
+	 * Return true if the rrule has no end condition (infite)
+	 *
+	 * @return bool
+	 */
 	public function isInfinite()
 	{
 		if ( $this->infinite === null ) {
@@ -151,6 +203,11 @@ class RSet implements RRuleInterface
 		return $this->infinite;
 	}
 
+	/**
+	 * Return all the occurrences in an array of \DateTime.
+	 *
+	 * @return array An array of \DateTime objects
+	 */
 	public function getOccurrences()
 	{
 		if ( $this->isInfinite() ) {
@@ -173,6 +230,13 @@ class RSet implements RRuleInterface
 		return $res;
 	}
 
+	/**
+	 * Return all the ocurrences after a date, before a date, or between two dates.
+	 *
+	 * @param mixed $begin Can be null to return all occurrences before $end
+	 * @param mixed $end Can be null to return all occurrences after $begin
+	 * @return array An array of \DateTime objects
+	 */
 	public function getOccurrencesBetween($begin, $end)
 	{
 		if ( $begin !== null ) {
@@ -204,6 +268,12 @@ class RSet implements RRuleInterface
 		return $res;
 	}
 
+	/**
+	 * Return true if $date is an occurrence.
+	 *
+	 * @param mixed $date
+	 * @return bool
+	 */
 	public function occursAt($date)
 	{
 		$date = RRule::parseDate($date);
@@ -254,31 +324,48 @@ class RSet implements RRuleInterface
 ///////////////////////////////////////////////////////////////////////////////
 // Iterator interface
 
+	/** @internal */
 	protected $current = 0;
+	/** @internal */
 	protected $key = 0;
 
+	/**
+	 * @internal
+	 */
 	public function rewind()
 	{
 		$this->current = $this->iterate(true);
 		$this->key = 0;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function current()
 	{
 		return $this->current;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function key()
 	{
 		return $this->key;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function next()
 	{
 		$this->current = $this->iterate();
 		$this->key += 1;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function valid()
 	{
 		return $this->current !== null;
@@ -287,11 +374,17 @@ class RSet implements RRuleInterface
 ///////////////////////////////////////////////////////////////////////////////
 // ArrayAccess interface
 
+	/**
+	 * @internal
+	 */
 	public function offsetExists($offset)
 	{
 		return is_numeric($offset) && $offset >= 0 && $offset < count($this);
 	}
 
+	/**
+	 * @internal
+	 */
 	public function offsetGet($offset)
 	{
 		if ( isset($this->cache[$offset]) ) {
@@ -317,11 +410,17 @@ class RSet implements RRuleInterface
 		return null;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function offsetSet($offset, $value)
 	{
 		throw new \LogicException('Setting a Date in a RSet is not supported (use addDate)');
 	}
 
+	/**
+	 * @internal
+	 */
 	public function offsetUnset($offset)
 	{
 		throw new \LogicException('Unsetting a Date in a RSet is not supported (use addDate)');
@@ -359,8 +458,12 @@ class RSet implements RRuleInterface
 	protected $exlist_iterator = null;
 
 	// local variables for iterate() (see comment in RRule about that)
+
+	/** @internal */
 	private $_previous_occurrence = null;
+	/** @internal */
 	private $_total = 0;
+	/** @internal */
 	private $_use_cache = 0;
 
 	/**
@@ -374,20 +477,17 @@ class RSet implements RRuleInterface
 	 * and stores them in the heap, that keeps them in order.
 	 *
 	 * This is made slightly more complicated because this method is a generator.
+	 *
+	 * @param $reset (bool) Whether to restart the iteration, or keep going
+	 * @return \DateTime|null
 	 */
 	protected function iterate($reset = false)
 	{
-		// $rlist = & $this->_rlist;
-		// $rlist_iterator = & $this->_rlist_iterator;
-		// $exlist = & $this->_exlist;
-		// $exlist_iterator = & $this->_exlist_iterator;
 		$previous_occurrence = & $this->_previous_occurrence;
 		$total = & $this->_total;
 		$use_cache = & $this->_use_cache;
 
 		if ( $reset ) {
-			// $this->_rlist = $this->_rlist_iterator = null;
-			// $this->_exlist = $this->_exlist_iterator = null;
 			$this->_previous_occurrence = null;
 			$this->_total = 0;
 			$this->_use_cache = true;
@@ -397,8 +497,6 @@ class RSet implements RRuleInterface
 		// go through the cache first
 		if ( $use_cache ) {
 			while ( ($occurrence = current($this->cache)) !== false ) {
-			// 	// echo "Cache hit\n";
-			// 	$dtstart = $occurrence;
 				next($this->cache);
 				$total += 1;
 				return clone $occurrence;
@@ -409,20 +507,8 @@ class RSet implements RRuleInterface
 			$use_cache = false;
 			// if the cache as been used up completely and we now there is nothing else
 			if ( $total === $this->total ) {
-			// 	// echo "Cache used up, nothing else to compute\n";
 				return null;
 			}
-			// // echo "Cache used up with occurrences remaining\n";
-			// if ( $dtstart ) {
-			// 	$dtstart = clone $dtstart; // since DateTime is not immutable, avoid any problem
-			// 	// so we skip the last occurrence of the cache
-			// 	if ( $this->freq === self::SECONDLY ) {
-			// 		$dtstart->modify('+'.$this->interval.'second');
-			// 	}
-			// 	else {
-			// 		$dtstart->modify('+1second');
-			// 	}
-			// }
 		}
 
 		if ( $this->rlist_heap === null ) {
@@ -459,7 +545,7 @@ class RSet implements RRuleInterface
 			}
 
 			$occurrence = $this->rlist_heap->top();
-			$this->rlist_heap->extract(); // remove the occurence from the heap
+			$this->rlist_heap->extract(); // remove the occurrence from the heap
 
 			if ( $occurrence == $previous_occurrence ) {
 				continue; // skip, was already considered
@@ -468,7 +554,7 @@ class RSet implements RRuleInterface
 			// now we need to check against exlist
 			// we need to iterate exlist as long as it contains dates lower than occurrence
 			// (they will be discarded), and then check if the date is the same
-			// as occurence (in which case it is discarded)
+			// as occurrence (in which case it is discarded)
 			$excluded = false;
 			while ( true ) {
 				foreach ( $this->exlist_iterator->current() as $date ) {
