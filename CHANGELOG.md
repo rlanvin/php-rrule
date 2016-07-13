@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-n/a
+### Added
+
+- Italian translation (it) [#14](https://github.com/rlanvin/php-rrule/pull/14)
+
+### Fixed
+
+- Fixed a bug when combining values with an integer modifier and regular values in `BYDAY` (example `1MO,FR`)
 
 ## [1.3.0] - 2016-07-08
 

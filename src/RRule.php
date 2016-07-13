@@ -888,10 +888,6 @@ class RRule implements RRuleInterface
 			return false;
 		}
 
-		if ( $this->byweekday && ! in_array($weekday, $this->byweekday) ) {
-			return false;
-		}
-
 		if ( $this->bymonthday || $this->bymonthday_negative ) {
 			$monthday_negative = -1 * ($month_len - $day + 1);
 
@@ -909,10 +905,11 @@ class RRule implements RRuleInterface
 			}
 		}
 
-		if ( $this->byweekday_nth ) {
+		if ( $this->byweekday || $this->byweekday_nth ) {
 			// we need to summon some magic here
 			$this->buildNthWeekdayMask($year, $month, $day, $masks);
-			if ( ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
+
+			if ( ! in_array($weekday, $this->byweekday) && ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
 				return false;
 			}
 		}
@@ -1703,6 +1700,7 @@ class RRule implements RRuleInterface
 
 				$filtered_set = array();
 
+				// filter out the days based on the BY*** rules
 				foreach ( $dayset as $yearday ) {
 					if ( $this->bymonth && ! in_array($masks['yearday_to_month'][$yearday], $this->bymonth) ) {
 						continue;
@@ -1731,11 +1729,9 @@ class RRule implements RRuleInterface
 						continue;
 					}
 
-					if ( $this->byweekday && ! in_array($masks['yearday_to_weekday'][$yearday], $this->byweekday) ) {
-						continue;
-					}
-
-					if ( $this->byweekday_nth && ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
+					if ( ( $this->byweekday || $this->byweekday_nth )
+						&& ! in_array($masks['yearday_to_weekday'][$yearday], $this->byweekday)
+						&& ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
 						continue;
 					}
 

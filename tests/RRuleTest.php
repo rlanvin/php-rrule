@@ -229,6 +229,13 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				date_create('1997-10-31'),
 				date_create('1997-11-28'))),
 
+			// first working day of the month, or previous Friday
+			// see http://stackoverflow.com/questions/38170676/recurring-calendar-event-on-first-of-the-month/38314515
+			array(array('BYDAY'=>'1MO,1TU,1WE,1TH,1FR,-1FR','BYMONTHDAY'=>'1,-1,-2'),
+				array(date_create('1997-10-01'),date_create('1997-10-31'),date_create('1997-12-01'))),
+			array(array('BYDAY'=>'1MO,1TU,1WE,1TH,FR','BYMONTHDAY'=>'1,-1,-2'),
+				array(date_create('1997-10-01'),date_create('1997-10-31'),date_create('1997-12-01'))),
+
 			array(array('BYHOUR'=> '6,18'),array(
 				date_create('1997-09-02 06:00:00'),date_create('1997-09-02 18:00:00'),date_create('1997-10-02 06:00:00'))),
 			array(array('BYMINUTE'=> '6,18'),array(
