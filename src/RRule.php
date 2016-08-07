@@ -558,10 +558,10 @@ class RRule implements RRuleInterface
 					// handle unsupported timezones like "+02:00"
 					// we convert them to UTC to generate a valid string
 					// note: there is possibly other weird timezones out there that we should catch
-					$dtstart->setTimezone(new \DateTimeZone('Z'));
-					$timezone_name = 'Z';
+					$dtstart->setTimezone(new \DateTimeZone('UTC'));
+					$timezone_name = 'UTC';
 				}
-				if ( $timezone_name == 'Z' ) {
+				if ( in_array($timezone_name, ['UTC','GMT','Z']) ) {
 					$str = sprintf(
 						"DTSTART:%s\nRRULE:",
 						$dtstart->format('Ymd\THis\Z')
@@ -1170,7 +1170,7 @@ class RRule implements RRuleInterface
 			try {
 				if ( is_integer($date) ) {
 					$date = \DateTime::createFromFormat('U',$date);
-					$date->setTimezone(new \DateTimeZone('Z')); // default is +00:00 (see issue #15)
+					$date->setTimezone(new \DateTimeZone('UTC')); // default is +00:00 (see issue #15)
 				}
 				else {
 					$date = new \DateTime($date);
