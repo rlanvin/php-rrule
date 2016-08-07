@@ -551,18 +551,29 @@ class RRule implements RRuleInterface
 					$this->dtstart->format('Ymd\THis')
 				);
 			}
-			elseif ( $this->dtstart->getTimeZone()->getName() == 'Z' ) {
-				$str = sprintf(
-					"DTSTART:%s\nRRULE:",
-					$this->dtstart->format('Ymd\THis\Z')
-				);
-			}
 			else {
-				$str = sprintf(
-					"DTSTART;TZID=%s:%s\nRRULE:",
-					$this->dtstart->getTimezone()->getName(),
-					$this->dtstart->format('Ymd\THis')
-				);
+				$dtstart = clone $this->dtstart;
+				$timezone_name = $dtstart->getTimeZone()->getName();
+				if ( strpos($timezone_name,':') !== false ) {
+					// handle unsupported timezones like "+02:00"
+					// we convert them to UTC to generate a valid string
+					// note: there is possibly other weird timezones out there that we should catch
+					$dtstart->setTimezone(new \DateTimeZone('Z'));
+					$timezone_name = 'Z';
+				}
+				if ( $timezone_name == 'Z' ) {
+					$str = sprintf(
+						"DTSTART:%s\nRRULE:",
+						$dtstart->format('Ymd\THis\Z')
+					);
+				}
+				else {
+					$str = sprintf(
+						"DTSTART;TZID=%s:%s\nRRULE:",
+						$timezone_name,
+						$dtstart->format('Ymd\THis')
+					);
+				}
 			}
 		}
 
@@ -1159,6 +1170,7 @@ class RRule implements RRuleInterface
 			try {
 				if ( is_integer($date) ) {
 					$date = \DateTime::createFromFormat('U',$date);
+					$date->setTimezone(new \DateTimeZone('Z')); // default is +00:00 (see issue #15)
 				}
 				else {
 					$date = new \DateTime($date);

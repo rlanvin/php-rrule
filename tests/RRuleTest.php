@@ -1793,6 +1793,36 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals("DTSTART:19970512T090000Z\nRRULE:FREQ=YEARLY", $rule->rfcString());
 	}
 
+	/**
+	 * @see https://github.com/rlanvin/php-rrule/issues/15
+	 */
+	public function testRfcStsringsWithTimestamp()
+	{
+		$rrule = new RRule(array(
+			"freq" => "WEEKLY",
+			"dtstart" => 1470323171,
+			"interval" => 1
+		));
+
+		$str = $rrule->rfcString();
+		$new_rrule = new RRule($str);
+	}
+
+
+	public function testUnsupportedTimezoneConvertedToUtc()
+	{
+		$date = new DateTime('2016-07-08 12:00:00', new DateTimeZone('+06:00'));
+		$rrule = new RRule(array(
+			"freq" => "WEEKLY",
+			"dtstart" => $date,
+			"interval" => 1
+		));
+
+		$str = $rrule->rfcString();
+		$this->assertTrue(strpos($str, '20160708T060000Z')!== false);
+		$new_rrule = new RRule($str);
+	}
+
 	public function rfcStringsWithoutTimezone()
 	{
 		return array(
