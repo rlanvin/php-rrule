@@ -561,7 +561,7 @@ class RRule implements RRuleInterface
 					$dtstart->setTimezone(new \DateTimeZone('UTC'));
 					$timezone_name = 'UTC';
 				}
-				if ( in_array($timezone_name, ['UTC','GMT','Z']) ) {
+				if ( in_array($timezone_name, array('UTC','GMT','Z')) ) {
 					$str = sprintf(
 						"DTSTART:%s\nRRULE:",
 						$dtstart->format('Ymd\THis\Z')
