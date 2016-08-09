@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.3.1] - 2016-08-09
+
 ### Added
 
 - Italian translation (it) [#14](https://github.com/rlanvin/php-rrule/pull/14)
@@ -9,6 +11,7 @@
 ### Fixed
 
 - Fixed a bug when combining values with an integer modifier and regular values in `BYDAY` (example `1MO,FR`)
+- Fixed RRule created with a timestamp start date generates an invalid RFC string [#15](https://github.com/rlanvin/php-rrule/issues/15)
 
 ## [1.3.0] - 2016-07-08
 
@@ -64,7 +67,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/rlanvin/php-rrule/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/rlanvin/php-rrule/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/rlanvin/php-rrule/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/rlanvin/php-rrule/compare/v1.0.1...v1.1.0
