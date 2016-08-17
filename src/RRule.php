@@ -604,9 +604,9 @@ class RRule implements RRuleInterface
 				continue;
 			}
 			if ( $key === 'FREQ' && $value && !array_key_exists($value, static::$frequencies) ) {
-				$frequencyKey = array_search($value, static::$frequencies);
-				if ($frequencyKey !== false) {
-					$value = $frequencyKey;
+				$frequency_key = array_search($value, static::$frequencies);
+				if ($frequency_key !== false) {
+					$value = $frequency_key;
 				}
 			}
 			if ( $value ) {
