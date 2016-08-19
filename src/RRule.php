@@ -528,7 +528,7 @@ class RRule implements RRuleInterface
 	 * Magic string converter.
 	 *
 	 * @see RRule::rfcString()
-	 * @return a rfc string
+	 * @return string a rfc string
 	 */
 	public function __toString()
 	{
@@ -602,6 +602,12 @@ class RRule implements RRuleInterface
 					$parts[] = 'UNTIL='.$tmp->format('Ymd\THis\Z');
 				}
 				continue;
+			}
+			if ( $key === 'FREQ' && $value && !array_key_exists($value, static::$frequencies) ) {
+				$frequency_key = array_search($value, static::$frequencies);
+				if ($frequency_key !== false) {
+					$value = $frequency_key;
+				}
 			}
 			if ( $value ) {
 				if ( is_array($value) ) {

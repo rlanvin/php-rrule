@@ -1845,6 +1845,70 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($expected_str, $rule->rfcString(false));
 	}
 
+	public function rfcStringsGenerated()
+	{
+		return array(
+			array(
+				array(
+					'FREQ' => RRule::YEARLY,
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=YEARLY"
+			),
+			array(
+				array(
+					'FREQ' => RRule::MONTHLY,
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=MONTHLY"
+			),
+			array(
+				array(
+					'FREQ' => RRule::WEEKLY,
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=WEEKLY"
+			),
+			array(
+				array(
+					'FREQ' => RRule::DAILY,
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=DAILY"
+			),
+			array(
+				array(
+					'FREQ' => RRule::HOURLY,
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=HOURLY"
+			),
+			array(
+				array(
+					'FREQ' => RRule::MINUTELY,
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=MINUTELY"
+			),
+			array(
+				array(
+					'FREQ' => RRule::SECONDLY,
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=SECONDLY"
+			),
+		);
+	}
+
+	/**
+	 * @dataProvider rfcStringsGenerated
+	 */
+	public function testRfcStringsGenerated($params, $expected_str)
+	{
+		$rule = new RRule($params);
+		$this->assertEquals($expected_str, $rule->rfcString());
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Timezone
 
