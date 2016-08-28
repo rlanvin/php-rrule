@@ -2574,4 +2574,8 @@ class RRule implements RRuleInterface
 		$str = implode('',$parts);
 		return $str;
 	}
+
+	public function getRule() {
+		return $this->rule;
+	}
 }
