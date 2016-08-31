@@ -525,6 +525,16 @@ class RRule implements RRuleInterface
 	}
 
 	/**
+	 * Return the internal rule array, as it was passed to the constructor.
+	 *
+	 * @return array
+	 */
+	public function getRule()
+	{
+		return $this->rule;
+	}
+
+	/**
 	 * Magic string converter.
 	 *
 	 * @see RRule::rfcString()
@@ -2573,9 +2583,5 @@ class RRule implements RRuleInterface
 		$parts = array_filter($parts);
 		$str = implode('',$parts);
 		return $str;
-	}
-
-	public function getRule() {
-		return $this->rule;
 	}
 }
