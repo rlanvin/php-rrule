@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add `getRule()` method to return original rule array [#17](https://github.com/rlanvin/php-rrule/pull/17)
+
+### Fixed
+
+- Fix a bug in `rfcString` when using a frequency constant (instead of a string) to create the rule [#16](https://github.com/rlanvin/php-rrule/pull/16)
+
 ## [1.3.1] - 2016-08-09
 
 ### Added
