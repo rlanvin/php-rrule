@@ -4,7 +4,8 @@
 
 ### Added
 
-- Add `getRule()` method to return original rule array [#17](https://github.com/rlanvin/php-rrule/pull/17)
+- Add `RRule::getRule()` method to return original rule array [#17](https://github.com/rlanvin/php-rrule/pull/17)
+- Add `RSet::getRRules()`, `RSet::getExRules()`, `RSet::getDates()` and `RSet::getExDates()`
 
 ### Fixed
 

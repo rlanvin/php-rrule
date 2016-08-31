@@ -2174,7 +2174,15 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$occurrences[0]->modify('+1 day');
 		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
 		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (cached version)');
+	}
 
+	public function testGetRule()
+	{
+		$array = array(
+			'FREQ' => 'YEARLY'
+		);
+		$rrule = new RRule($array);
+		$this->assertInternalType('array', $rrule->getRule());
 	}
 
 ///////////////////////////////////////////////////////////////////////////////

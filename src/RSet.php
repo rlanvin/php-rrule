@@ -85,6 +85,18 @@ class RSet implements RRuleInterface
 	}
 
 	/**
+	 * Return the RRULE(s) contained in this set
+	 *
+	 * @todo check if a deep copy is needed.
+	 *
+	 * @return array Array of RRule
+	 */
+	public function getRRules()
+	{
+		return $this->rrules;
+	}
+
+	/**
 	 * Add a RRule with exclusion rules.
 	 * In RFC 2445 but deprecated in RFC 5545
 	 *
@@ -106,6 +118,18 @@ class RSet implements RRuleInterface
 		$this->clearCache();
 
 		return $this;
+	}
+
+	/**
+	 * Return the EXRULE(s) contained in this set
+	 *
+	 * @todo check if a deep copy is needed.
+	 *
+	 * @return array Array of RRule
+	 */
+	public function getExRules()
+	{
+		return $this->exrules;
 	}
 
 	/**
@@ -131,6 +155,18 @@ class RSet implements RRuleInterface
 	}
 
 	/**
+	 * Return the RDATE(s) contained in this set
+	 *
+	 * @todo check if a deep copy is needed.
+	 *
+	 * @return array Array of \DateTime
+	 */
+	public function getDates()
+	{
+		return $this->rdates;
+	}
+
+	/**
 	 * Add a EXDATE
 	 *
 	 * @param mixed $date a valid date representation or a \DateTime object
@@ -150,6 +186,18 @@ class RSet implements RRuleInterface
 		$this->clearCache();
 
 		return $this;
+	}
+
+	/**
+	 * Return the EXDATE(s) contained in this set
+	 *
+	 * @todo check if a deep copy is needed.
+	 *
+	 * @return array Array of \DateTime
+	 */
+	public function getExDates()
+	{
+		return $this->exdates;
 	}
 
 	/**

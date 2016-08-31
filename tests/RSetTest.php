@@ -352,4 +352,39 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			date_create('2016-03-21 10:00')
 		), $rset->getOccurrences());
 	}
+
+	public function testGetter()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 2,
+			'BYDAY' => 'TU',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$rset->addRRule(new RRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 1,
+			'BYDAY' => 'TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		)));
+		$rset->addDate(date_create('1997-09-04 09:00'));
+		$rset->addDate(date_create('1997-09-05 09:00'));
+		$rset->addDate(date_create('1997-09-06 09:00'));
+		$rset->addExRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 3,
+			'BYDAY' => 'TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+
+		$this->assertInternalType('array', $rset->getRRules());
+		$this->assertCount(2, $rset->getRRules());
+		$this->assertInternalType('array', $rset->getExRules());
+		$this->assertCount(1, $rset->getExRules());
+		$this->assertInternalType('array', $rset->getDates());
+		$this->assertCount(3, $rset->getDates());
+		$this->assertInternalType('array', $rset->getExDates());
+		$this->assertCount(0, $rset->getExDates());
+	}
 }
