@@ -2,14 +2,18 @@
 
 ## [Unreleased]
 
+## [1.4] - 2016-11-11
+
 ### Added
 
 - Add `RRule::getRule()` method to return original rule array [#17](https://github.com/rlanvin/php-rrule/pull/17)
 - Add `RSet::getRRules()`, `RSet::getExRules()`, `RSet::getDates()` and `RSet::getExDates()`
+- Tests for PHP 7.0
 
 ### Fixed
 
 - Fix a bug in `rfcString` when using a frequency constant (instead of a string) to create the rule [#16](https://github.com/rlanvin/php-rrule/pull/16)
+- Fix a undefined index bug in RFC parser
 
 ## [1.3.1] - 2016-08-09
 
