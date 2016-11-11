@@ -66,6 +66,25 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	}
 
 	/**
+	 * These rules are valid according to the RFC, just making sure that the lib doesn't reject them.
+	 */
+	public function validRules()
+	{
+		return array(
+			// The BYMONTHDAY rule part MUST NOT be specified when the FREQ rule part is set to WEEKLY.
+			array(array('FREQ' => 'WEEKLY', 'BYMONTHDAY' => array()))
+		);
+	}
+
+	/**
+	 * @dataProvider validRules
+	 */
+	public function testValidRules($rule)
+	{
+		new RRule($rule);
+	}
+
+	/**
 	 * YEARLY rules, mostly taken from Python test suite.
 	 */
 	public function yearlyRules()
@@ -1748,6 +1767,10 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	public function invalidRfcStrings()
 	{
 		return array(
+			// plain invalid strings
+			array('foobar'),
+			array('blah=blah=blah'),
+
 			// test invalid date formats
 			array('DTSTART:2006-06-24
 			RRULE:FREQ=DAILY'),

@@ -706,7 +706,11 @@ class RRule implements RRuleInterface
 					break;
 				case 'RRULE':
 					foreach ( explode(';',$property_value) as $pair ) {
-						list($key, $value) = explode('=', $pair);
+						$pair = explode('=', $pair);
+						if ( ! isset($pair[1]) || isset($pair[2]) ) {
+							throw new \InvalidArgumentException("Failed to parse RFC string, malformed RRULE property: $property_value");
+						}
+						list($key, $value) = $pair;
 						if ( $key === 'UNTIL' ) {
 							if ( ! preg_match($rfc_date_regexp, $value) ) {
 								throw new \InvalidArgumentException(
