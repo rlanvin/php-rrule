@@ -20,22 +20,15 @@ $rrule = new RRule([
 ]);
 
 foreach ( $rrule as $occurrence ) {
-	echo $occurrence->format('D d M Y'),"\n";
+	echo $occurrence->format('D d M Y'),", ";
 }
-
-// will output:
-// Mon 01 Jun 2015
-// Wed 01 Jul 2015
-// Sat 01 Aug 2015
-// Tue 01 Sep 2015
-// Thu 01 Oct 2015
-// Sun 01 Nov 2015
+// Mon 01 Jun 2015, Wed 01 Jul 2015, Sat 01 Aug 2015, Tue 01 Sep 2015, Thu 01 Oct 2015, Sun 01 Nov 2015
 
 echo $rrule->humanReadable(),"\n";
 // monthly on the 1st of the month, starting from 01/06/2015, 6 times
 ```
 
-Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
+Complete documentation and more example is available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
 
 ## Requirements
 
@@ -46,7 +39,9 @@ Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wik
 
 The recommended way is to install the lib [through Composer](http://getcomposer.org/).
 
-Just add this to your `composer.json` file (change the version by the release you want, or use dev-master for the development version):
+Simply run `composer require "rlanvin/php-rrule" "1.*"` for it to be automatically installed and included in your `composer.json`.
+
+Alternatively, just add this to your `composer.json` file and then run `composer install`.
 
 ```JSON
 {
@@ -55,10 +50,6 @@ Just add this to your `composer.json` file (change the version by the release yo
     }
 }
 ```
-
-Then run `composer install` or `composer update`.
-
-Or just run `composer require "rlanvin/php-rrule" "1.*"` for it to be automatically installed and included in your  `composer.json`
 
 Now you can use the autoloader, and you will have access to the library:
 
@@ -74,7 +65,9 @@ require 'vendor/autoload.php';
 
 ## Documentation
 
-Complete doc is available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
+Complete documentation is available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
+
+You will also find useful information in the [RFC 5545 section 3.3.10](https://tools.ietf.org/html/rfc5545#section-3.3.10).
 
 ## Contribution
 
