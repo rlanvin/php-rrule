@@ -28,7 +28,7 @@ echo $rrule->humanReadable(),"\n";
 // monthly on the 1st of the month, starting from 01/06/2015, 6 times
 ```
 
-Complete documentation and more example is available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
+Complete documentation and more examples are available in [the wiki](https://github.com/rlanvin/php-rrule/wiki).
 
 ## Requirements
 
@@ -39,9 +39,9 @@ Complete documentation and more example is available in [the wiki](https://githu
 
 The recommended way is to install the lib [through Composer](http://getcomposer.org/).
 
-Simply run `composer require "rlanvin/php-rrule" "1.*"` for it to be automatically installed and included in your `composer.json`.
+Simply run `composer require rlanvin/php-rrule` for it to be automatically installed and included in your `composer.json`.
 
-Alternatively, just add this to your `composer.json` file and then run `composer install`.
+Alternatively, just add this to your `composer.json` file and then run `composer install` (you can replace `1.*` by any version selector, or even `dev-master` for the latest development version).
 
 ```JSON
 {
@@ -54,7 +54,6 @@ Alternatively, just add this to your `composer.json` file and then run `composer
 Now you can use the autoloader, and you will have access to the library:
 
 ```php
-<?php
 require 'vendor/autoload.php';
 ```
 
