@@ -219,7 +219,7 @@ class RRule implements RRuleInterface
 		$this->wkst = self::$week_days[$parts['WKST']];
 
 		// FREQ
-		if ( is_integer($parts['FREQ']) ) {
+                if ( intval($parts['FREQ']) == $parts['FREQ'] ) {
 			if ( $parts['FREQ'] > self::SECONDLY || $parts['FREQ'] < self::YEARLY ) {
 				throw new \InvalidArgumentException(
 					'The FREQ rule part must be one of the following: '
