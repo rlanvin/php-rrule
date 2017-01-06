@@ -77,12 +77,12 @@ function is_leap_year($year)
  *
  * Some useful terms to understand the algorithms and variables naming:
  *
- * - yearday = day of the year, from 0 to 365 (on leap years) - date('z')
- * - weekday = day of the week (ISO-8601), from 1 (MO) to 7 (SU) - date('N')
- * - monthday = day of the month, from 1 to 31
- * - wkst = week start, the weekday (1 to 7) which is the first day of week.
+ * - "yearday" = day of the year, from 0 to 365 (on leap years) - `date('z')`
+ * - "weekday" = day of the week (ISO-8601), from 1 (MO) to 7 (SU) - `date('N')`
+ * - "monthday" = day of the month, from 1 to 31
+ * - "wkst" = week start, the weekday (1 to 7) which is the first day of week.
  *          Default is Monday (1). In some countries it's Sunday (7).
- * - weekno = number of the week in the year (ISO-8601)
+ * - "weekno" = number of the week in the year (ISO-8601)
  *
  * CAREFUL with this bug: https://bugs.php.net/bug.php?id=62476
  *
@@ -100,7 +100,12 @@ class RRule implements RRuleInterface
 	const YEARLY = 1;
 
 	/**
-	 * @var array frequency names
+	 * Frequency names.
+	 * Used internally for conversion but public if a reference list is needed.
+	 *
+	 * @todo should probably be protected, with a static getter instead.
+	 *
+	 * @var array The name as the key
 	 */
 	public static $frequencies = array(
 		'SECONDLY' => self::SECONDLY,
@@ -113,7 +118,12 @@ class RRule implements RRuleInterface
 	);
 
 	/** 
-	 * @var array weekdays numbered from 1 (ISO-8601 or date('N'))
+	 * Weekdays numbered from 1 (ISO-8601 or `date('N')`).
+	 * Used internally but public if a reference list is needed.
+	 *
+	 * @todo should probably be protected, with a static getter instead.
+	 *
+	 * @var array The name as the key
 	 */
 	public static $week_days = array(
 		'MO' => 1,
