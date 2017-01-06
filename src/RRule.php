@@ -1111,7 +1111,7 @@ class RRule implements RRuleInterface
 	 */
 	public function offsetExists($offset)
 	{
-		return is_numeric($offset) && $offset >= 0 && $offset < count($this);
+		return is_numeric($offset) && $offset >= 0 && ! is_float($offset) && $offset < count($this);
 	}
 
 	/**
@@ -1119,6 +1119,10 @@ class RRule implements RRuleInterface
 	 */
 	public function offsetGet($offset)
 	{
+		if ( ! is_numeric($offset) || $offset < 0 || is_float($offset) ) {
+			throw new \InvalidArgumentException('Illegal offset type: '.gettype($offset));
+		}
+
 		if ( isset($this->cache[$offset]) ) {
 			// found in cache
 			return clone $this->cache[$offset];

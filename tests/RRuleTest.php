@@ -2092,44 +2092,6 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue(\RRule\is_leap_year(2000));
 	}
 
-	public function testCountable()
-	{
-		$rrule = new RRule(array(
-			'freq' => 'yearly',
-			'count' => 10
-		));
-		$this->assertEquals(10, count($rrule));
-	}
-
-	public function testOffsetExists()
-	{
-		$rrule = new RRule(array(
-			'freq' => 'daily',
-			'count' => 3,
-			'byday' => 'TU,TH',
-			'dtstart' => '2007-01-01'
-		));
-		$this->assertTrue(isset($rrule[0]));
-		$this->assertTrue(isset($rrule[1]));
-		$this->assertTrue(isset($rrule[2]));
-		$this->assertFalse(isset($rrule[3]));
-	}
-
-	public function testOffsetGet()
-	{
-		$rrule = new RRule(array(
-			'freq' => 'daily',
-			'count' => 3,
-			'byday' => 'TU,TH',
-			'dtstart' => '2007-01-01'
-		));
-
-		$this->assertEquals(date_create('2007-01-02'), $rrule[0]);
-		$this->assertEquals(date_create('2007-01-04'), $rrule[1]);
-		$this->assertEquals(date_create('2007-01-09'), $rrule[2]);
-		$this->assertEquals(null, $rrule[4]);
-	}
-
 	public function testDateTimeMutableReferenceBug()
 	{
 		$date = date_create('2007-01-01');
@@ -2206,6 +2168,78 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		);
 		$rrule = new RRule($array);
 		$this->assertInternalType('array', $rrule->getRule());
+	}
+
+///////////////////////////////////////////////////////////////////////////////
+// Array access and countable interfaces
+
+	public function testCountable()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'yearly',
+			'count' => 10
+		));
+		$this->assertEquals(10, count($rrule));
+	}
+
+	public function testOffsetExists()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 3,
+			'byday' => 'TU,TH',
+			'dtstart' => '2007-01-01'
+		));
+		$this->assertTrue(isset($rrule[0]));
+		$this->assertTrue(isset($rrule[1]));
+		$this->assertTrue(isset($rrule[2]));
+		$this->assertFalse(isset($rrule[3]));
+	}
+
+	public function testOffsetGet()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 3,
+			'byday' => 'TU,TH',
+			'dtstart' => '2007-01-01'
+		));
+
+		$this->assertEquals(date_create('2007-01-02'), $rrule[0]);
+		$this->assertEquals(date_create('2007-01-02'), $rrule['0']);
+		$this->assertEquals(date_create('2007-01-04'), $rrule[1]);
+		$this->assertEquals(date_create('2007-01-04'), $rrule['1']);
+		$this->assertEquals(date_create('2007-01-09'), $rrule[2]);
+		$this->assertEquals(null, $rrule[4]);
+		$this->assertEquals(null, $rrule['4']);
+	}
+
+	public function illegalOffsets()
+	{
+		return array(
+			array('dtstart'),
+			array('1dtstart'),
+			array(array()),
+			array(1.1),
+			array(-1),
+			array(null),
+			array(new stdClass())
+		);
+	}
+
+	/**
+	 * @dataProvider illegalOffsets
+	 * @expectedException InvalidArgumentException
+	 */
+	public function testOffsetGetInvalidArgument($offset)
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 3,
+			'byday' => 'TU,TH',
+			'dtstart' => '2007-01-01'
+		));
+		$rrule[$offset];
 	}
 
 ///////////////////////////////////////////////////////////////////////////////

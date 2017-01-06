@@ -42,7 +42,7 @@ class RSetTest extends PHPUnit_Framework_TestCase
 	public function testCombineRDate()
 	{
 		$rset =new RSet();
-		$rset->addDate(date_create('1997-09-09 09:00')); // adding out of order
+		$rset->addDate(date_create('1997-09-09 09:00')); // adding out é order
 		$rset->addDate('1997-09-04 09:00');
 		$rset->addDate('1997-09-04 09:00'); // adding a duplicate
 
@@ -173,6 +173,99 @@ class RSetTest extends PHPUnit_Framework_TestCase
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
+// Array access and countable interface
+
+	public function testCountable()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$rset->addExdate('1997-09-04 09:00:00');
+		$rset->addExdate('1997-09-11 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00');
+
+		$this->assertEquals(3, count($rset));
+	}
+
+	public function testOffsetExists()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$rset->addExdate('1997-09-04 09:00:00');
+		$rset->addExdate('1997-09-11 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00');
+
+		$this->assertTrue(isset($rset[0]));
+		$this->assertTrue(isset($rset[1]));
+		$this->assertTrue(isset($rset['1']));
+		$this->assertTrue(isset($rset[2]));
+		$this->assertFalse(isset($rset[3]));
+
+		$this->assertFalse(isset($rset['foobar']));
+	}
+
+	public function testOffsetGet()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00:00')
+		));
+		$rset->addExdate('1997-09-04 09:00:00');
+		$rset->addExdate('1997-09-11 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00');
+
+		$this->assertEquals(date_create('1997-09-02 09:00:00'), $rset[0]);
+		$this->assertEquals(date_create('1997-09-02 09:00:00'), $rset['0']);
+		$this->assertEquals(date_create('1997-09-09 09:00:00'), $rset[1]);
+		$this->assertEquals(date_create('1997-09-09 09:00:00'), $rset['1']);
+		$this->assertEquals(date_create('1997-09-16 09:00:00'), $rset[2]);
+		$this->assertEquals(null, $rset[3]);
+		$this->assertEquals(null, $rset['3']);
+	}
+
+
+	public function illegalOffsets()
+	{
+		return array(
+			array('dtstart'),
+			array('1dtstart'),
+			array(array()),
+			array(1.1),
+			array(-1),
+			array(null),
+			array(new stdClass())
+		);
+	}
+
+	/**
+	 * @dataProvider illegalOffsets
+	 * @expectedException InvalidArgumentException
+	 */
+	public function testOffsetGetInvalidArgument($offset)
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00:00')
+		));
+		$rset[$offset];
+	}
+
+///////////////////////////////////////////////////////////////////////////////
 // Other tests
 
 	public function testIsInfinite()
@@ -267,60 +360,6 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			date_create('1997-09-09 09:00'),
 			date_create('1997-09-16 09:00')
 		), $rset->getOccurrences(), 'Iteration works');
-	}
-
-	public function testCountable()
-	{
-		$rset = new RSet();
-		$rset->addRRule(array(
-			'FREQ' => 'YEARLY',
-			'COUNT' => 6,
-			'BYDAY' => 'TU, TH',
-			'DTSTART' => date_create('1997-09-02 09:00')
-		));
-		$rset->addExdate('1997-09-04 09:00:00');
-		$rset->addExdate('1997-09-11 09:00:00');
-		$rset->addExdate('1997-09-18 09:00:00');
-
-		$this->assertEquals(3, count($rset));
-	}
-
-	public function testOffsetExists()
-	{
-		$rset = new RSet();
-		$rset->addRRule(array(
-			'FREQ' => 'YEARLY',
-			'COUNT' => 6,
-			'BYDAY' => 'TU, TH',
-			'DTSTART' => date_create('1997-09-02 09:00')
-		));
-		$rset->addExdate('1997-09-04 09:00:00');
-		$rset->addExdate('1997-09-11 09:00:00');
-		$rset->addExdate('1997-09-18 09:00:00');
-
-		$this->assertTrue(isset($rset[0]));
-		$this->assertTrue(isset($rset[1]));
-		$this->assertTrue(isset($rset[2]));
-		$this->assertFalse(isset($rset[3]));
-	}
-
-	public function testOffsetGet()
-	{
-		$rset = new RSet();
-		$rset->addRRule(array(
-			'FREQ' => 'YEARLY',
-			'COUNT' => 6,
-			'BYDAY' => 'TU, TH',
-			'DTSTART' => date_create('1997-09-02 09:00:00')
-		));
-		$rset->addExdate('1997-09-04 09:00:00');
-		$rset->addExdate('1997-09-11 09:00:00');
-		$rset->addExdate('1997-09-18 09:00:00');
-
-		$this->assertEquals(date_create('1997-09-02 09:00:00'), $rset[0]);
-		$this->assertEquals(date_create('1997-09-09 09:00:00'), $rset[1]);
-		$this->assertEquals(date_create('1997-09-16 09:00:00'), $rset[2]);
-		$this->assertEquals(null, $rset[3]);
 	}
 
 	public function testRSetInRset()
