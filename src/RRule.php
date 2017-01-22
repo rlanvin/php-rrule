@@ -724,7 +724,7 @@ class RRule implements RRuleInterface
 						if ( $key === 'UNTIL' ) {
 							if ( ! preg_match($rfc_date_regexp, $value) ) {
 								throw new \InvalidArgumentException(
-									'Invalid DTSTART property: date or date time format incorrect'
+									'Invalid UNTIL property: date or date time format incorrect'
 								);
 							}
 							switch ( $dtstart_type ) {
