@@ -5,6 +5,7 @@
 ### Fixed
 
 - `RRule::offsetGet` and `RSet::offsetGet` throw `InvalidArgumentException` for illegal offset types [#22](https://github.com/rlanvin/php-rrule/issues/22)
+- Update exception message for UNTIL parse error [#23](https://github.com/rlanvin/php-rrule/pull/23)
 
 ## [1.4.0] - 2016-11-11
 
