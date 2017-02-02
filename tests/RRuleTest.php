@@ -2590,6 +2590,6 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	public function testHumanReadable($rrule,$locale,  $string)
 	{
 		$rrule = new RRule($rrule);
-		$this->assertEquals($string, $rrule->humanReadable(['locale' => $locale]));
+		$this->assertEquals($string, $rrule->humanReadable(array('locale' => $locale)));
 	}
 }
