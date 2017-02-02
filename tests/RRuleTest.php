@@ -2404,24 +2404,28 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 ///////////////////////////////////////////////////////////////////////////////
 // Human readable string conversion
 
-	/**
-	 * Providing a set of valid locales to call RRule::i18nLoad() with
-	 *
-	 * @return array
-	 */
 	public function validLocales()
 	{
 		return array(
+			// locale | result expected with intl | result expected without intl
+
 			// 2 characters language code
-			array('en'),
-			array('fr'),
+			array('en', array('en'), array('en')),
+			array('fr', array('fr'), array('fr')),
 			// with region and underscore
-			array('en_US'),
-			array('en_US.utf-8'),
-			array('en_US_POSIX'),
+			array('en_US', array('en','en_US'), array('en','en_US')),
+			array('en_US.utf-8', array('en','en_US'), array('en','en_US')),
+			array('en_US_POSIX', array('en','en_US'), array('en','en_US')),
+			// case insentitive
+			array('en_sg', array('en','en_SG'), array('en','en_SG')),
 			// with a dash
-			array('en-US'),
-			array('en-Hant-TW'), // real locale is zh-Hant-TW, but since we don't have a "zh" file, we just use en
+			array('en-US', array('en','en_US'), array('en','en_US')),
+			array('zh-Hant-TW', array('zh','zh_TW'), array('zh','zh_TW')), // real locale is zh-Hant-TW, but since we don't have a "zh" file, we just use "en" for the test
+
+			// invalid
+			array('eng', array('en'), false),
+			array('invalid', array('invalid'), false),
+			array('en_US._wr!ng', array('en','en_US'), false),
 		);
 	}
 
@@ -2430,102 +2434,105 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider validLocales
 	 */
-	public function testI18nLoad($locale)
+	public function testI18nFilesToLoadWithIntl($locale, $files)
 	{
-		$rrule = new RRule(array(
-			'freq' => 'daily',
-			'count' => 10,
-			'dtstart' => '2007-01-01'
-		));
+		if ( ! $files ) {
+			try {
+				$files = RRule::i18nFilesToLoad($locale, true);
+				$this->fail('Expected InvalidArgumentException not thrown (files was '.json_encode($files).')');
+			} catch (\InvalidArgumentException $e) {
+			}
+		}
+		else {
+			$this->assertEquals($files, RRule::i18nFilesToLoad($locale, true));
+		}
+	}
 
+	/**
+	 * @dataProvider validLocales
+	 */
+	public function testI18nFilesToLoadWithoutIntl($locale, $dummy, $files)
+	{
+		if ( ! $files ) {
+			try {
+				RRule::i18nFilesToLoad($locale, false);
+				$this->fail('Expected InvalidArgumentException not thrown (files was '.json_encode($files).')');
+			} catch (\InvalidArgumentException $e) {
+			}
+		}
+		else {
+			$this->assertEquals($files, RRule::i18nFilesToLoad($locale, false));
+		}
+	}
+
+	/**
+	 * Locales for which we have a translation
+	 */
+	public function validTranslatedLocales()
+	{
+		return array(
+			array('en'),
+			array('en_US')
+		);
+	}
+
+	/**
+	 * Test that RRule::i18nLoad() does not throw an exception with valid locales.
+	 *
+	 * @dataProvider validTranslatedLocales
+	 */
+	public function testI18nLoadWithIntl($locale)
+	{
 		$reflector = new ReflectionClass('RRule\RRule');
 		$method = $reflector->getMethod('i18nLoad');
 		$method->setAccessible(true);
 
-		$result = $method->invokeArgs($rrule, array($locale));
+		$result = $method->invokeArgs(null, array($locale, null, true));
 		$this->assertNotEmpty($result);
 	}
 
 	/**
 	 * Test that the RRule::i18nLoad() does not fail when provided with valid fallback locales
 	 *
-	 * @dataProvider validLocales
+	 * @dataProvider validTranslatedLocales
 	 */
 	public function testI18nLoadFallback($fallback)
 	{
-		$date = date_create('2007-01-01');
-		$rrule = new RRule(array(
-			'freq' => 'daily',
-			'count' => 10,
-			'dtstart' => $date
-		));
-
 		$reflector = new ReflectionClass('RRule\RRule');
 
 		$method = $reflector->getMethod('i18nLoad');
 		$method->setAccessible(true);
 
-		// $result = $method->invokeArgs($rrule, array(array('locale' => 'xx', 'fallback' => $fallback)));
-		$result = $method->invokeArgs($rrule, array('xx', $fallback));
+		$result = $method->invokeArgs(null, array('xx', $fallback));
 		$this->assertNotEmpty($result);
-	}
-
-	/**
-	 * Providing a set of invalid locales to call RRule::i18nLoad() with
-	 *
-	 * @return array
-	 */
-	public function invalidLocales()
-	{
-		return array(
-			array('eng'),
-			array('invalid'),
-			array('en_US._wr!ng'),
-		);
 	}
 
 	/**
 	 * Tests that the RRule::i18nLoad() fails as expected on invalid $locale settings
 	 *
-	 * @dataProvider invalidLocales
 	 * @expectedException \InvalidArgumentException
 	 */
-	public function testI18nLoadFails($locale)
+	public function testI18nLoadFailsWithoutIntl()
 	{
-		$date = date_create('2007-01-01');
-		$rrule = new RRule(array(
-			'freq' => 'daily',
-			'count' => 10,
-			'dtstart' => $date
-		));
-
 		$reflector = new ReflectionClass('RRule\RRule');
 
 		$method = $reflector->getMethod('i18nLoad');
 		$method->setAccessible(true);
-		$method->invokeArgs($rrule, array($locale, 'en')); // even with a valid fallback it should fail
+		$method->invokeArgs(null, array('invalid', 'en', false)); // even with a valid fallback it should fail
 	}
 
 	/**
 	 * Tests that the RRule::i18nLoad() fails as expected on invalid $fallback settings
 	 *
-	 * @dataProvider invalidLocales
 	 * @expectedException \InvalidArgumentException
 	 */
-	public function testI18nLoadFallbackFails($locale)
+	public function testI18nLoadFallbackFailsWitoutIntl()
 	{
-		$date = date_create('2007-01-01');
-		$rrule = new RRule(array(
-			'freq' => 'daily',
-			'count' => 10,
-			'dtstart' => $date
-		));
-
 		$reflector = new ReflectionClass('RRule\RRule');
 
 		$method = $reflector->getMethod('i18nLoad');
 		$method->setAccessible(true);
-		$method->invokeArgs($rrule, array('xx', $locale));
+		$method->invokeArgs(null, array('xx', 'invalid', false));
 	}
 
 	/**
@@ -2547,7 +2554,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	/** 
 	 * Test that humanReadable works
 	 */
-	public function testHumanReadable()
+	public function testHumanReadableWithCLocale()
 	{
 		$rrule = new RRule(array(
 			'freq' => 'daily',
@@ -2557,12 +2564,32 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		$reflector = new ReflectionClass('RRule\RRule');
 
-		// Force RRule::$intl_loaded to false, to test setlocale()
-		$property = $reflector->getProperty('intl_loaded');
-		$property->setAccessible(true);
-		$property->setValue($rrule, false);
-
 		setlocale(LC_MESSAGES, 'C');
 		$this->assertNotEmpty($rrule->humanReadable(array('fallback' => null)), 'C locale is converted to "en"');
+	}
+
+	public function humanReadableStrings()
+	{
+		return array(
+			array(
+				"DTSTART:20170202T000000Z\nFREQ=DAILY;UNTIL=20170205T000000Z",
+				"en",
+				"daily, starting from 2/2/17, until 2/5/17"
+			),
+			array(
+				"DTSTART:20170202T000000Z\nFREQ=DAILY;UNTIL=20170205T000000Z",
+				"en_IE",
+				"daily, starting from 02/02/2017, until 05/02/2017"
+			)
+		);
+	}
+
+	/**
+	 * @dataProvider humanReadableStrings
+	 */
+	public function testHumanReadable($rrule,$locale,  $string)
+	{
+		$rrule = new RRule($rrule);
+		$this->assertEquals($string, $rrule->humanReadable(['locale' => $locale]));
 	}
 }

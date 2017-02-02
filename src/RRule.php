@@ -2219,12 +2219,17 @@ class RRule implements RRuleInterface
 	);
 
 ///////////////////////////////////////////////////////////////////////////////
-// i18n methods (could be moved into a separate class, since it's not always necessary)
+// i18n methods
+// these could be moved into a separate class maybe, since it's not always necessary
 
 	/**
-	 * Stores translations once loaded (so we don't have to reload them all the time)
+	 * @var array Stores translations once loaded (so we don't have to reload them all the time)
 	 */
 	static protected $i18n = array();
+
+	/**
+	 * @var bool if intl extension is loaded
+	 */
 	static protected $intl_loaded = null;
 
 	/** 
@@ -2279,6 +2284,51 @@ class RRule implements RRuleInterface
 		}
 	}
 
+	/** 
+	 * Test if intl extension is loaded
+	 * @return bool
+	 */
+	static public function intlLoaded()
+	{
+		if ( self::$intl_loaded === null ) {
+			self::$intl_loaded = extension_loaded('intl');
+		}
+		return self::$intl_loaded;
+	}
+
+	/**
+	 * Parse a locale and returns a list of files to load.
+	 *
+	 * @return array
+	 */
+	static public function i18nFilesToLoad($locale, $use_intl = null)
+	{
+		if ( $use_intl === null ) {
+			$use_intl = self::intlLoaded();
+		}
+		$files = array();
+		
+		if ( $use_intl ) {
+			$parsed = \Locale::parseLocale($locale);
+			$files[] = $parsed['language'];
+			if ( isset($parsed['region']) ) {
+				$files[] = $parsed['language'].'_'.$parsed['region'];
+			}
+		}
+		else {
+			if ( ! preg_match('/^([a-z]{2})(?:(?:_|-)[A-Z][a-z]+)?(?:(?:_|-)([A-Za-z]{2}))?(?:(?:_|-)[A-Z]*)?(?:\.[a-zA-Z\-0-9]*)?$/', $locale, $matches) ) {
+				throw new \InvalidArgumentException("The locale option does not look like a valid locale: $locale. For more option install the intl extension.");
+			}
+
+			$files[] = $matches[1];
+			if ( isset($matches[2]) ) {
+				$files[] = $matches[1].'_'.strtoupper($matches[2]);
+			}
+		}
+
+		return $files;
+	}
+
 	/**
 	 * Load a translation file in memory.
 	 * Will load the basic first (e.g. "en") and then the region-specific if any
@@ -2291,17 +2341,9 @@ class RRule implements RRuleInterface
 	 * @return array
 	 * @throws \InvalidArgumentException
 	 */
-	static protected function i18nLoad($locale, $fallback = null)
+	static protected function i18nLoad($locale, $fallback = null, $use_intl = null)
 	{
-		if ( ! preg_match('/^([a-z]{2})(?:(?:_|-)[A-Z][a-z]+)?(?:(?:_|-)([A-Z]{2}))?(?:(?:_|-)[A-Z]*)?(?:\.[a-zA-Z\-0-9]*)?$/', $locale, $matches) ) {
-			throw new \InvalidArgumentException('The locale option does not look like a valid locale: '.$locale);
-		}
-
-		$files = array();
-		if ( isset($matches[2]) ) {
-			$files[] = $matches[1];
-		}
-		$files[] = $locale;
+		$files = self::i18nFilesToLoad($locale, $use_intl);
 
 		$result = array();
 		foreach ( $files as $file ) {
@@ -2320,7 +2362,7 @@ class RRule implements RRuleInterface
 
 		if ( empty($result) ) {
 			if (!is_null($fallback)) {
-				return self::i18nLoad($fallback);
+				return self::i18nLoad($fallback, null, $use_intl);
 			}
 			throw new \RuntimeException("Failed to load translations for '$locale'");
 		}
@@ -2338,27 +2380,28 @@ class RRule implements RRuleInterface
 	 */
 	public function humanReadable(array $opt = array())
 	{
-		if ( self::$intl_loaded === null ) {
-			self::$intl_loaded = extension_loaded('intl');
-		}
-
-		// attempt to detect default locale
-		if ( self::$intl_loaded ) {
-			$locale = \Locale::getDefault();
-		} else {
-			$locale = setlocale(LC_MESSAGES, 0);
-			if ($locale == 'C') {
-				$locale = 'en';
-			}
+		if ( ! isset($opt['use_intl']) ) {
+			$opt['use_intl'] = self::intlLoaded();
 		}
 
 		$default_opt = array(
-			'locale' => $locale,
+			'use_intl' => self::intlLoaded(),
+			'locale' => null,
 			'date_formatter' => null,
 			'fallback' => 'en',
 		);
 
-		if ( self::$intl_loaded ) {
+		// attempt to detect default locale
+		if ( $opt['use_intl'] ) {
+			$default_opt['locale'] = \Locale::getDefault();
+		} else {
+			$default_opt['locale'] = setlocale(LC_MESSAGES, 0);
+			if ( $default_opt['locale'] == 'C' ) {
+				$default_opt['locale'] = 'en';
+			}
+		}
+
+		if ( $opt['use_intl'] ) {
 			$default_opt['date_format'] = \IntlDateFormatter::SHORT;
 			if ( $this->freq >= self::SECONDLY || not_empty($this->rule['BYSECOND']) ) {
 				$default_opt['time_format'] = \IntlDateFormatter::LONG;
@@ -2373,18 +2416,27 @@ class RRule implements RRuleInterface
 
 		$opt = array_merge($default_opt, $opt);
 
+		$i18n = self::i18nLoad($opt['locale'], $opt['fallback'], $opt['use_intl']);
+
 		if ( $opt['date_formatter'] && ! is_callable($opt['date_formatter']) ) {
 			throw new \InvalidArgumentException('The option date_formatter must callable');
 		}
 
 		if ( ! $opt['date_formatter'] ) {
-			if ( self::$intl_loaded ) {
+			if (  $opt['use_intl'] ) {
+				$timezone = $this->dtstart->getTimezone()->getName();
+				if ( $timezone == 'Z' ) {
+					$timezone = 'GMT'; // otherwise IntlDateFormatter::create fails because... reasons.
+				}
 				$formatter = \IntlDateFormatter::create(
 					$opt['locale'],
 					$opt['date_format'],
 					$opt['time_format'],
-					$this->dtstart->getTimezone()->getName()
+					$timezone
 				);
+				if ( ! $formatter ) {
+					throw new \RuntimeException('IntlDateFormatter::create() failed (this should not happen, please open a bug report!)');
+				}
 				$opt['date_formatter'] = function($date) use ($formatter) {
 					return $formatter->format($date);
 				};
@@ -2395,8 +2447,6 @@ class RRule implements RRuleInterface
 				};
 			}
 		}
-
-		$i18n = self::i18nLoad($opt['locale'], $opt['fallback']);
 
 		$parts = array(
 			'freq' => '',
