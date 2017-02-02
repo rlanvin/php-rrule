@@ -103,7 +103,8 @@ class RRule implements RRuleInterface
 	 * Frequency names.
 	 * Used internally for conversion but public if a reference list is needed.
 	 *
-	 * @todo should probably be protected, with a static getter instead.
+	 * @todo should probably be protected, with a static getter instead to avoid
+	 * unintended modification.
 	 *
 	 * @var array The name as the key
 	 */
@@ -121,7 +122,8 @@ class RRule implements RRuleInterface
 	 * Weekdays numbered from 1 (ISO-8601 or `date('N')`).
 	 * Used internally but public if a reference list is needed.
 	 *
-	 * @todo should probably be protected, with a static getter instead.
+	 * @todo should probably be protected, with a static getter instead
+	 * to avoid unintended modification
 	 *
 	 * @var array The name as the key
 	 */
@@ -653,9 +655,9 @@ class RRule implements RRuleInterface
 	{
 		$parts = array();
 
-		$string = trim($string);
+		$string = strtoupper(trim($string));
 
-		$dtstart_type = 'date';
+		$dtstart_type = null;
 		$rfc_date_regexp = '/\d{6}(T\d{6})?Z?/'; // a bit loose
 
 		foreach ( explode("\n", $string) as $line ) {
@@ -681,7 +683,9 @@ class RRule implements RRuleInterface
 
 			switch ( $property_name ) {
 				case 'DTSTART':
+				case 'dtstart':
 					$tmp = null;
+					$dtstart_type = 'date';
 					if ( ! preg_match($rfc_date_regexp, $property_value) ) {
 						throw new \InvalidArgumentException(
 							'Invalid DTSTART property: date or date time format incorrect'
@@ -715,6 +719,7 @@ class RRule implements RRuleInterface
 					$parts['DTSTART'] = new \DateTime($property_value, $tmp);
 					break;
 				case 'RRULE':
+				case 'rrule':
 					foreach ( explode(';',$property_value) as $pair ) {
 						$pair = explode('=', $pair);
 						if ( ! isset($pair[1]) || isset($pair[2]) ) {
@@ -751,8 +756,16 @@ class RRule implements RRuleInterface
 									}
 									break;
 							}
-								
+
 							$value = new \DateTime($value);
+						}
+						elseif ( $key === 'DTSTART' ) {
+							if ( isset($parts['DTSTART']) ) {
+								throw new \InvalidArgumentException('DTSTART cannot be part of RRULE and has already been defined');
+							}
+							// this is an invalid rule, however we'll support it since the JS lib is broken
+							// see https://github.com/rlanvin/php-rrule/issues/25
+							trigger_error("This string is not compliant with the RFC (DTSTART cannot be part of RRULE). It is accepted as is for compability reasons only.", E_USER_NOTICE);
 						}
 						$parts[$key] = $value;
 					}

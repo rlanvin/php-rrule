@@ -1721,47 +1721,188 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	public function rfcStrings() 
 	{
 		return array(
+			// full RFC string
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=HOURLY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=1'),
+			RRULE:FREQ=HOURLY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=1',
+				null // todo
+			),
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1'),
+			RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1',
+				null // todo
+			),
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=12;BYMINUTE=15,30'),
+			RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=12;BYMINUTE=15,30',
+				null
+			),
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR'),
+			RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR',
+				null // todo
+			),
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR'),
+			RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR',
+				null // todo
+			),
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1'),
+			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1',
+				array()
+			),
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15'),
+			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15',
+				array(
+					date_create('1997-09-01 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-09-05 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-10-01 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-10-17 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-10-29 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-10-31 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-11-05 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-11-28 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-12-01 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-12-05 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-12-17 09:00:00', new DateTimeZone('America/New_York'))
+				)
+			),
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15;BYSETPOS=-1'),
+			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15;BYSETPOS=-1',
+				array(
+					date_create('1997-09-05 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-10-31 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-11-28 09:00:00', new DateTimeZone('America/New_York')),
+				)
+			),
 			array('DTSTART;TZID=America/New_York:19970901T090000
-			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15;BYSETPOS=-1,1'),
+			RRULE:FREQ=MONTHLY;INTERVAL=1;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTHDAY=1,2,5,31,-1,-3,-15;BYSETPOS=-1,1',
+				array(
+					date_create('1997-09-01 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-09-05 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-10-01 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-10-31 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-11-05 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-11-28 09:00:00', new DateTimeZone('America/New_York')),
+					date_create('1997-12-01 09:00:00', new DateTimeZone('America/New_York'))
+				)
+			),
 			array(' DTSTART;TZID=America/New_York:19970512T090000
-			RRULE:FREQ=YEARLY;BYWEEKNO=20,30,40;BYDAY=MO'),
+			RRULE:FREQ=YEARLY;BYWEEKNO=20,30,40;BYDAY=MO',
+				null
+			),
 			array('DTSTART;TZID=America/New_York:19970512T090000
-			RRULE:FREQ=YEARLY;BYYEARDAY=1,-1,10,-50;BYDAY=MO'),
+			RRULE:FREQ=YEARLY;BYYEARDAY=1,-1,10,-50;BYDAY=MO',
+				null
+			),
 			array('DTSTART:19970512T090000Z
-			RRULE:FREQ=YEARLY'),
+			RRULE:FREQ=YEARLY',
+				null
+			),
 			array('DTSTART:19970512T090000
-			RRULE:FREQ=YEARLY'),
+			RRULE:FREQ=YEARLY',
+				null
+			),
 			array('DTSTART:19970512
-			RRULE:FREQ=YEARLY'),
+			RRULE:FREQ=YEARLY',
+				null
+			),
+
+			// case insensitive
+			array("dtstart:19970902T090000\nrrule:freq=yearly;count=3",
+				array(date_create('1997-09-02 09:00:00'),date_create('1998-09-02 09:00:00'),date_create('1999-09-02 09:00:00'))
+			),
+
+			// empty lines
+			array("\nDTSTART:19970512\nRRULE:FREQ=YEARLY;COUNT=3\n\n",
+				array(date_create('1997-05-12'),date_create('1998-05-12'),date_create('1999-05-12'))
+			),
+
+			// no DTSTART
+			array("RRULE:FREQ=YEARLY;COUNT=3",
+				null
+			),
+			array("RRULE:FREQ=YEARLY;UNTIL=20170202",
+				null
+			),
+			array("RRULE:FREQ=YEARLY;UNTIL=20170202T090000",
+				null
+			),
+			array("RRULE:FREQ=YEARLY;UNTIL=20170202T090000Z",
+				null
+			),
+
+			// just the RRULE property
+			array('FREQ=DAILY',
+				null
+			),
+			array("FREQ=YEARLY;UNTIL=20170202",
+				null
+			),
+			array("FREQ=YEARLY;UNTIL=20170202T090000",
+				null
+			),
+			array("FREQ=YEARLY;UNTIL=20170202T090000Z",
+				null
+			),
 		);
 	}
 
 	/**
 	 * @dataProvider rfcStrings
 	 */
-	public function testRfcStrings($str)
+	public function testRfcStringParser($str, $occurrences)
 	{
 		$rule = new RRule($str);
 
 		// test that parsing the string produces the same result 
 		// as generating the string from a rule
 		$this->assertEquals($rule, new RRule($rule->rfcString()));
+
+		if ( $occurrences ) {
+			$this->assertEquals($occurrences, $rule->getOccurrences());
+		}
+	}
+
+	/**
+	 * @see https://github.com/rlanvin/php-rrule/issues/25
+	 */
+	public function quirkyRfcStrings()
+	{
+		return array(
+			array('DTSTART=20160202T000000Z;FREQ=DAILY;UNTIL=20160205T000000Z', 
+				array(
+					date_create('2016-02-02', new DateTimeZone('UTC')),
+					date_create('2016-02-03', new DateTimeZone('UTC')),
+					date_create('2016-02-04', new DateTimeZone('UTC')),
+					date_create('2016-02-05', new DateTimeZone('UTC'))
+				)
+			),
+			array('RRULE:DTSTART=20160202T000000Z;FREQ=DAILY;UNTIL=20160205T000000Z', 
+				array(
+					date_create('2016-02-02', new DateTimeZone('UTC')),
+					date_create('2016-02-03', new DateTimeZone('UTC')),
+					date_create('2016-02-04', new DateTimeZone('UTC')),
+					date_create('2016-02-05', new DateTimeZone('UTC'))
+				)
+			)
+		);
+	}
+
+	/** 
+	 * @dataProvider quirkyRfcStrings
+	 * @expectedException PHPUnit_Framework_Error_Notice 
+	 */
+	public function testQuirkyRfcStringsParserNotice($str,$occurrences)
+	{
+		$rule = new RRule($str);
+	}
+
+	/**
+	 * @dataProvider quirkyRfcStrings
+	 */
+	public function testQuirkyRfcStringsParser($str,$occurrences)
+	{
+		$rule = @ new RRule($str);
+
+		if ( $occurrences ) {
+			$this->assertEquals($occurrences, $rule->getOccurrences());
+		}
 	}
 
 	public function invalidRfcStrings()
@@ -1778,6 +1919,10 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			RRULE:FREQ=DAILY'),
 			array('DTSTART:20060624
 			RRULE:FREQ=DAILY;UNTIL=2006-06-24'),
+
+			// multiple dtstart
+			array('DTSTART:20060624
+			RRULE:DTSTART=20060630;FREQ=DAILY;UNTIL=20060624'),
 
 			// test combinations of DTSTART and UNTIL which are invalid
 			array('DTSTART;TZID=Australia/Sydney:20160624
