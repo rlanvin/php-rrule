@@ -60,7 +60,7 @@ require 'vendor/autoload.php';
 ### Alternative method (not recommended)
 
 - Download [the latest release](https://github.com/rlanvin/php-rrule/releases/latest)
-- Put the files in a folder that is autoloaded, or `inclure` or `require` them
+- Put the files in a folder that is autoloaded, or `include` or `require` them
 
 ## Documentation
 
