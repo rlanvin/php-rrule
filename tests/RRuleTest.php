@@ -1975,21 +1975,23 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$str = $rrule->rfcString();
 		$new_rrule = new RRule($str);
 	}
-/* todo: only run this test for php > 5.4
+
 	public function testUnsupportedTimezoneConvertedToUtc()
 	{
-		$date = new DateTime('2016-07-08 12:00:00', new DateTimeZone('+06:00'));
-		$rrule = new RRule(array(
-			"freq" => "WEEKLY",
-			"dtstart" => $date,
-			"interval" => 1
-		));
+		if (version_compare(PHP_VERSION, '5.5', '>=')) {
+			$date = new DateTime('2016-07-08 12:00:00', new DateTimeZone('+06:00'));
+			$rrule = new RRule(array(
+				"freq" => "WEEKLY",
+				"dtstart" => $date,
+				"interval" => 1
+			));
 
-		$str = $rrule->rfcString();
-		$this->assertTrue(strpos($str, '20160708T060000Z')!== false);
-		$new_rrule = new RRule($str);
+			$str = $rrule->rfcString();
+			$this->assertTrue(strpos($str, '20160708T060000Z')!== false);
+			$new_rrule = new RRule($str);
+		}
 	}
-*/
+
 	public function rfcStringsWithoutTimezone()
 	{
 		return array(
