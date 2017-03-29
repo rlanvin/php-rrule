@@ -197,6 +197,7 @@ class RRule implements RRuleInterface
 	{
 		if ( is_string($parts) ) {
 			$parts = self::parseRfcString($parts);
+			$parts = array_change_key_case($parts, CASE_UPPER);
 		}
 		elseif ( is_array($parts) ) {
 			$parts = array_change_key_case($parts, CASE_UPPER);
@@ -655,7 +656,7 @@ class RRule implements RRuleInterface
 	{
 		$parts = array();
 
-		$string = strtoupper(trim($string));
+		$string = trim($string);
 
 		$dtstart_type = null;
 		$rfc_date_regexp = '/\d{6}(T\d{6})?Z?/'; // a bit loose

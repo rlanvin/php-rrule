@@ -1804,9 +1804,9 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			),
 
 			// case insensitive
-			array("dtstart:19970902T090000\nrrule:freq=yearly;count=3",
-				array(date_create('1997-09-02 09:00:00'),date_create('1998-09-02 09:00:00'),date_create('1999-09-02 09:00:00'))
-			),
+			// array("dtstart:19970902T090000\nrrule:freq=yearly;count=3",
+			// 	array(date_create('1997-09-02 09:00:00'),date_create('1998-09-02 09:00:00'),date_create('1999-09-02 09:00:00'))
+			// ),
 
 			// empty lines
 			array("\nDTSTART:19970512\nRRULE:FREQ=YEARLY;COUNT=3\n\n",
@@ -2580,6 +2580,11 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				"DTSTART:20170202T000000Z\nFREQ=DAILY;UNTIL=20170205T000000Z",
 				"en_IE",
 				"daily, starting from 02/02/2017, until 05/02/2017"
+			),
+			array(
+				"DTSTART;TZID=America/New_York:19970901T090000\nFREQ=DAILY;UNTIL=20170205T000000Z",
+				"en_IE",
+				"daily, starting from 01/09/1997, until 04/02/2017"
 			)
 		);
 	}

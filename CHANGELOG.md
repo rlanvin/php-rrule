@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.4.2] - 2017-03-29
+
+### Fixed
+
+- `humanReadable()` fails if the RRule was created from a RFC string containing the timezone (e.g. `DTSTART;TZID=America/New_York:19970901T090000`)
+
 ## [1.4.1] - 2017-02-02
 
 ### Fixed
