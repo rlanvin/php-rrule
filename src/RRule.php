@@ -2314,7 +2314,7 @@ class RRule implements RRuleInterface
 			'date_formatter' => null,
 			'fallback' => 'en',
 			'explicit_infinite' => true,
-			'dtstart' => true
+			'include_start' => true
 		);
 
 		// attempt to detect default locale
@@ -2558,7 +2558,7 @@ class RRule implements RRuleInterface
 			$parts['bysetpos'] = $tmp;
 		}
 
-		if ( $opt['dtstart'] ) {
+		if ( $opt['include_start'] ) {
 			// from X
 			$parts['start'] = strtr($i18n['dtstart'], array(
 				'%{date}' => $opt['date_formatter']($this->dtstart)

@@ -2658,7 +2658,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			),
 			array(
 				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
-				array('locale' => "en_IE", 'dtstart' => false),
+				array('locale' => "en_IE", 'include_start' => false),
 				"daily, until 04/02/2017"
 			),
 			array(
@@ -2673,7 +2673,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			),
 			array(
 				"FREQ=DAILY",
-				array('locale' => "en_IE", 'dtstart' => false, 'explicit_infinite' => false),
+				array('locale' => "en_IE", 'include_start' => false, 'explicit_infinite' => false),
 				"daily"
 			),
 		);
