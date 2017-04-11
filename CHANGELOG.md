@@ -2,8 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+
 - Add `explicit_infinite` and `dtstart` options to `humanReadable` to respectivity omit "forever" and the start date from the sentence.
-- RFC parser will not accept multiple DTSTART or RRULE lines
+- RSet constructor now accepts a string to build a RSET from a RFC string [#26](https://github.com/rlanvin/php-rrule/issues/26)
+- New factory method `RRule::createFromRfcString()` to build either a RRule or a RSet from a string
+
+### Fixed
+
+- When creating a RRule, the RFC parser will not accept multiple DTSTART or RRULE lines
 
 ## [1.4.2] - 2017-03-29
 

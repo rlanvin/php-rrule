@@ -196,7 +196,7 @@ class RRule implements RRuleInterface
 	public function __construct($parts)
 	{
 		if ( is_string($parts) ) {
-			$parts = self::parseRfcString($parts);
+			$parts = RfcParser::parseRRule($parts);
 			$parts = array_change_key_case($parts, CASE_UPPER);
 		}
 		elseif ( is_array($parts) ) {
@@ -652,141 +652,43 @@ class RRule implements RRuleInterface
 	 *
 	 * @throws \InvalidArgumentException on error
 	 */
-	static protected function parseRfcString($string)
+	static public function parseRfcString($string)
 	{
-		$string = trim($string);
-		$parts = array();
-		$dtstart_type = null;
-		$rfc_date_regexp = '/\d{6}(T\d{6})?Z?/'; // regexp to check the date, a bit loose
-		$nb_dtstart = 0;
-		$nb_rrule = 0;
-		$lines = explode("\n", $string);
+		trigger_error('parseRfcString() is deprecated - use new RRule(), RRule::createFromRfcString() or \RRule\RfcParser::parseRRule() if necessary',E_USER_DEPRECATED);
+		return RfcParser::parseRRule($sring);
+	}
 
-		foreach ( $lines as $line ) {
-			$line = trim($line);
-			if ( strpos($line,':') === false ) {
-				if ( sizeof($lines) > 1 ) {
-					throw new \InvalidArgumentException('Failed to parse RFC string, line is not starting with "RRULE:" in a multi-line RFC string');
-				}
-				$property_name = 'RRULE';
-				$property_value = $line;
+	/**
+	 * Take a RFC 5545 string and returns either a RRule or a RSet.
+	 *
+	 * @param bool $force_rset Force a RSet to be returned.
+	 * @return RRule|RSet
+	 *
+	 * @throws \InvalidArgumentException on error
+	 */
+	static public function createFromRfcString($string, $force_rset = false)
+	{
+		$class = '\RRule\RSet';
+
+		if ( ! $force_rset ) {
+			// try to detect if we have a RRULE or a set
+			$uppercased_string = strtoupper($string);
+			$nb_rrule = substr_count($string, 'RRULE');
+			if ( $nb_rrule == 0 ) {
+				$class = '\RRule\RRule';
+			}
+			elseif ( $nb_rrule > 1 ) {
+				$class = '\RRule\RSet';
 			}
 			else {
-				list($property_name,$property_value) = explode(':',$line);
-			}
-			$tmp = explode(';',$property_name);
-			$property_name = $tmp[0];
-			$property_params = array();
-			array_splice($tmp,0,1);
-			foreach ( $tmp as $pair ) {
-				if ( strpos($pair,'=') === false ) {
-					throw new \InvalidArgumentException('Failed to parse RFC string, invalid property parameters: '.$pair);
+				$class = '\RRule\RRule';
+				if ( strpos($string, 'EXDATE') !== false ||  strpos($string, 'RDATE') !== false ||  strpos($string, 'EXRULE') !== false ) {
+					$class = '\RRule\RSet';
 				}
-				list($key,$value) = explode('=',$pair);
-				$property_params[$key] = $value;
-			}
-
-			switch ( strtoupper($property_name) ) {
-				case 'DTSTART':
-					$nb_dtstart += 1;
-					if ( $nb_dtstart > 1 ) {
-						throw new \InvalidArgumentException('Too many DTSTART properties (there can be only one)');
-					}
-					$tmp = null;
-					$dtstart_type = 'date';
-					if ( ! preg_match($rfc_date_regexp, $property_value) ) {
-						throw new \InvalidArgumentException(
-							'Invalid DTSTART property: date or date time format incorrect'
-						);
-					}
-					if ( isset($property_params['TZID']) ) {
-						// TZID must only be specified if this is a date-time (see section 3.3.4 & 3.3.5 of RFC 5545)
-						if ( strpos($property_value, 'T') === false ) {
-							throw new \InvalidArgumentException(
-								'Invalid DTSTART property: TZID should not be specified if there is no time component'
-							);
-						}
-						// The "TZID" property parameter MUST NOT be applied to DATE-TIME
-						// properties whose time values are specified in UTC.
-						if ( strpos($property_value, 'Z') !== false ) {
-							throw new \InvalidArgumentException(
-								'Invalid DTSTART property: TZID must not be applied when time is specified in UTC'
-							);
-						}
-						$dtstart_type = 'tzid';
-						$tmp = new \DateTimeZone($property_params['TZID']);
-					}
-					elseif ( strpos($property_value, 'T') !== false ) {
-						if ( strpos($property_value, 'Z') === false ) {
-							$dtstart_type = 'localtime'; // no timezone
-						}
-						else {
-							$dtstart_type = 'utc';
-						}
-					}
-					$parts['DTSTART'] = new \DateTime($property_value, $tmp);
-					break;
-				case 'RRULE':
-					$nb_rrule += 1;
-					if ( $nb_rrule > 1 ) {
-						throw new \InvalidArgumentException('Too many RRULE properties (there can be only one)');
-					}
-					foreach ( explode(';',$property_value) as $pair ) {
-						$pair = explode('=', $pair);
-						if ( ! isset($pair[1]) || isset($pair[2]) ) {
-							throw new \InvalidArgumentException("Failed to parse RFC string, malformed RRULE property: $property_value");
-						}
-						list($key, $value) = $pair;
-						if ( $key === 'UNTIL' ) {
-							if ( ! preg_match($rfc_date_regexp, $value) ) {
-								throw new \InvalidArgumentException(
-									'Invalid UNTIL property: date or date time format incorrect'
-								);
-							}
-							switch ( $dtstart_type ) {
-								case 'date':
-									if ( strpos($value, 'T') !== false) {
-										throw new \InvalidArgumentException(
-											'Invalid UNTIL property: The value of the UNTIL rule part MUST be a date if DTSTART is a date.'
-										);
-									}
-									break;
-								case 'localtime':
-									if ( strpos($value, 'T') === false || strpos($value, 'Z') !== false ) {
-										throw new \InvalidArgumentException(
-											'Invalid UNTIL property: if the "DTSTART" property is specified as a date with local time, then the UNTIL rule part MUST also be specified as a date with local time'
-										);
-									}
-									break;
-								case 'tzid':
-								case 'utc':
-									if ( strpos($value, 'T') === false || strpos($value, 'Z') === false ) {
-										throw new \InvalidArgumentException(
-											'Invalid UNTIL property: if the "DTSTART" property is specified as a date with UTC time or a date with local time and time zone reference, then the UNTIL rule part MUST be specified as a date with UTC time.'
-										);
-									}
-									break;
-							}
-
-							$value = new \DateTime($value);
-						}
-						elseif ( $key === 'DTSTART' ) {
-							if ( isset($parts['DTSTART']) ) {
-								throw new \InvalidArgumentException('DTSTART cannot be part of RRULE and has already been defined');
-							}
-							// this is an invalid rule, however we'll support it since the JS lib is broken
-							// see https://github.com/rlanvin/php-rrule/issues/25
-							trigger_error("This string is not compliant with the RFC (DTSTART cannot be part of RRULE). It is accepted as is for compability reasons only.", E_USER_NOTICE);
-						}
-						$parts[$key] = $value;
-					}
-					break;
-				default:
-					throw new \InvalidArgumentException('Failed to parse RFC string, unsupported property: '.$property_name);
 			}
 		}
 
-		return $parts;
+		return new $class($string);
 	}
 
 	/**

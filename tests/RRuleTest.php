@@ -2089,6 +2089,65 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
+// RFC Factory method
+
+	public function rfcStringsForFactory()
+	{
+		return array(
+			array('DTSTART;TZID=America/New_York:19970901T090000
+			RRULE:FREQ=HOURLY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=1',
+				'\RRule\RRule'
+			),
+			array('DTSTART;TZID=America/New_York:19970512T090000
+			RRULE:FREQ=YEARLY;BYYEARDAY=1,-1,10,-50;BYDAY=MO',
+				'\RRule\RRule'
+			),
+			array('DTSTART:19970512T090000Z
+			RRULE:FREQ=YEARLY',
+				'\RRule\RRule'
+			),
+			array('DTSTART:19970512T090000
+			RRULE:FREQ=YEARLY',
+				'\RRule\RRule'
+			),
+			array('DTSTART:19970512
+			RRULE:FREQ=YEARLY',
+				'\RRule\RRule'
+			),
+			// empty lines
+			array("\nDTSTART:19970512\nRRULE:FREQ=YEARLY;COUNT=3\n\n",
+				'\RRule\RRule'
+			),
+			// no DTSTART
+			array("RRULE:FREQ=YEARLY;COUNT=3",
+				'\RRule\RRule'
+			),
+			array(
+				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY\nEXRULE:FREQ=YEARLY\nEXDATE;TZID=America/New_York:19970902T090000",
+				'\RRule\RSet'
+			)
+		);
+	}
+
+	/**
+	 * @dataProvider rfcStringsForFactory
+	 */
+	public function testCreateFromRfcString($string, $expected_class)
+	{
+		$object = RRule::createFromRfcString($string);
+		$this->assertInstanceOf($expected_class, $object);
+	}
+
+	/**
+	 * @dataProvider rfcStringsForFactory
+	 */
+	public function testCreateFromRfcStringForceRSet($string)
+	{
+		$object = RRule::createFromRfcString($string, true);
+		$this->assertInstanceOf('\RRule\RSet', $object);
+	}
+
+///////////////////////////////////////////////////////////////////////////////
 // Timezone
 
 	public function testTimezoneIsKeptIdentical()

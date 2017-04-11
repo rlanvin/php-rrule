@@ -426,4 +426,77 @@ class RSetTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('array', $rset->getExDates());
 		$this->assertCount(0, $rset->getExDates());
 	}
+
+///////////////////////////////////////////////////////////////////////////////
+// RFC Strings
+
+	public function rfcStrings()
+	{
+		return array(
+			array(
+				"DTSTART;TZID=America/New_York:19970901T090000
+				RRULE:FREQ=DAILY;COUNT=3
+				EXDATE;TZID=America/New_York:19970902T090000",
+				array(
+					date_create('1997-09-01 09:00:00', new \DateTimeZone('America/New_York')),
+					date_create('1997-09-03 09:00:00', new \DateTimeZone('America/New_York'))
+				)
+			),
+			array(
+				"DTSTART;TZID=America/New_York:19970901T090000
+				RRULE:FREQ=DAILY;COUNT=3
+				EXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1
+				EXDATE;TZID=America/New_York:19970903T090000
+				RDATE;TZID=America/New_York:19970904T090000",
+				array(
+					date_create('1997-09-02 09:00:00', new \DateTimeZone('America/New_York')),
+					date_create('1997-09-04 09:00:00', new \DateTimeZone('America/New_York'))
+				)
+			)
+		);
+	}
+
+	/**
+	 * @dataProvider rfcStrings
+	 */
+	public function testParseRfcString($string, $occurrences)
+	{
+		$object = new RSet($string);
+		$this->assertEquals($occurrences, $object->getOccurrences());
+	}
+
+	public function quirkyRfcStrings()
+	{
+		return array(
+			array(
+				'RRULE:FREQ=MONTHLY;DTSTART=20170201T010000Z;UNTIL=20170228T030000Z;BYDAY=TU
+				RDATE:20170222T010000Z
+				EXDATE:20170221T010000Z',
+				array(
+					date_create('20170207T010000Z'),
+					date_create('20170214T010000Z'),
+					date_create('20170222T010000Z'),
+					date_create('20170228T010000Z')
+				)
+			)
+		);
+	}
+
+	/**
+	 * @dataProvider quirkyRfcStrings
+	 * @expectedException PHPUnit_Framework_Error_Notice 
+	 */
+	public function testParseQuirkyRfcStringNotice($string, $occurrences)
+	{
+		$object = new RSet($string);
+	}
+
+	/**
+	 * @dataProvider quirkyRfcStrings
+	 */
+	public function testParseQuirkyRfcString($string, $occurrences)
+	{
+		$object = @ new RSet($string);
+		$this->assertEquals($occurrences, $object->getOccurrences());
+	}
 }

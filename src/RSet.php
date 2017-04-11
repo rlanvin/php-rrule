@@ -55,10 +55,77 @@ class RSet implements RRuleInterface
 
 	/**
 	 * Constructor
+	 *
+	 * @param string $string a RFC compliant text block
 	 */
-	public function __construct()
+	public function __construct($string = null)
 	{
+		if ( $string && is_string($string) ) {
+			$string = trim($string);
+			$rrules = array();
+			$exrules = array();
+			$rdates = array();
+			$exdates = array();
+			$dtstart = null;
 
+			// parse
+			$lines = explode("\n", $string);
+			foreach ( $lines as $line ) {
+				$line = trim($line);
+
+				if ( strpos($line,':') === false ) {
+					throw new \InvalidArgumentException('Failed to parse RFC string, line is not starting with a property name followed by ":"');
+				}
+
+				list($property_name,$property_value) = explode(':',$line);
+				$tmp = explode(";",$property_name);
+				$property_name = $tmp[0];
+				switch ( strtoupper($property_name) ) {
+					case 'DTSTART':
+						if ( $dtstart !== null ) {
+							throw new \InvalidArgumentException('Failed to parse RFC string, multiple DTSTART found');
+						}
+						$dtstart = $line;
+					break;
+					case 'RRULE':
+						$rrules[] = $line;
+					break;
+					case 'EXRULE':
+						$exrules[] = $line;
+					break;
+					case 'RDATE':
+						$rdates = array_merge($rdates, RfcParser::parseRDate($line));
+					break;
+					case 'EXDATE':
+						$exdates = array_merge($exdates, RfcParser::parseExDate($line));
+					break;
+					default:
+						throw new \InvalidArgumentException("Failed to parse RFC, unknown property: $property_name");
+				}
+			}
+			foreach ( $rrules as $rrule ) {
+				if ( $dtstart ) {
+					$rrule = $dtstart."\n".$rrule;
+				}
+
+				$this->addRRule($rrule);
+			}
+
+			foreach ( $exrules as $rrule ) {
+				if ( $dtstart ) {
+					$rrule = $dtstart."\n".$rrule;
+				}
+				$this->addExRule($rrule);
+			}
+
+			foreach ( $rdates as $date ) {
+				$this->addDate($date);
+			}
+
+			foreach ( $exdates as $date ) {
+				$this->addExDate($date);
+			}
+		}
 	}
 
 	/**
