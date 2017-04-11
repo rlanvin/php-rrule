@@ -652,18 +652,22 @@ class RRule implements RRuleInterface
 	 *
 	 * @throws \InvalidArgumentException on error
 	 */
-	static public function parseRfcString($string)
+	static protected function parseRfcString($string)
 	{
-		$parts = array();
-
 		$string = trim($string);
-
+		$parts = array();
 		$dtstart_type = null;
-		$rfc_date_regexp = '/\d{6}(T\d{6})?Z?/'; // a bit loose
+		$rfc_date_regexp = '/\d{6}(T\d{6})?Z?/'; // regexp to check the date, a bit loose
+		$nb_dtstart = 0;
+		$nb_rrule = 0;
+		$lines = explode("\n", $string);
 
-		foreach ( explode("\n", $string) as $line ) {
+		foreach ( $lines as $line ) {
 			$line = trim($line);
 			if ( strpos($line,':') === false ) {
+				if ( sizeof($lines) > 1 ) {
+					throw new \InvalidArgumentException('Failed to parse RFC string, line is not starting with "RRULE:" in a multi-line RFC string');
+				}
 				$property_name = 'RRULE';
 				$property_value = $line;
 			}
@@ -682,9 +686,12 @@ class RRule implements RRuleInterface
 				$property_params[$key] = $value;
 			}
 
-			switch ( $property_name ) {
+			switch ( strtoupper($property_name) ) {
 				case 'DTSTART':
-				case 'dtstart':
+					$nb_dtstart += 1;
+					if ( $nb_dtstart > 1 ) {
+						throw new \InvalidArgumentException('Too many DTSTART properties (there can be only one)');
+					}
 					$tmp = null;
 					$dtstart_type = 'date';
 					if ( ! preg_match($rfc_date_regexp, $property_value) ) {
@@ -720,7 +727,10 @@ class RRule implements RRuleInterface
 					$parts['DTSTART'] = new \DateTime($property_value, $tmp);
 					break;
 				case 'RRULE':
-				case 'rrule':
+					$nb_rrule += 1;
+					if ( $nb_rrule > 1 ) {
+						throw new \InvalidArgumentException('Too many RRULE properties (there can be only one)');
+					}
 					foreach ( explode(';',$property_value) as $pair ) {
 						$pair = explode('=', $pair);
 						if ( ! isset($pair[1]) || isset($pair[2]) ) {

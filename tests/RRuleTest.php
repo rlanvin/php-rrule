@@ -1942,6 +1942,15 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array('DTSTART:19970512
 			RRULE:FREQ=YEARLY;UNTIL=19970512T090000Z'),
 
+			// missing RRULE
+			array("DTSTART:20060624\nFREQ=DAILY"),
+
+			// multiple RRULE or DTSTART
+			array("DTSTART:20060624\nRRULE:FREQ=DAILY\nRRULE:FREQ=YEARLY"),
+			array("DTSTART:20060624\nDTSTART:20060624\nRRULE:FREQ=YEARLY"),
+
+			// properties for Rset
+			array("DTSTART:20060624\nRRULE:FREQ=DAILY\nEXRULE:FREQ=YEARLY"),
 		);
 	}
 
