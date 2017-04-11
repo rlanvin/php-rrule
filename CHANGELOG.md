@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add `explicit_infinite` and `dtstart` options to `humanReadable` to respectivity omit "forever" and the start date from the sentence.
+
 ## [1.4.2] - 2017-03-29
 
 ### Fixed

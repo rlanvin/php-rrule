@@ -2574,29 +2574,49 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	{
 		return array(
 			array(
-				"DTSTART:20170202T000000Z\nFREQ=DAILY;UNTIL=20170205T000000Z",
-				"en",
+				"DTSTART:20170202T000000Z\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
+				array('locale' => "en"),
 				"daily, starting from 2/2/17, until 2/5/17"
 			),
 			array(
-				"DTSTART:20170202T000000Z\nFREQ=DAILY;UNTIL=20170205T000000Z",
-				"en_IE",
+				"DTSTART:20170202T000000Z\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
+				array('locale' => "en_IE"),
 				"daily, starting from 02/02/2017, until 05/02/2017"
 			),
 			array(
-				"DTSTART;TZID=America/New_York:19970901T090000\nFREQ=DAILY;UNTIL=20170205T000000Z",
-				"en_IE",
+				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
+				array('locale' => "en_IE"),
 				"daily, starting from 01/09/1997, until 04/02/2017"
-			)
+			),
+			array(
+				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
+				array('locale' => "en_IE", 'dtstart' => false),
+				"daily, until 04/02/2017"
+			),
+			array(
+				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY",
+				array('locale' => "en_IE", 'explicit_infinite' => false),
+				"daily, starting from 01/09/1997"
+			),
+			array(
+				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=YEARLY;INTERVAL=2",
+				array('locale' => "en_IE", 'explicit_infinite' => false),
+				"every 2 years, starting from 01/09/1997"
+			),
+			array(
+				"FREQ=DAILY",
+				array('locale' => "en_IE", 'dtstart' => false, 'explicit_infinite' => false),
+				"daily"
+			),
 		);
 	}
 
 	/**
 	 * @dataProvider humanReadableStrings
 	 */
-	public function testHumanReadable($rrule,$locale,  $string)
+	public function testHumanReadable($rrule,$options,  $string)
 	{
 		$rrule = new RRule($rrule);
-		$this->assertEquals($string, $rrule->humanReadable(array('locale' => $locale)));
+		$this->assertEquals($string, $rrule->humanReadable($options));
 	}
 }

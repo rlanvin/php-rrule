@@ -2375,6 +2375,17 @@ class RRule implements RRuleInterface
 	 * Format a rule in a human readable string
 	 * intl extension is required.
 	 *
+	 * Available options
+	 *
+	 * | Name              | Type    | Description
+	 * |-------------------|---------|------------
+	 * | `use_intl`        | bool    | Use the intl extension or not (autodetect)
+	 * | `locale`          | string  | The locale to use (autodetect)
+	 * | `fallback`        | string  | Fallback locale if main locale is not found (default en)
+	 * | `date_formatter`  | callable| Function used to format the date (takes date, returns formatted)
+	 * | `explicit_inifite`| bool    | Mention "forever" if the rule is infinite (true)
+	 * | `dtstart`         | bool    | Mention the start date (true)
+	 *
 	 * @param array  $opt
 	 *
 	 * @return string
@@ -2390,6 +2401,8 @@ class RRule implements RRuleInterface
 			'locale' => null,
 			'date_formatter' => null,
 			'fallback' => 'en',
+			'explicit_infinite' => true,
+			'dtstart' => true
 		);
 
 		// attempt to detect default locale
@@ -2633,14 +2646,18 @@ class RRule implements RRuleInterface
 			$parts['bysetpos'] = $tmp;
 		}
 
-		// from X
-		$parts['start'] = strtr($i18n['dtstart'], array(
-			'%{date}' => $opt['date_formatter']($this->dtstart)
-		));
+		if ( $opt['dtstart'] ) {
+			// from X
+			$parts['start'] = strtr($i18n['dtstart'], array(
+				'%{date}' => $opt['date_formatter']($this->dtstart)
+			));
+		}
 
 		// to X, or N times, or indefinitely
 		if ( ! $this->until && ! $this->count ) {
-			$parts['end'] = $i18n['infinite'];
+			if ( $opt['explicit_infinite'] ) {
+				$parts['end'] = $i18n['infinite'];
+			}
 		}
 		elseif ( $this->until ) {
 			$parts['end'] = strtr($i18n['until'], array(
@@ -2656,12 +2673,6 @@ class RRule implements RRuleInterface
 			);
 		}
 
-		// $str = strtr('%{frequency}%{byday}%{start}%{end}', array(
-		// 	'%{frequency}' => $parts['frequency'],
-		// 	'%{start}' => $parts['start'],
-		// 	'%{end}' => $parts['end'],
-		// 	'%{byday}' => $parts['byday'],
-		// ));
 		$parts = array_filter($parts);
 		$str = implode('',$parts);
 		return $str;
