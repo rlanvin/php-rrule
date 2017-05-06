@@ -8,10 +8,15 @@
 - RSet constructor now accepts a string to build a RSET from a RFC string [#26](https://github.com/rlanvin/php-rrule/issues/26)
 - New factory method `RRule::createFromRfcString()` to build either a RRule or a RSet from a string
 - Add a `$limit` parameter to `getOccurrences()` and `getOccurrencesBetween()` to make working with infinite rule easier
+- Add a `$dtstart` parameter to `RRule` and `RSet` constsructor to specify dtstart when working with a RFC string without DTSTART.
 
 ### Fixed
 
 - When creating a RRule, the RFC parser will not accept multiple DTSTART or RRULE lines
+
+### Deprecated
+
+- `RRule::parseRfcString` is deprecated. Note: it wasn't part of the documentation in the first place, but just in case someone is using it, it's not removed yet.
 
 ## [1.4.2] - 2017-03-29
 

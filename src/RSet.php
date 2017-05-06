@@ -58,7 +58,7 @@ class RSet implements RRuleInterface
 	 *
 	 * @param string $string a RFC compliant text block
 	 */
-	public function __construct($string = null)
+	public function __construct($string = null, $default_dtstart = null)
 	{
 		if ( $string && is_string($string) ) {
 			$string = trim($string);
@@ -82,7 +82,7 @@ class RSet implements RRuleInterface
 				$property_name = $tmp[0];
 				switch ( strtoupper($property_name) ) {
 					case 'DTSTART':
-						if ( $dtstart !== null ) {
+						if ( $default_dtstart || $dtstart !== null ) {
 							throw new \InvalidArgumentException('Failed to parse RFC string, multiple DTSTART found');
 						}
 						$dtstart = $line;
@@ -108,14 +108,14 @@ class RSet implements RRuleInterface
 					$rrule = $dtstart."\n".$rrule;
 				}
 
-				$this->addRRule($rrule);
+				$this->addRRule(new RRule($rrule, $default_dtstart));
 			}
 
 			foreach ( $exrules as $rrule ) {
 				if ( $dtstart ) {
 					$rrule = $dtstart."\n".$rrule;
 				}
-				$this->addExRule($rrule);
+				$this->addExRule(new RRule($rrule, $default_dtstart));
 			}
 
 			foreach ( $rdates as $date ) {

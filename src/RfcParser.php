@@ -22,7 +22,6 @@ namespace RRule;
  */
 class RfcParser
 {
-
 	/**
 	 * High level "line".
 	 * Explode a line into property name, property parameters and property value
@@ -63,10 +62,14 @@ class RfcParser
 	/**
 	 * Parse both DTSTART and RRULE (and EXRULE).
 	 *
-	 * It's impossible to accuractly parse a RRULE in isolation (without the DTSTART)
+	 * It's impossible to accuratly parse a RRULE in isolation (without the DTSTART)
 	 * as some tests depends on DTSTART (notably the date format for UNTIL).
+	 *
+	 * @param string $string The RFC-like string
+	 * @param mixed $dtstart The default dtstart to be used (if not in the string)
+	 * @return array
 	 */
-	static public function parseRRule($string)
+	static public function parseRRule($string, $dtstart = null)
 	{
 		$string = trim($string);
 		$parts = array();
@@ -75,6 +78,12 @@ class RfcParser
 		$nb_dtstart = 0;
 		$nb_rrule = 0;
 		$lines = explode("\n", $string);
+
+		if ( $dtstart ) {
+			$nb_dtstart = 1;
+			$dtstart_type = 'tzid';
+			$parts['DTSTART'] = RRule::parseDate($dtstart);
+		}
 
 		foreach ( $lines as $line ) {
 			$property = self::parseLine($line, array(

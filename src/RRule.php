@@ -193,20 +193,25 @@ class RRule implements RRuleInterface
 	 *
 	 * @param mixed $parts An assoc array of parts, or a RFC string.
 	 */
-	public function __construct($parts)
+	public function __construct($parts, $dtstart = null)
 	{
 		if ( is_string($parts) ) {
-			$parts = RfcParser::parseRRule($parts);
-			$parts = array_change_key_case($parts, CASE_UPPER);
-		}
-		elseif ( is_array($parts) ) {
+			$parts = RfcParser::parseRRule($parts, $dtstart);
 			$parts = array_change_key_case($parts, CASE_UPPER);
 		}
 		else {
-			throw new \InvalidArgumentException(sprintf(
-				'The first argument must be a string or an array (%s provided)',
-				gettype($parts)
-			));
+			if ( $dtstart ) {
+				throw new \InvalidArgumentException('$dtstart argument has no effect if not constructing from a string');
+			}
+			if ( is_array($parts) ) {
+				$parts = array_change_key_case($parts, CASE_UPPER);
+			}
+			else {
+				throw new \InvalidArgumentException(sprintf(
+					'The first argument must be a string or an array (%s provided)',
+					gettype($parts)
+				));
+			}
 		}
 
 		// validate extra parts

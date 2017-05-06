@@ -1726,12 +1726,12 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		));
 
 		$this->assertCount(1, $rrule->getOccurrences(1));
-		$this->assertEquals([date_create('2017-01-01')], $rrule->getOccurrences(1));
+		$this->assertEquals(array(date_create('2017-01-01')), $rrule->getOccurrences(1));
 		$this->assertCount(5, $rrule->getOccurrences(5));
-		$this->assertEquals([
+		$this->assertEquals(array(
 			date_create('2017-01-01'),date_create('2017-01-02'),date_create('2017-01-03'),
 			date_create('2017-01-04'),date_create('2017-01-05')
-		], $rrule->getOccurrences(5));
+		), $rrule->getOccurrences(5));
 		try {
 			$rrule->getOccurrences();
 			$this->fail('Expected exception (infinite rule) not thrown');
@@ -1749,7 +1749,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		$this->assertCount(1, $rrule->getOccurrencesBetween('2017-01-01', null, 1));
 		$this->assertCount(1, $rrule->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
-		$this->assertEquals([date_create('2017-02-01')], $rrule->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
+		$this->assertEquals(array(date_create('2017-02-01')), $rrule->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
 		$this->assertCount(5, $rrule->getOccurrencesBetween('2017-01-01', null, 5));
 		try {
 			$rrule->getOccurrencesBetween('2017-01-01', null);
@@ -1856,6 +1856,10 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array("\nDTSTART:19970512\nRRULE:FREQ=YEARLY;COUNT=3\n\n",
 				array(date_create('1997-05-12'),date_create('1998-05-12'),date_create('1999-05-12'))
 			),
+			// CRLF
+			array("\r\nDTSTART:19970512\r\nRRULE:FREQ=YEARLY;COUNT=3\r\n\r\n",
+				array(date_create('1997-05-12'),date_create('1998-05-12'),date_create('1999-05-12'))
+			),
 
 			// no DTSTART
 			array("RRULE:FREQ=YEARLY;COUNT=3",
@@ -1900,6 +1904,25 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		if ( $occurrences ) {
 			$this->assertEquals($occurrences, $rule->getOccurrences());
+		}
+	}
+
+	public function testRfcStringParserWithDtStart()
+	{
+		$rrule = new RRule('RRULE:FREQ=YEARLY');
+		$this->assertEquals(date_create(), $rrule[0]);
+
+		$rrule = new RRule('RRULE:FREQ=YEARLY', date_create('2017-01-01'));
+		$this->assertEquals(date_create('2017-01-01'), $rrule[0]);
+
+		$rrule = new RRule('RRULE:FREQ=YEARLY', '2017-01-01');
+		$this->assertEquals(date_create('2017-01-01'), $rrule[0]);
+
+		try {
+			$rrule = new RRule("DTSTART:19970512\nRRULE:FREQ=YEARLY", date_create('2017-01-01'));
+			$this->fail('Expected InvalidArgumentException (too many dtstart) not thrown');
+		} catch ( \InvalidArgumentException $e ) {
+
 		}
 	}
 

@@ -511,6 +511,44 @@ class RSetTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($occurrences, $object->getOccurrences());
 	}
 
+	public function testParseRfcStringWithDtStart()
+	{
+		$rset = new RSet(
+			"RRULE:FREQ=DAILY;COUNT=3\nEXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1"
+		);
+		$this->assertEquals(array(
+			date_create('+1day'),
+			date_create('+2day')
+		), $rset->getOccurrences());
+
+		$rset = new RSet(
+			"RRULE:FREQ=DAILY;COUNT=3\nEXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1",
+			'2017-01-01'
+		);
+		$this->assertEquals(array(
+			date_create('2017-01-02'),
+			date_create('2017-01-03')
+		), $rset->getOccurrences());
+
+		$rset = new RSet(
+			"RRULE:FREQ=DAILY;COUNT=3\nEXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1",
+			date_create('2017-01-01')
+		);
+		$this->assertEquals(array(
+			date_create('2017-01-02'),
+			date_create('2017-01-03')
+		), $rset->getOccurrences());
+
+		try {
+			$rset = new RSet(
+				"DTSTART:DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;COUNT=3\nEXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1",
+				date_create('2017-01-01')
+			);
+			$this->fail('Expected InvalidArgumentException (too many start date) not thrown');
+		} catch ( InvalidArgumentException $e ) {
+
+		}
+	}
 	public function quirkyRfcStrings()
 	{
 		return array(
