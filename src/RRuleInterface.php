@@ -19,18 +19,20 @@ interface RRuleInterface extends \Iterator, \ArrayAccess, \Countable
 	/**
 	 * Return all the occurrences in an array of \DateTime.
 	 *
+	 * @param int $limit Limit the resultset to n occurrences (0, null or false = everything)
 	 * @return array An array of \DateTime objects
 	 */
-	public function getOccurrences();
+	public function getOccurrences($limit = null);
 
 	/**
 	 * Return all the ocurrences after a date, before a date, or between two dates.
 	 *
 	 * @param mixed $begin Can be null to return all occurrences before $end
 	 * @param mixed $end Can be null to return all occurrences after $begin
+	 * @param int $limit Limit the resultset to n occurrences (0, null or false = everything)
 	 * @return array An array of \DateTime objects
 	 */
-	public function getOccurrencesBetween($begin, $end);
+	public function getOccurrencesBetween($begin, $end, $limit = null);
 
 	/**
 	 * Return true if $date is an occurrence.

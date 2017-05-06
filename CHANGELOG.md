@@ -7,6 +7,7 @@
 - Add `explicit_infinite` and `include_start` options to `humanReadable` to respectivity omit "forever" and the start date from the sentence.
 - RSet constructor now accepts a string to build a RSET from a RFC string [#26](https://github.com/rlanvin/php-rrule/issues/26)
 - New factory method `RRule::createFromRfcString()` to build either a RRule or a RSet from a string
+- Add a `$limit` parameter to `getOccurrences()` and `getOccurrencesBetween()` to make working with infinite rule easier
 
 ### Fixed
 

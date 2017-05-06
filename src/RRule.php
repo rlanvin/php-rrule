@@ -731,26 +731,29 @@ class RRule implements RRuleInterface
 	/**
 	 * Return all the occurrences in an array of \DateTime.
 	 *
+	 * @param int $limit Limit the resultset to n occurrences (0, null or false = everything)
 	 * @return array An array of \DateTime objects
 	 */
-	public function getOccurrences()
+	public function getOccurrences($limit = null)
 	{
-		if ( $this->isInfinite() ) {
+		if ( ! $limit && $this->isInfinite() ) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
 
 		// cached version already computed
+		$iterator = $this;
 		if ( $this->total !== null ) {
-			$res = array();
-			foreach ( $this->cache as $occurrence ) {
-				$res[] = clone $occurrence; // we have to clone because DateTime is not immutable
-			}
-			return $res;
+			$iterator = $this->cache;
 		}
 
 		$res = array();
-		foreach ( $this as $occurrence ) {
-			$res[] = $occurrence;
+		$n = 0;
+		foreach ( $iterator as $occurrence ) {
+			$res[] = clone $occurrence; // we have to clone because DateTime is not immutable
+			$n += 1;
+			if ( $limit && $n >= $limit ) {
+				break;
+			}
 		}
 		return $res;
 	}
@@ -760,9 +763,10 @@ class RRule implements RRuleInterface
 	 *
 	 * @param mixed $begin Can be null to return all occurrences before $end
 	 * @param mixed $end Can be null to return all occurrences after $begin
+	 * @param int $limit Limit the resultset to n occurrences (0, null or false = everything)
 	 * @return array An array of \DateTime objects
 	 */
-	public function getOccurrencesBetween($begin, $end)
+	public function getOccurrencesBetween($begin, $end, $limit = null)
 	{
 		if ( $begin !== null ) {
 			$begin = self::parseDate($begin);
@@ -771,7 +775,7 @@ class RRule implements RRuleInterface
 		if ( $end !== null ) {
 			$end = self::parseDate($end);
 		}
-		elseif ( $this->isInfinite() ) {
+		elseif ( ! $limit && $this->isInfinite() ) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
 
@@ -781,6 +785,7 @@ class RRule implements RRuleInterface
 		}
 
 		$res = array();
+		$n = 0;
 		foreach ( $iterator as $occurrence ) {
 			if ( $begin !== null && $occurrence < $begin ) {
 				continue;
@@ -789,6 +794,10 @@ class RRule implements RRuleInterface
 				break;
 			}
 			$res[] = clone $occurrence;
+			$n += 1;
+			if ( $limit && $n >= $limit ) {
+				break;
+			}
 		}
 		return $res;
 	}
