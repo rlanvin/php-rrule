@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2017-05-07
+
 ### Added
 
 - Add `explicit_infinite` and `include_start` options to `humanReadable` to respectivity omit "forever" and the start date from the sentence.
@@ -113,7 +115,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/rlanvin/php-rrule/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/rlanvin/php-rrule/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/rlanvin/php-rrule/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/rlanvin/php-rrule/compare/v1.3.1...v1.4.0
