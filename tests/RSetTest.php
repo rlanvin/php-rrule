@@ -439,12 +439,12 @@ class RSetTest extends PHPUnit_Framework_TestCase
 		)));
 
 		$this->assertCount(1, $rset->getOccurrences(1));
-		$this->assertEquals([date_create('2017-01-01')], $rset->getOccurrences(1));
+		$this->assertEquals(array(date_create('2017-01-01')), $rset->getOccurrences(1));
 		$this->assertCount(5, $rset->getOccurrences(5));
-		$this->assertEquals([
+		$this->assertEquals(array(
 			date_create('2017-01-01'),date_create('2017-01-02'),date_create('2017-01-03'),
 			date_create('2017-01-04'),date_create('2017-01-05')
-		], $rset->getOccurrences(5));
+		), $rset->getOccurrences(5));
 		try {
 			$rset->getOccurrences();
 			$this->fail('Expected exception (infinite rule) not thrown');
@@ -463,7 +463,7 @@ class RSetTest extends PHPUnit_Framework_TestCase
 
 		$this->assertCount(1, $rset->getOccurrencesBetween('2017-01-01', null, 1));
 		$this->assertCount(1, $rset->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
-		$this->assertEquals([date_create('2017-02-01')], $rset->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
+		$this->assertEquals(array(date_create('2017-02-01')), $rset->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
 		$this->assertCount(5, $rset->getOccurrencesBetween('2017-01-01', null, 5));
 		try {
 			$rset->getOccurrencesBetween('2017-01-01', null);
@@ -517,8 +517,9 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			"RRULE:FREQ=DAILY;COUNT=3\nEXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1"
 		);
 		$this->assertEquals(array(
-			date_create('+1day'),
-			date_create('+2day')
+			// get rid of microseconds for PHP 7.1+
+			date_create(date_create('+1day')->format('Y-m-d H:i:s')),
+			date_create(date_create('+2day')->format('Y-m-d H:i:s'))
 		), $rset->getOccurrences());
 
 		$rset = new RSet(

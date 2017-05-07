@@ -277,7 +277,16 @@ class RRule implements RRuleInterface
 			}
 		} 
 		else {
-			$this->dtstart = new \DateTime();
+			$this->dtstart = new \DateTime(); // for PHP 7.1+ this contains microseconds which causes many problems
+			if ( version_compare(PHP_VERSION, '7.1.0') >= 0 ) {
+				// remove microseconds
+				$this->dtstart->setTime(
+					$this->dtstart->format('H'),
+					$this->dtstart->format('i'),
+					$this->dtstart->format('s'),
+					0
+				);
+			}
 		}
 
 		// UNTIL (optional)

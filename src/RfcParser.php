@@ -81,7 +81,17 @@ class RfcParser
 
 		if ( $dtstart ) {
 			$nb_dtstart = 1;
-			$dtstart_type = 'tzid';
+			if ( is_string($dtstart) ) {
+				if ( strlen($dtstart) == 10 ) {
+					$dtstart_type = 'date';
+				}
+				else {
+					$dtstart_type = 'localtime';
+				}
+			}
+			else {
+				$dtstart_type = 'tzid';
+			}
 			$parts['DTSTART'] = RRule::parseDate($dtstart);
 		}
 

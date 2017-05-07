@@ -1910,13 +1910,13 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	public function testRfcStringParserWithDtStart()
 	{
 		$rrule = new RRule('RRULE:FREQ=YEARLY');
-		$this->assertEquals(date_create(), $rrule[0]);
+		$this->assertEquals(date_create()->format('Y-m-d'), $rrule[0]->format('Y-m-d'));
 
 		$rrule = new RRule('RRULE:FREQ=YEARLY', date_create('2017-01-01'));
-		$this->assertEquals(date_create('2017-01-01'), $rrule[0]);
+		$this->assertEquals('2017-01-01', $rrule[0]->format('Y-m-d'));
 
 		$rrule = new RRule('RRULE:FREQ=YEARLY', '2017-01-01');
-		$this->assertEquals(date_create('2017-01-01'), $rrule[0]);
+		$this->assertEquals('2017-01-01', $rrule[0]->format('Y-m-d'));
 
 		try {
 			$rrule = new RRule("DTSTART:19970512\nRRULE:FREQ=YEARLY", date_create('2017-01-01'));
@@ -1968,7 +1968,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$rule = @ new RRule($str);
 
 		if ( $occurrences ) {
-			$this->assertEquals($occurrences, $rule->getOccurrences());
+			$this->assertEquals($occurrences, $rule->getOccurrences(), '', 1);
 		}
 	}
 
