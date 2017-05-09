@@ -258,8 +258,7 @@ class RRule implements RRuleInterface
 		}
 
 		// INTERVAL
-		$parts['INTERVAL'] = (int) $parts['INTERVAL'];
-		if ( $parts['INTERVAL'] < 1 ) {
+		if ( filter_var($parts['INTERVAL'], FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) === false ) {
 			throw new \InvalidArgumentException(
 				'The INTERVAL rule part must be a positive integer (> 0)'
 			);
@@ -302,8 +301,7 @@ class RRule implements RRuleInterface
 
 		// COUNT (optional)
 		if ( not_empty($parts['COUNT']) ) {
-			$parts['COUNT'] = (int) $parts['COUNT'];
-			if ( $parts['COUNT'] < 1 ) {
+			if ( filter_var($parts['COUNT'], FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) === false ) {
 				throw new \InvalidArgumentException('COUNT must be a positive integer (> 0)');
 			}
 			$this->count = (int) $parts['COUNT'];
@@ -380,10 +378,10 @@ class RRule implements RRuleInterface
 			$this->bymonthday = array();
 			$this->bymonthday_negative = array();
 			foreach ( $parts['BYMONTHDAY'] as $value ) {
-				$value = (int) $value;
-				if ( ! $value || $value < -31 || $value > 31 ) {
+				if ( !$value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -31, 'max_range' => 31))) === false ) {
 					throw new \InvalidArgumentException('Invalid BYMONTHDAY value: '.$value.' (valid values are 1 to 31 or -31 to -1)');
 				}
+				$value = (int) $value;
 				if ( $value < 0 ) {
 					$this->bymonthday_negative[] = $value;
 				}
@@ -404,12 +402,11 @@ class RRule implements RRuleInterface
 
 			$this->bysetpos = array();
 			foreach ( $parts['BYYEARDAY'] as $value ) {
-				$value = (int) $value;
-				if ( ! $value || $value < -366 || $value > 366 ) {
+				if ( ! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -366, 'max_range' => 366))) === false ) {
 					throw new \InvalidArgumentException('Invalid BYSETPOS value: '.$value.' (valid values are 1 to 366 or -366 to -1)');
 				}
 
-				$this->byyearday[] = $value;
+				$this->byyearday[] = (int) $value;
 			}
 		}
 
@@ -425,11 +422,10 @@ class RRule implements RRuleInterface
 
 			$this->byweekno = array();
 			foreach ( $parts['BYWEEKNO'] as $value ) {
-				$value = (int) $value;
-				if ( ! $value || $value < -53 || $value > 53 ) {
+				if ( ! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -53, 'max_range' => 53))) === false ) {
 					throw new \InvalidArgumentException('Invalid BYWEEKNO value: '.$value.' (valid values are 1 to 53 or -53 to -1)');
 				}
-				$this->byweekno[] = $value;
+				$this->byweekno[] = (int) $value;
 			}
 		}
 
@@ -442,11 +438,10 @@ class RRule implements RRuleInterface
 
 			$this->bymonth = array();
 			foreach ( $parts['BYMONTH'] as $value ) {
-				$value = (int) $value;
-				if ( $value < 1 || $value > 12 ) {
+				if ( filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1, 'max_range' => 12))) === false ) {
 					throw new \InvalidArgumentException('Invalid BYMONTH value: '.$value);
 				}
-				$this->bymonth[] = $value;
+				$this->bymonth[] = (int) $value;
 			}
 		}
 
@@ -464,12 +459,11 @@ class RRule implements RRuleInterface
 
 			$this->bysetpos = array();
 			foreach ( $parts['BYSETPOS'] as $value ) {
-				$value = (int) $value;
-				if ( ! $value || $value < -366 || $value > 366 ) {
+				if ( ! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -366, 'max_range' => 366))) === false ) {
 					throw new \InvalidArgumentException('Invalid BYSETPOS value: '.$value.' (valid values are 1 to 366 or -366 to -1)');
 				}
 
-				$this->bysetpos[] = $value;
+				$this->bysetpos[] = (int) $value;
 			}
 		}
 
@@ -480,11 +474,10 @@ class RRule implements RRuleInterface
 
 			$this->byhour = array();
 			foreach ( $parts['BYHOUR'] as $value ) {
-				$value = (int) $value;
-				if ( $value < 0 || $value > 23 ) {
+				if ( filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 23))) === false ) {
 					throw new \InvalidArgumentException('Invalid BYHOUR value: '.$value);
 				}
-				$this->byhour[] = $value;
+				$this->byhour[] = (int) $value;
 			}
 
 			sort($this->byhour);
@@ -500,11 +493,10 @@ class RRule implements RRuleInterface
 
 			$this->byminute = array();
 			foreach ( $parts['BYMINUTE'] as $value ) {
-				$value = (int) $value;
-				if ( $value < 0 || $value > 59 ) {
+				if ( filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 59))) === false ) {
 					throw new \InvalidArgumentException('Invalid BYMINUTE value: '.$value);
 				}
-				$this->byminute[] = $value;
+				$this->byminute[] = (int) $value;
 			}
 			sort($this->byminute);
 		}
@@ -519,14 +511,13 @@ class RRule implements RRuleInterface
 
 			$this->bysecond = array();
 			foreach ( $parts['BYSECOND'] as $value ) {
-				$value = (int) $value;
 				// yes, "60" is a valid value, in (very rare) cases on leap seconds
 				//  December 31, 2005 23:59:60 UTC is a valid date...
 				// so is 2012-06-30T23:59:60UTC
-				if ( $value < 0 || $value > 60 ) {
+				if ( filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 60))) === false ) {
 					throw new \InvalidArgumentException('Invalid BYSECOND value: '.$value);
 				}
-				$this->bysecond[] = $value;
+				$this->bysecond[] = (int) $value;
 			}
 			sort($this->bysecond);
 		}

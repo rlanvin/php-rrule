@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Throw exception when passing a float instead of an int (e.g. INTERVAL=1.5) instead of casting silently
+
 ## [1.5.0] - 2017-05-07
 
 ### Added

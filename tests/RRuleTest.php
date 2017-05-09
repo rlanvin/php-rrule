@@ -19,20 +19,24 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 			array(array('FREQ' => 'foobar')),
 			array(array('FREQ' => 'DAILY', 'INTERVAL' => -1)),
+			array(array('FREQ' => 'DAILY', 'INTERVAL' => 1.5)),
 			array(array('FREQ' => 'DAILY', 'UNTIL' => 'foobar')),
 			array(array('FREQ' => 'DAILY', 'COUNT' => -1)),
+			array(array('FREQ' => 'DAILY', 'COUNT' => 1.5)),
 			array(array('FREQ' => 'DAILY', 'UNTIL' => '2015-07-01', 'COUNT' => 1)),
 
 			array(array('FREQ' => 'YEARLY', 'BYDAY' => '1MO,X')),
 			// The BYDAY rule part MUST NOT be specified with a numeric value
 			// when the FREQ rule part is not set to MONTHLY or YEARLY.
 			array(array('FREQ' => 'DAILY', 'BYDAY' => array('1MO'))),
+			array(array('FREQ' => 'DAILY', 'BYDAY' => array('1.5MO'))),
 			array(array('FREQ' => 'WEEKLY', 'BYDAY' => array('1MO'))),
 			// The BYDAY rule part MUST NOT be specified with a numeric value
 			// with the FREQ rule part set to YEARLY when the BYWEEKNO rule part is specified.
 			array(array('FREQ' => 'YEARLY', 'BYDAY' => array('1MO'), 'BYWEEKNO' => 20)),
 
 			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => 0)),
+			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => 1.5)),
 			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => 32)),
 			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => -32)),
 			array(array('FREQ' => 'DAILY', 'BYMONTHDAY' => '1,A')),
@@ -41,6 +45,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array(array('FREQ' => 'WEEKLY', 'BYMONTHDAY' => 1)),
 
 			array(array('FREQ' => 'YEARLY', 'BYYEARDAY' => 0)),
+			array(array('FREQ' => 'YEARLY', 'BYYEARDAY' => 1.5)),
 			array(array('FREQ' => 'YEARLY', 'BYYEARDAY' => 367)),
 			array(array('FREQ' => 'YEARLY', 'BYYEARDAY' => '1,A')),
 			// The BYYEARDAY rule part MUST NOT be specified when the FREQ
@@ -49,10 +54,31 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			array(array('FREQ' => 'WEEKLY', 'BYYEARDAY' => 1)),
 			array(array('FREQ' => 'MONTHLY', 'BYYEARDAY' => 1)),
 
+			array(array('FREQ' => 'MONTHLY', 'BYMONTH' => 0)),
+			array(array('FREQ' => 'MONTHLY', 'BYMONTH' => -1)),
+			array(array('FREQ' => 'MONTHLY', 'BYMONTH' => 1.5)),
+			array(array('FREQ' => 'MONTHLY', 'BYMONTH' => 13)),
+
 			// BYSETPOS rule part MUST only be used in conjunction with another
 			// BYxxx rule part.
-			array(array('FREQ' => 'DAILY', 'BYSETPOS' => -1)),
+			array(array('FREQ' => 'DAILY', 'BYSETPOS' => 1)),
+			array(array('FREQ' => 'DAILY', 'BYDAY' => 'MO', 'BYSETPOS' => 1.5)),
 			array(array('FREQ' => 'DAILY', 'BYDAY' => 'MO', 'BYSETPOS' => '1,A')),
+
+			array(array('FREQ' => 'YEARLY', 'BYWEEKNO' => 0)),
+			array(array('FREQ' => 'YEARLY', 'BYWEEKNO' => 1.5)),
+
+			array(array('FREQ' => 'MONTHLY', 'BYHOUR' => -1)),
+			array(array('FREQ' => 'MONTHLY', 'BYHOUR' => 1.5)),
+			array(array('FREQ' => 'MONTHLY', 'BYHOUR' => 25)),
+
+			array(array('FREQ' => 'MONTHLY', 'BYMINUTE' => -1)),
+			array(array('FREQ' => 'MONTHLY', 'BYMINUTE' => 1.5)),
+			array(array('FREQ' => 'MONTHLY', 'BYMINUTE' => 60)),
+
+			array(array('FREQ' => 'MONTHLY', 'BYSECOND' => -1)),
+			array(array('FREQ' => 'MONTHLY', 'BYSECOND' => 1.5)),
+			array(array('FREQ' => 'MONTHLY', 'BYSECOND' => 61))
 		);
 	}
 
