@@ -660,12 +660,13 @@ class RRule implements RRuleInterface
 	static public function parseRfcString($string)
 	{
 		trigger_error('parseRfcString() is deprecated - use new RRule(), RRule::createFromRfcString() or \RRule\RfcParser::parseRRule() if necessary',E_USER_DEPRECATED);
-		return RfcParser::parseRRule($sring);
+		return RfcParser::parseRRule($string);
 	}
 
 	/**
 	 * Take a RFC 5545 string and returns either a RRule or a RSet.
 	 *
+	 * @param string $string The RFC string
 	 * @param bool $force_rset Force a RSet to be returned.
 	 * @return RRule|RSet
 	 *

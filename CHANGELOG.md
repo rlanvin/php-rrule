@@ -2,9 +2,12 @@
 
 ## [Unreleased]
 
+## [1.5.1] - 2017-05-15
+
 ### Fixed
 
 - Throw exception when passing a float instead of an int (e.g. INTERVAL=1.5) instead of casting silently
+- Variable name typo [#34](https://github.com/rlanvin/php-rrule/issues/34)
 
 ## [1.5.0] - 2017-05-07
 
@@ -119,7 +122,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/rlanvin/php-rrule/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/rlanvin/php-rrule/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/rlanvin/php-rrule/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/rlanvin/php-rrule/compare/v1.4.0...v1.4.1
