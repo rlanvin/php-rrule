@@ -2330,7 +2330,7 @@ class RRule implements RRuleInterface
 			'fallback' => 'en',
 			'explicit_infinite' => true,
 			'include_start' => true,
-			'omit_until' => false
+			'include_until' => true
 		);
 
 		// attempt to detect default locale
@@ -2582,7 +2582,7 @@ class RRule implements RRuleInterface
 		}
 
 		// to X, or N times, or indefinitely
-		if ( !$opt['omit_until'] ) {
+		if ( $opt['include_until'] ) {
 			if ( ! $this->until && ! $this->count ) {
 				if ( $opt['explicit_infinite'] ) {
 					$parts['end'] = $i18n['infinite'];
