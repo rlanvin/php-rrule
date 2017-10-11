@@ -2,12 +2,14 @@
 
 ## [Unreleased]
 
-## [1.5.1] - 2017-05-15
+- German translation [#38](https://github.com/rlanvin/php-rrule/pull/38)
 
+## [1.5.1] - 2017-05-15
 ### Fixed
 
 - Throw exception when passing a float instead of an int (e.g. INTERVAL=1.5) instead of casting silently
 - Variable name typo [#34](https://github.com/rlanvin/php-rrule/issues/34)
+
 
 ## [1.5.0] - 2017-05-07
 
