@@ -2329,7 +2329,8 @@ class RRule implements RRuleInterface
 			'date_formatter' => null,
 			'fallback' => 'en',
 			'explicit_infinite' => true,
-			'include_start' => true
+			'include_start' => true,
+			'include_until' => true
 		);
 
 		// attempt to detect default locale
@@ -2581,23 +2582,25 @@ class RRule implements RRuleInterface
 		}
 
 		// to X, or N times, or indefinitely
-		if ( ! $this->until && ! $this->count ) {
-			if ( $opt['explicit_infinite'] ) {
-				$parts['end'] = $i18n['infinite'];
+		if ( $opt['include_until'] ) {
+			if ( ! $this->until && ! $this->count ) {
+				if ( $opt['explicit_infinite'] ) {
+					$parts['end'] = $i18n['infinite'];
+				}
 			}
-		}
-		elseif ( $this->until ) {
-			$parts['end'] = strtr($i18n['until'], array(
-				'%{date}' => $opt['date_formatter']($this->until)
-			));
-		}
-		elseif ( $this->count ) {
-			$parts['end'] = strtr(
-				self::i18nSelect($i18n['count'], $this->count),
-				array(
-					'%{count}' => $this->count
-				)
-			);
+			elseif ( $this->until ) {
+				$parts['end'] = strtr($i18n['until'], array(
+					'%{date}' => $opt['date_formatter']($this->until)
+				));
+			}
+			elseif ( $this->count ) {
+				$parts['end'] = strtr(
+					self::i18nSelect($i18n['count'], $this->count),
+					array(
+						'%{count}' => $this->count
+					)
+				);
+			}
 		}
 
 		$parts = array_filter($parts);
