@@ -108,7 +108,7 @@ return array(
         '-1' => 'de laatste dag', // not so many options necessary for NL translation, but none removed
         '-2' => 'de voorlaatste dag',
         '-3' => 'de twee-na-laatste dag',
-        'else' => 'de %{n}e tot de laastste dag'
+        'else' => 'de %{n}e tot de laatste dag'
     ),
     'byyearday' => array(
         '1' => ' op dag %{yeardays}',
@@ -151,7 +151,7 @@ return array(
 		'else' => 'de %{n}e'
 	),
 	'-nth_setpos' => array(
-        '-1' => 'de laastste',
+        '-1' => 'de laatste',
         '-2' => 'de voorlaatste',
         '-3' => 'de twee-na-laatste',
         'else' => 'de %{n}e tot de laatste'
