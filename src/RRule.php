@@ -2337,8 +2337,7 @@ class RRule implements RRuleInterface
 		if ( $opt['use_intl'] ) {
 			$default_opt['locale'] = \Locale::getDefault();
 		} else {
-			$category = defined('LC_MESSAGES') ? LC_MESSAGES : LC_ALL;
-			$default_opt['locale'] = setlocale($category, 0);
+			$default_opt['locale'] = setlocale(LC_ALL, 0);
 			if ( $default_opt['locale'] == 'C' ) {
 				$default_opt['locale'] = 'en';
 			}
