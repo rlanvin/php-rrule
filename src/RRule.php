@@ -637,7 +637,7 @@ class RRule implements RRuleInterface
 					$value = $frequency_key;
 				}
 			}
-			if ( $value ) {
+			if ( $value !== NULL ) {
 				if ( is_array($value) ) {
 					$value = implode(',',$value);
 				}

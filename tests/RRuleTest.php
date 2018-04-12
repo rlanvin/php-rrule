@@ -2169,6 +2169,15 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 				),
 				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=SECONDLY"
 			),
+			array(
+				array(
+					'FREQ' => RRule::SECONDLY,
+					'BYMINUTE' => 0,
+					'BYHOUR' => 0,
+					'DTSTART' => date_create('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+				),
+				"DTSTART;TZID=Australia/Sydney:20150701T090000\nRRULE:FREQ=SECONDLY;BYMINUTE=0;BYHOUR=0"
+			),
 		);
 	}
 
