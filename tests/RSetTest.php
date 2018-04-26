@@ -1,9 +1,15 @@
 <?php
 
+namespace RRule\Tests;
+
 use RRule\RSet;
 use RRule\RRule;
+use DateTimeZone;
+use ReflectionObject;
+use stdClass;
+use PHPUnit\Framework\TestCase;
 
-class RSetTest extends PHPUnit_Framework_TestCase
+class RSetTest extends TestCase
 {
 	public function testCombineRRule()
 	{
@@ -445,12 +451,20 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			date_create('2017-01-01'),date_create('2017-01-02'),date_create('2017-01-03'),
 			date_create('2017-01-04'),date_create('2017-01-05')
 		), $rset->getOccurrences(5));
-		try {
-			$rset->getOccurrences();
-			$this->fail('Expected exception (infinite rule) not thrown');
-		} catch ( \LogicException $e ) {
+	}
 
-		}
+	/**
+	 * @expectedException LogicException
+	 * @expectedExceptionMessage Cannot get all occurrences of an infinite recurrence set.
+	 */
+	public function testGetOccurrencesThrowsLogicException()
+	{
+		$rset = new RSet();
+		$rset->addRRule(new RRule(array(
+			'FREQ' => 'DAILY',
+			'DTSTART' => '2017-01-01'
+		)));
+		$rset->getOccurrences();
 	}
 
 	public function testGetOccurrencesBetween()
@@ -465,12 +479,20 @@ class RSetTest extends PHPUnit_Framework_TestCase
 		$this->assertCount(1, $rset->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
 		$this->assertEquals(array(date_create('2017-02-01')), $rset->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
 		$this->assertCount(5, $rset->getOccurrencesBetween('2017-01-01', null, 5));
-		try {
-			$rset->getOccurrencesBetween('2017-01-01', null);
-			$this->fail('Expected exception (infinite rule) not thrown');
-		} catch ( \LogicException $e ) {
-			
-		}
+	}
+
+	/**
+	 * @expectedException LogicException
+	 * @expectedExceptionMessage Cannot get all occurrences of an infinite recurrence rule.
+	 */
+	public function testGetOccurrencesBetweenThrowsLogicException()
+	{
+		$rset = new RSet();
+		$rset->addRRule(new RRule(array(
+			'FREQ' => 'DAILY',
+			'DTSTART' => '2017-01-01'
+		)));
+		$rset->getOccurrencesBetween('2017-01-01', null);
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -539,17 +561,20 @@ class RSetTest extends PHPUnit_Framework_TestCase
 			date_create('2017-01-02'),
 			date_create('2017-01-03')
 		), $rset->getOccurrences());
-
-		try {
-			$rset = new RSet(
-				"DTSTART:DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;COUNT=3\nEXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1",
-				date_create('2017-01-01')
-			);
-			$this->fail('Expected InvalidArgumentException (too many start date) not thrown');
-		} catch ( InvalidArgumentException $e ) {
-
-		}
 	}
+
+	/**
+	 * @expectedException InvalidArgumentException
+	 * @expectedExcpetionMessage Failed to parse RFC string, multiple DTSTART found
+	 */
+	public function testParseRfcStringWithMultipleDtStart()
+	{
+		$rset = new RSet(
+			"DTSTART:DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;COUNT=3\nEXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1",
+			date_create('2017-01-01')
+		);
+	}
+
 	public function quirkyRfcStrings()
 	{
 		return array(
@@ -569,7 +594,7 @@ class RSetTest extends PHPUnit_Framework_TestCase
 
 	/**
 	 * @dataProvider quirkyRfcStrings
-	 * @expectedException PHPUnit_Framework_Error_Notice 
+	 * @expectedException PHPUnit\Framework\Error\Notice 
 	 */
 	public function testParseQuirkyRfcStringNotice($string, $occurrences)
 	{

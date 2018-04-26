@@ -1,12 +1,15 @@
 <?php
 
+namespace RRule\Tests;
+
 use RRule\RRule;
+use DateTime;
+use DateTimeZone;
+use ReflectionClass;
+use stdClass;
+use PHPUnit\Framework\TestCase;
 
-// make sure that the tests are run in the same timezone everywhere
-// Europe/Helsinki has DST
-date_default_timezone_set('Europe/Helsinki');
-
-class RRuleTest extends PHPUnit_Framework_TestCase
+class RRuleTest extends TestCase
 {
 	/**
 	 * These rules are invalid according to the RFC
@@ -107,7 +110,8 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testValidRules($rule)
 	{
-		new RRule($rule);
+		$result = new RRule($rule);
+		$this->assertInstanceOf('RRule\RRule', $result);
 	}
 
 	/**
@@ -1758,12 +1762,19 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 			date_create('2017-01-01'),date_create('2017-01-02'),date_create('2017-01-03'),
 			date_create('2017-01-04'),date_create('2017-01-05')
 		), $rrule->getOccurrences(5));
-		try {
-			$rrule->getOccurrences();
-			$this->fail('Expected exception (infinite rule) not thrown');
-		} catch ( \LogicException $e ) {
+	}
 
-		}
+	/**
+	 * @expectedException LogicException
+	 * @expectedExceptionMessage Cannot get all occurrences of an infinite recurrence rule.
+	 */
+	public function testGetOccurrencesThrowsLogicException()
+	{
+		$rrule = new RRule(array(
+			'FREQ' => 'DAILY',
+			'DTSTART' => '2017-01-01'
+		));
+		$rrule->getOccurrences();
 	}
 
 	public function testGetOccurrencesBetween()
@@ -1777,12 +1788,19 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 		$this->assertCount(1, $rrule->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
 		$this->assertEquals(array(date_create('2017-02-01')), $rrule->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
 		$this->assertCount(5, $rrule->getOccurrencesBetween('2017-01-01', null, 5));
-		try {
-			$rrule->getOccurrencesBetween('2017-01-01', null);
-			$this->fail('Expected exception (infinite rule) not thrown');
-		} catch ( \LogicException $e ) {
-			
-		}
+	}
+
+	/**
+	 * @expectedException LogicException
+	 * @expectedExceptionMessage Cannot get all occurrences of an infinite recurrence rule.
+	 */
+	public function testGetOccurrencesBetweenThrowsLogicException()
+	{
+		$rrule = new RRule(array(
+			'FREQ' => 'DAILY',
+			'DTSTART' => '2017-01-01'
+		));
+		$rrule->getOccurrencesBetween('2017-01-01', null);
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1943,13 +1961,15 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		$rrule = new RRule('RRULE:FREQ=YEARLY', '2017-01-01');
 		$this->assertEquals('2017-01-01', $rrule[0]->format('Y-m-d'));
+	}
 
-		try {
-			$rrule = new RRule("DTSTART:19970512\nRRULE:FREQ=YEARLY", date_create('2017-01-01'));
-			$this->fail('Expected InvalidArgumentException (too many dtstart) not thrown');
-		} catch ( \InvalidArgumentException $e ) {
-
-		}
+	/**
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Too many DTSTART properties (there can be only one)
+	 */
+	public function testRfcStringParserWithMultipleDtStart()
+	{
+		$rrule = new RRule("DTSTART:19970512\nRRULE:FREQ=YEARLY", date_create('2017-01-01'));
 	}
 
 	/**
@@ -1979,7 +1999,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 	/** 
 	 * @dataProvider quirkyRfcStrings
-	 * @expectedException PHPUnit_Framework_Error_Notice 
+	 * @expectedException PHPUnit\Framework\Error\Notice 
 	 */
 	public function testQuirkyRfcStringsParserNotice($str,$occurrences)
 	{
@@ -2076,6 +2096,7 @@ class RRuleTest extends PHPUnit_Framework_TestCase
 
 		$str = $rrule->rfcString();
 		$new_rrule = new RRule($str);
+		$this->assertInstanceOf('RRule\RRule', $new_rrule);
 	}
 
 	public function testUnsupportedTimezoneConvertedToUtc()
