@@ -1,8 +1,11 @@
 <?php
 
-use RRule\RfcParser;
+namespace RRule\Tests;
 
-class RfcParserTest extends PHPUnit_Framework_TestCase
+use RRule\RfcParser;
+use PHPUnit\Framework\TestCase;
+
+class RfcParserTest extends TestCase
 {
 	public function rfcLines()
 	{
