@@ -45,7 +45,7 @@ return array(
         '1' => 'elke seconde',
         'else' => 'elke %{interval} seconden'
     ),
-    'dtstart' => ', wordt getart vanaf %{date}',
+    'dtstart' => ', wordt gestart vanaf %{date}',
     'infinite' => ', oneindig',
     'until' => ', tot en met %{date}',
     'count' => array(
