@@ -1,8 +1,14 @@
 # Changelog
 
-## [Unreleased]
+## Unreleased
 
-n/a
+- n/a
+
+## [1.6.2] - 2018-09-18
+
+### Fixed
+
+- Fix typo in NL translation [#53](https://github.com/rlanvin/php-rrule/issues/53)
 
 ## [1.6.1] - 2018-04-13
 
@@ -138,7 +144,8 @@ n/a
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v1.6.2...HEAD
+[1.6.2]: https://github.com/rlanvin/php-rrule/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/rlanvin/php-rrule/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/rlanvin/php-rrule/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/rlanvin/php-rrule/compare/v1.5.0...v1.5.1
