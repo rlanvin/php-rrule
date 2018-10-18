@@ -52,7 +52,7 @@ function pymod($a, $b)
 }
 
 /**
- * Check is a year is a leap year.
+ * Check if a year is a leap year.
  *
  * @param int $year The year to be checked.
  * @return bool
