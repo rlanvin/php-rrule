@@ -2770,6 +2770,12 @@ class RRuleTest extends TestCase
 				"daily, starting from 2/2/17, until 2/5/17"
 			),
 			array(
+				"RRULE:FREQ=DAILY;UNTIL=20190405T055959Z",
+				array('locale' => "en"),
+				"daily, starting from 1/10/19, until 4/5/19",
+				'2019-01-10T12:00:00-05:00'
+			),
+			array(
 				"DTSTART:20170202T000000Z\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
 				array('locale' => "en_IE"),
 				"daily, starting from 02/02/2017, until 05/02/2017"
@@ -2805,9 +2811,12 @@ class RRuleTest extends TestCase
 	/**
 	 * @dataProvider humanReadableStrings
 	 */
-	public function testHumanReadable($rrule,$options,  $string)
+	public function testHumanReadable($rrule, $options, $string, $dtstart = null)
 	{
-		$rrule = new RRule($rrule);
+		if ($dtstart) {
+			$dtstart = new DateTime($dtstart);
+		}
+		$rrule = new RRule($rrule, $dtstart);
 		$this->assertEquals($string, $rrule->humanReadable($options));
 	}
 }
