@@ -278,6 +278,9 @@ class RfcParser
 		$tz = null;
 		foreach ( $property['params'] as $name => $value ) {
 			switch ( strtoupper($name) ) {
+				case 'VALUE':
+					// Ignore optional words
+					break;
 				case 'TZID':
 					$tz = new \DateTimeZone($value);
 				break;
