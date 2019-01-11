@@ -526,8 +526,8 @@ class RSetTest extends TestCase
 				RRULE:FREQ=MONTHLY;WKST=MO;BYDAY=-1WE;UNTIL=20180131T200000Z
 				DTSTART:20171129T200000Z",
 				array(
-					date_create('2017-11-29 20:00:00', new \DateTimeZone('Z')),
-					date_create('2018-01-31 20:00:00', new \DateTimeZone('Z'))
+					date_create('2017-11-29 20:00:00', new \DateTimeZone('GMT')),
+					date_create('2018-01-31 20:00:00', new \DateTimeZone('GMT'))
 				)
 			),
 		);
