@@ -2367,8 +2367,11 @@ class RRule implements RRuleInterface
 		if ( ! $opt['date_formatter'] ) {
 			if (  $opt['use_intl'] ) {
 				$timezone = $this->dtstart->getTimezone()->getName();
-				if ( $timezone == 'Z' ) {
+
+				if ( $timezone === 'Z' ) {
 					$timezone = 'GMT'; // otherwise IntlDateFormatter::create fails because... reasons.
+				} elseif ( preg_match( '/[-+]\d{2}/', $timezone ) ) {
+					$timezone = 'GMT'.$timezone; // otherwise IntlDateFormatter::create fails because... other reasons.
 				}
 				$formatter = \IntlDateFormatter::create(
 					$opt['locale'],
@@ -2377,7 +2380,7 @@ class RRule implements RRuleInterface
 					$timezone
 				);
 				if ( ! $formatter ) {
-					throw new \RuntimeException('IntlDateFormatter::create() failed (this should not happen, please open a bug report!)');
+					throw new \RuntimeException('IntlDateFormatter::create() failed. Error Code: '.intl_get_error_code().' "'. intl_get_error_message().'" (this should not happen, please open a bug report!)');
 				}
 				$opt['date_formatter'] = function($date) use ($formatter) {
 					return $formatter->format($date);
