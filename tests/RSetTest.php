@@ -520,7 +520,16 @@ class RSetTest extends TestCase
 					date_create('1997-09-02 09:00:00', new \DateTimeZone('America/New_York')),
 					date_create('1997-09-04 09:00:00', new \DateTimeZone('America/New_York'))
 				)
-			)
+			),
+			array(
+				"EXDATE;VALUE=DATE-TIME:20171227T200000Z
+				RRULE:FREQ=MONTHLY;WKST=MO;BYDAY=-1WE;UNTIL=20180131T200000Z
+				DTSTART:20171129T200000Z",
+				array(
+					date_create('2017-11-29 20:00:00', new \DateTimeZone('GMT')),
+					date_create('2018-01-31 20:00:00', new \DateTimeZone('GMT'))
+				)
+			),
 		);
 	}
 
