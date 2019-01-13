@@ -91,6 +91,8 @@ function is_leap_year($year)
  */
 class RRule implements RRuleInterface
 {
+	use RRuleTrait;
+
 	const SECONDLY = 7;
 	const MINUTELY = 6;
 	const HOURLY = 5;
@@ -735,80 +737,6 @@ class RRule implements RRuleInterface
 	}
 
 	/**
-	 * Return all the occurrences in an array of \DateTime.
-	 *
-	 * @param int $limit Limit the resultset to n occurrences (0, null or false = everything)
-	 * @return array An array of \DateTime objects
-	 */
-	public function getOccurrences($limit = null)
-	{
-		if ( ! $limit && $this->isInfinite() ) {
-			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
-		}
-
-		// cached version already computed
-		$iterator = $this;
-		if ( $this->total !== null ) {
-			$iterator = $this->cache;
-		}
-
-		$res = array();
-		$n = 0;
-		foreach ( $iterator as $occurrence ) {
-			$res[] = clone $occurrence; // we have to clone because DateTime is not immutable
-			$n += 1;
-			if ( $limit && $n >= $limit ) {
-				break;
-			}
-		}
-		return $res;
-	}
-
-	/**
-	 * Return all the ocurrences after a date, before a date, or between two dates.
-	 *
-	 * @param mixed $begin Can be null to return all occurrences before $end
-	 * @param mixed $end Can be null to return all occurrences after $begin
-	 * @param int $limit Limit the resultset to n occurrences (0, null or false = everything)
-	 * @return array An array of \DateTime objects
-	 */
-	public function getOccurrencesBetween($begin, $end, $limit = null)
-	{
-		if ( $begin !== null ) {
-			$begin = self::parseDate($begin);
-		}
-
-		if ( $end !== null ) {
-			$end = self::parseDate($end);
-		}
-		elseif ( ! $limit && $this->isInfinite() ) {
-			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
-		}
-
-		$iterator = $this;
-		if ( $this->total !== null ) {
-			$iterator = $this->cache;
-		}
-
-		$res = array();
-		$n = 0;
-		foreach ( $iterator as $occurrence ) {
-			if ( $begin !== null && $occurrence < $begin ) {
-				continue;
-			}
-			if ( $end !== null && $occurrence > $end ) {
-				break;
-			}
-			$res[] = clone $occurrence;
-			$n += 1;
-			if ( $limit && $n >= $limit ) {
-				break;
-			}
-		}
-		return $res;
-	}
-
-	/**
 	 * Return true if $date is an occurrence.
 	 *
 	 * This method will attempt to determine the result programmatically.
@@ -1129,38 +1057,6 @@ class RRule implements RRuleInterface
 ///////////////////////////////////////////////////////////////////////////////
 // Internal methods
 // where all the magic happens
-
-	/**
-	 * Convert any date into a DateTime object.
-	 *
-	 * @param mixed $date
-	 * @return \DateTime
-	 *
-	 * @throws \InvalidArgumentException on error
-	 */
-	static public function parseDate($date)
-	{
-		// DateTimeInterface is only on PHP 5.5+, and includes DateTimeImmutable
-		if ( ! $date instanceof \DateTime && ! $date instanceof \DateTimeInterface ) {
-			try {
-				if ( is_integer($date) ) {
-					$date = \DateTime::createFromFormat('U',$date);
-					$date->setTimezone(new \DateTimeZone('UTC')); // default is +00:00 (see issue #15)
-				}
-				else {
-					$date = new \DateTime($date);
-				}
-			} catch (\Exception $e) {
-				throw new \InvalidArgumentException(
-					"Failed to parse the date"
-				);
-			}
-		}
-		else {
-			$date = clone $date; // avoid reference problems
-		}
-		return $date;
-	}
 
 	/**
 	 * Return an array of days of the year (numbered from 0 to 365)

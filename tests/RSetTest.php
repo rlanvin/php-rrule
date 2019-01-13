@@ -468,19 +468,34 @@ class RSetTest extends TestCase
 		)));
 		$rset->getOccurrences();
 	}
-
-	public function testGetOccurrencesBetween()
+	public function occurrencesBetween()
 	{
-		$rset = new RSet();
-		$rset->addRRule(new RRule(array(
-			'FREQ' => 'DAILY',
-			'DTSTART' => '2017-01-01'
-		)));
+		return [
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-01', null, 1, [date_create('2017-01-01')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-02-01', '2017-12-31', 1, [date_create('2017-02-01')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-01', null, 5, [
+				date_create('2017-01-01'),
+				date_create('2017-01-02'),
+				date_create('2017-01-03'),
+				date_create('2017-01-04'),
+				date_create('2017-01-05'),
+			]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-01', '2017-01-05', null, [
+				date_create('2017-01-01'),
+				date_create('2017-01-02'),
+				date_create('2017-01-03'),
+				date_create('2017-01-04'),
+				date_create('2017-01-05'),
+			]],
+		];
+	}
 
-		$this->assertCount(1, $rset->getOccurrencesBetween('2017-01-01', null, 1));
-		$this->assertCount(1, $rset->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
-		$this->assertEquals(array(date_create('2017-02-01')), $rset->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
-		$this->assertCount(5, $rset->getOccurrencesBetween('2017-01-01', null, 5));
+	/**
+	 * @dataProvider occurrencesBetween
+	 */
+	public function testGetOccurrencesBetween(RSet $rset, $begin, $end, $limit, $expected)
+	{
+		$this->assertEquals($expected, $rset->getOccurrencesBetween($begin, $end, $limit));
 	}
 
 	/**
@@ -495,6 +510,79 @@ class RSetTest extends TestCase
 			'DTSTART' => '2017-01-01'
 		)));
 		$rset->getOccurrencesBetween('2017-01-01', null);
+	}
+
+	public function occurrencesAfter()
+	{
+		return [
+			[
+				(new RSet())
+					->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2")
+					->addRRule("DTSTART:20170102\nRRULE:FREQ=DAILY;INTERVAL=2")
+				, '2017-02-01', false, 2, [date_create('2017-02-02'),date_create('2017-02-03')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-02-01', true, 2, [date_create('2017-02-01'),date_create('2017-02-02')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-02', true, 2, [date_create('2017-01-03'),date_create('2017-01-05')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-02', false, 2, [date_create('2017-01-03'),date_create('2017-01-05')]],
+		];
+	}
+
+	/**
+	 * @dataProvider occurrencesAfter
+	 */
+	public function testGetOccurrencesAfter(RSet $rset, $date, $inclusive, $limit, $expected)
+	{
+		$occurrences = $rset->getOccurrencesAfter($date, $inclusive, $limit);
+		$this->assertEquals($expected, $occurrences);
+	}
+
+	public function occurrencesBefore()
+	{
+		return [
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-02-01', true, 2, [date_create('2017-01-31'),date_create('2017-02-01')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-02-01', false, 2, [date_create('2017-01-30'),date_create('2017-01-31')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-02', false, null, [date_create('2017-01-01')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-02', false, 5, [date_create('2017-01-01')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-04', true, 2, [date_create('2017-01-01'),date_create('2017-01-03')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-04', false, 2, [date_create('2017-01-01'),date_create('2017-01-03')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-02', false, null, [date_create('2017-01-01')]],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-02', false, 5, [date_create('2017-01-01')]],
+		];
+	}
+	/**
+	 * @dataProvider occurrencesBefore
+	 */
+	public function testGetOccurrencesBefore(RSet $rset, $date, $inclusive, $limit, $expected)
+	{
+		$occurrences = $rset->getOccurrencesBefore($date, $inclusive, $limit);
+		$this->assertEquals($expected, $occurrences);
+	}
+
+	public function nthOccurrences()
+	{
+		return [
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-01', 0, date_create('2017-01-01')],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-01', 1, date_create('2017-01-02')],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-01', 2, date_create('2017-01-05')],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-02', 0, null],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-01', -1, null],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-10', -1, date_create('2017-01-09')],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY"), '2017-01-10', -2, date_create('2017-01-08')],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-11', -2, date_create('2017-01-07')],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2"), '2017-01-10', -2, date_create('2017-01-07')],
+
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;COUNT=2"), '2017-01-01', 3, null],
+			[(new RSet())->addRRule("DTSTART:20170101\nRRULE:FREQ=DAILY;UNTIL=20170102"), '2017-01-01', 3, null],
+
+		];
+	}
+
+	/**
+	 * @dataProvider nthOccurrences
+	 */
+	public function testGetNthOccurrenceFrom(RSet $rset, $date, $index, $result)
+	{
+		$occurrence = $rset->getNthOccurrenceFrom($date, $index);
+		$this->assertEquals($result, $occurrence);
 	}
 
 ///////////////////////////////////////////////////////////////////////////////

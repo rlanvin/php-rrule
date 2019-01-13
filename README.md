@@ -41,26 +41,11 @@ The recommended way is to install the lib [through Composer](http://getcomposer.
 
 Simply run `composer require rlanvin/php-rrule` for it to be automatically installed and included in your `composer.json`.
 
-Alternatively, just add this to your `composer.json` file and then run `composer install` (you can replace `2.*` by any version selector, or even `dev-master` for the latest development version).
-
-```JSON
-{
-    "require": {
-        "rlanvin/php-rrule": "2.*"
-    }
-}
-```
-
 Now you can use the autoloader, and you will have access to the library:
 
 ```php
 require 'vendor/autoload.php';
 ```
-
-### Alternative method (not recommended)
-
-- Download [the latest release](https://github.com/rlanvin/php-rrule/releases/latest)
-- Put the files in a folder that is autoloaded, or `include` or `require` them
 
 ## Documentation
 

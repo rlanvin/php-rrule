@@ -7,6 +7,12 @@
 ### Added
 
 - New option `custom_path` to `humanReadable()` to use custom translation files [#56](https://github.com/rlanvin/php-rrule/issues/56)
+- New helpers methods [#60](https://github.com/rlanvin/php-rrule/issues/60)
+  - `getOccurrencesBefore`
+  - `getOccurrencesAfter`
+  - `getNthOccurrencesBefore`
+  - `getNthOccurrencesAfter`
+  - `getNthOccurrencesFrom`
 
 ## [1.6.3] - 2019-01-13
 

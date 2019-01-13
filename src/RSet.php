@@ -16,6 +16,8 @@ namespace RRule;
  */
 class RSet implements RRuleInterface
 {
+	use RRuleTrait;
+
 	/**
 	 * @var array List of RDATE (single dates)
 	 */
@@ -340,50 +342,6 @@ class RSet implements RRuleInterface
 		$n = 0;
 		foreach ( $iterator as $occurrence ) {
 			$res[] = clone $occurrence; // we have to clone because DateTime is not immutable
-			$n += 1;
-			if ( $limit && $n >= $limit ) {
-				break;
-			}
-		}
-		return $res;
-	}
-
-	/**
-	 * Return all the ocurrences after a date, before a date, or between two dates.
-	 *
-	 * @param mixed $begin Can be null to return all occurrences before $end
-	 * @param mixed $end Can be null to return all occurrences after $begin
-	 * @param int $limit Limit the resultset to n occurrences (0, null or false = everything)
-	 * @return array An array of \DateTime objects
-	 */
-	public function getOccurrencesBetween($begin, $end, $limit = null)
-	{
-		if ( $begin !== null ) {
-			$begin = RRule::parseDate($begin);
-		}
-
-		if ( $end !== null ) {
-			$end = RRule::parseDate($end);
-		}
-		elseif ( ! $limit && $this->isInfinite() ) {
-			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
-		}
-
-		$iterator = $this;
-		if ( $this->total !== null ) {
-			$iterator = $this->cache;
-		}
-
-		$res = array();
-		$n = 0;
-		foreach ( $iterator as $occurrence ) {
-			if ( $begin !== null && $occurrence < $begin ) {
-				continue;
-			}
-			if ( $end !== null && $occurrence > $end ) {
-				break;
-			}
-			$res[] = clone $occurrence;
 			$n += 1;
 			if ( $limit && $n >= $limit ) {
 				break;

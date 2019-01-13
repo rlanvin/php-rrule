@@ -1777,17 +1777,46 @@ class RRuleTest extends TestCase
 		$rrule->getOccurrences();
 	}
 
-	public function testGetOccurrencesBetween()
+	public function testGetOccurrencesNegativeLimit()
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		$rrule = new RRule(array(
 			'FREQ' => 'DAILY',
 			'DTSTART' => '2017-01-01'
 		));
+		$rrule->getOccurrences(-1);
+	}
 
-		$this->assertCount(1, $rrule->getOccurrencesBetween('2017-01-01', null, 1));
-		$this->assertCount(1, $rrule->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
-		$this->assertEquals(array(date_create('2017-02-01')), $rrule->getOccurrencesBetween('2017-02-01', '2017-12-31', 1));
-		$this->assertCount(5, $rrule->getOccurrencesBetween('2017-01-01', null, 5));
+	public function occurrencesBetween()
+	{
+		return [
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-01', null, 1, [date_create('2017-01-01')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', '2017-12-31', 1, [date_create('2017-02-01')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-01', null, 5, [
+				date_create('2017-01-01'),
+				date_create('2017-01-02'),
+				date_create('2017-01-03'),
+				date_create('2017-01-04'),
+				date_create('2017-01-05'),
+			]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-01', '2017-01-05', null, [
+				date_create('2017-01-01'),
+				date_create('2017-01-02'),
+				date_create('2017-01-03'),
+				date_create('2017-01-04'),
+				date_create('2017-01-05'),
+			]],
+		];
+	}
+
+	/**
+	 * @dataProvider occurrencesBetween
+	 */
+	public function testGetOccurrencesBetween($rule, $begin, $end, $limit, $expected)
+	{
+		$rrule = new RRule($rule);
+
+		$this->assertEquals($expected, $rrule->getOccurrencesBetween($begin, $end, $limit));
 	}
 
 	/**
@@ -1802,6 +1831,89 @@ class RRuleTest extends TestCase
 		));
 		$rrule->getOccurrencesBetween('2017-01-01', null);
 	}
+
+	public function testGetOccurrencesBetweenNegativeLimit()
+	{
+		$this->expectException(\InvalidArgumentException::class);
+		$rrule = new RRule(array(
+			'FREQ' => 'DAILY',
+			'DTSTART' => '2017-01-01'
+		));
+		$rrule->getOccurrencesBetween('2017-01-01', '2018-01-01', -1);
+	}
+
+	public function occurrencesAfter()
+	{
+		return [
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', false, 2, [date_create('2017-02-02'),date_create('2017-02-03')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', true, 2, [date_create('2017-02-01'),date_create('2017-02-02')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-02', true, 2, [date_create('2017-01-03'),date_create('2017-01-05')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-02', false, 2, [date_create('2017-01-03'),date_create('2017-01-05')]],
+		];
+	}
+
+	/**
+	 * @dataProvider occurrencesAfter
+	 */
+	public function testGetOccurrencesAfter($rrule, $date, $inclusive, $limit, $expected)
+	{
+		$rrule = new RRule($rrule);
+		$occurrences = $rrule->getOccurrencesAfter($date, $inclusive, $limit);
+		$this->assertEquals($expected, $occurrences);
+	}
+
+	public function occurrencesBefore()
+	{
+		return [
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', true, 2, [date_create('2017-01-31'),date_create('2017-02-01')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', false, 2, [date_create('2017-01-30'),date_create('2017-01-31')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-02', false, null, [date_create('2017-01-01')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-02', false, 5, [date_create('2017-01-01')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-04', true, 2, [date_create('2017-01-01'),date_create('2017-01-03')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-04', false, 2, [date_create('2017-01-01'),date_create('2017-01-03')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-02', false, null, [date_create('2017-01-01')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-02', false, 5, [date_create('2017-01-01')]],
+		];
+	}
+	/**
+	 * @dataProvider occurrencesBefore
+	 */
+	public function testGetOccurrencesBefore($rrule, $date, $inclusive, $limit, $expected)
+	{
+		$rrule = new RRule($rrule);
+		$occurrences = $rrule->getOccurrencesBefore($date, $inclusive, $limit);
+		$this->assertEquals($expected, $occurrences);
+	}
+
+	public function nthOccurrences()
+	{
+		return [
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-01', 0, date_create('2017-01-01')],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-01', 1, date_create('2017-01-02')],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-01', 2, date_create('2017-01-05')],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-02', 0, null],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-01', -1, null],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-10', -1, date_create('2017-01-09')],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-01-10', -2, date_create('2017-01-08')],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-11', -2, date_create('2017-01-07')],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-10', -2, date_create('2017-01-07')],
+
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;COUNT=2", '2017-01-01', 3, null],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;UNTIL=20170102", '2017-01-01', 3, null],
+
+		];
+	}
+
+	/**
+	 * @dataProvider nthOccurrences
+	 */
+	public function testGetNthOccurrenceFrom($rrule, $date, $index, $result)
+	{
+		$rrule = new RRule($rrule);
+		$occurrence = $rrule->getNthOccurrenceFrom($date, $index);
+		$this->assertEquals($result, $occurrence);
+	}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // RFC Strings
