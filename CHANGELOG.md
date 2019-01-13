@@ -15,6 +15,7 @@
   - `getNthOccurrencesBefore`
   - `getNthOccurrencesAfter`
   - `getNthOccurrencesFrom`
+- New classes: `Proxy` and `Event` to work with events (a date + a duration) instead of simple occurrence (a date)
 
 ## [1.6.3] - 2019-01-13
 
