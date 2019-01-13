@@ -2629,15 +2629,19 @@ class RRuleTest extends TestCase
 	 */
 	public function testI18nFilesToLoadWithIntl($locale, $files)
 	{
+		$reflector = new ReflectionClass('RRule\RRule');
+		$method = $reflector->getMethod('i18nFilesToLoad');
+		$method->setAccessible(true);
+
 		if ( ! $files ) {
 			try {
-				$files = RRule::i18nFilesToLoad($locale, true);
+				$method->invokeArgs(null, array($locale, true));
 				$this->fail('Expected InvalidArgumentException not thrown (files was '.json_encode($files).')');
 			} catch (\InvalidArgumentException $e) {
 			}
 		}
 		else {
-			$this->assertEquals($files, RRule::i18nFilesToLoad($locale, true));
+			$this->assertEquals($files,$method->invokeArgs(null, array($locale, true)));
 		}
 	}
 
@@ -2646,15 +2650,19 @@ class RRuleTest extends TestCase
 	 */
 	public function testI18nFilesToLoadWithoutIntl($locale, $dummy, $files)
 	{
+		$reflector = new ReflectionClass('RRule\RRule');
+		$method = $reflector->getMethod('i18nFilesToLoad');
+		$method->setAccessible(true);
+
 		if ( ! $files ) {
 			try {
-				RRule::i18nFilesToLoad($locale, false);
+				$method->invokeArgs(null, array($locale, false));
 				$this->fail('Expected InvalidArgumentException not thrown (files was '.json_encode($files).')');
 			} catch (\InvalidArgumentException $e) {
 			}
 		}
 		else {
-			$this->assertEquals($files, RRule::i18nFilesToLoad($locale, false));
+			$this->assertEquals($files, $method->invokeArgs(null, array($locale, false)));
 		}
 	}
 
@@ -2755,8 +2763,6 @@ class RRuleTest extends TestCase
 			'dtstart' => '2007-01-01'
 		));
 
-		$reflector = new ReflectionClass('RRule\RRule');
-
 		setlocale(LC_MESSAGES, 'C');
 		$this->assertNotEmpty($rrule->humanReadable(array('fallback' => null)), 'C locale is converted to "en"');
 	}
@@ -2804,6 +2810,22 @@ class RRuleTest extends TestCase
 				"FREQ=DAILY",
 				array('locale' => "en_IE", 'include_start' => false, 'explicit_infinite' => false),
 				"daily"
+			),
+			// with custom_path
+			'custom_path' => array(
+				"DTSTART:20170202T000000Z\nRRULE:FREQ=YEARLY;UNTIL=20170205T000000Z",
+				array('locale' => "fr_BE", "custom_path" => __DIR__."/i18n"),
+				"chaque année, à partir du 2/02/17, jusqu'au 5/02/17"
+			),
+			'custom_path cached separately' => array(
+				"DTSTART:20170202T000000Z\nRRULE:FREQ=YEARLY;UNTIL=20170205T000000Z",
+				array('locale' => "fr_BE"),
+				"tous les ans, à partir du 2/02/17, jusqu'au 5/02/17",
+			),
+			array(
+				"RRULE:FREQ=DAILY;UNTIL=20190405T055959Z",
+				array('locale' => "xx", "custom_path" => __DIR__."/i18n", "date_formatter" => function($date) { return "X"; }),
+				"daily, starting from X, until X"
 			),
 		);
 	}

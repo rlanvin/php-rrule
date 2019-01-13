@@ -4,6 +4,10 @@
 
 - Rewrite the core algorithm to use a native PHP generator, drop compability with PHP < 5.6 [#43](https://github.com/rlanvin/php-rrule/issues/43)
 
+### Added
+
+- New option `custom_path` to `humanReadable()` to use custom translation files [#56](https://github.com/rlanvin/php-rrule/issues/56)
+
 ## [1.6.3] - 2019-01-13
 
 ### Fixed

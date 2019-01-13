@@ -2153,7 +2153,7 @@ class RRule implements RRuleInterface
 	 * Test if intl extension is loaded
 	 * @return bool
 	 */
-	static public function intlLoaded()
+	static protected function intlLoaded()
 	{
 		if ( self::$intl_loaded === null ) {
 			self::$intl_loaded = extension_loaded('intl');
@@ -2163,10 +2163,11 @@ class RRule implements RRuleInterface
 
 	/**
 	 * Parse a locale and returns a list of files to load.
+	 * For example "fr_FR" will produce "fr" and "fr_FR"
 	 *
 	 * @return array
 	 */
-	static public function i18nFilesToLoad($locale, $use_intl = null)
+	static protected function i18nFilesToLoad($locale, $use_intl = null)
 	{
 		if ( $use_intl === null ) {
 			$use_intl = self::intlLoaded();
@@ -2202,26 +2203,38 @@ class RRule implements RRuleInterface
 	 *
 	 * @param string      $locale
 	 * @param string|null $fallback
+	 * @param bool        $use_intl
+	 * @param string      $custom_path
 	 *
 	 * @return array
 	 * @throws \InvalidArgumentException
 	 */
-	static protected function i18nLoad($locale, $fallback = null, $use_intl = null)
+	static protected function i18nLoad($locale, $fallback = null, $use_intl = null, $custom_path = null)
 	{
 		$files = self::i18nFilesToLoad($locale, $use_intl);
 
+		$base_path = __DIR__.'/i18n';
+
 		$result = array();
 		foreach ( $files as $file ) {
-			$path = __DIR__."/i18n/$file.php";
-			if ( isset(self::$i18n[$file]) ) {
-				$result = array_merge($result, self::$i18n[$file]);
-			}
-			elseif ( is_file($path) && is_readable($path) ) {
-				self::$i18n[$file] = include $path;
-				$result = array_merge($result, self::$i18n[$file]);
+
+			// if the file exists in $custom_path, it overrides the default
+			if ( $custom_path && is_file("$custom_path/$file.php") ) {
+				$path = "$custom_path/$file.php";
 			}
 			else {
-				self::$i18n[$file] = array();
+				$path = "$base_path/$file.php";
+			}
+
+			if ( isset(self::$i18n[$path]) ) {
+				$result = array_merge($result, self::$i18n[$path]);
+			}
+			elseif ( is_file($path) && is_readable($path) ) {
+				self::$i18n[$path] = include $path;
+				$result = array_merge($result, self::$i18n[$path]);
+			}
+			else {
+				self::$i18n[$path] = array();
 			}
 		}
 
@@ -2237,7 +2250,7 @@ class RRule implements RRuleInterface
 
 	/**
 	 * Format a rule in a human readable string
-	 * intl extension is required.
+	 * `intl` extension is required.
 	 *
 	 * Available options
 	 *
@@ -2249,6 +2262,9 @@ class RRule implements RRuleInterface
 	 * | `date_formatter`  | callable| Function used to format the date (takes date, returns formatted)
 	 * | `explicit_inifite`| bool    | Mention "forever" if the rule is infinite (true)
 	 * | `dtstart`         | bool    | Mention the start date (true)
+	 * | `include_start`   | bool    |
+	 * | `include_until`   | bool    |
+	 * | `custom_path`     | string  |
 	 *
 	 * @param array  $opt
 	 *
@@ -2267,7 +2283,8 @@ class RRule implements RRuleInterface
 			'fallback' => 'en',
 			'explicit_infinite' => true,
 			'include_start' => true,
-			'include_until' => true
+			'include_until' => true,
+			'custom_path' => null
 		);
 
 		// attempt to detect default locale
@@ -2295,7 +2312,7 @@ class RRule implements RRuleInterface
 
 		$opt = array_merge($default_opt, $opt);
 
-		$i18n = self::i18nLoad($opt['locale'], $opt['fallback'], $opt['use_intl']);
+		$i18n = self::i18nLoad($opt['locale'], $opt['fallback'], $opt['use_intl'], $opt['custom_path']);
 
 		if ( $opt['date_formatter'] && ! is_callable($opt['date_formatter']) ) {
 			throw new \InvalidArgumentException('The option date_formatter must callable');
