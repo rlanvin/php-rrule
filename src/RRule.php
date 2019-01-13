@@ -2370,7 +2370,7 @@ class RRule implements RRuleInterface
 
 				if ( $timezone === 'Z' ) {
 					$timezone = 'GMT'; // otherwise IntlDateFormatter::create fails because... reasons.
-				} elseif ( preg_match( '/[-+]\d{2}/', $timezone ) ) {
+				} elseif ( preg_match('/[-+]\d{2}/',$timezone) ) {
 					$timezone = 'GMT'.$timezone; // otherwise IntlDateFormatter::create fails because... other reasons.
 				}
 				$formatter = \IntlDateFormatter::create(
