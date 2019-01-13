@@ -32,7 +32,7 @@ Complete documentation and more examples are available in [the wiki](https://git
 
 ## Requirements
 
-- PHP >= 5.3
+- PHP >= 5.6
 - [intl extension](http://php.net/manual/en/book.intl.php) is recommended for `humanReadable()` but not strictly required
 
 ## Installation
@@ -41,12 +41,12 @@ The recommended way is to install the lib [through Composer](http://getcomposer.
 
 Simply run `composer require rlanvin/php-rrule` for it to be automatically installed and included in your `composer.json`.
 
-Alternatively, just add this to your `composer.json` file and then run `composer install` (you can replace `1.*` by any version selector, or even `dev-master` for the latest development version).
+Alternatively, just add this to your `composer.json` file and then run `composer install` (you can replace `2.*` by any version selector, or even `dev-master` for the latest development version).
 
 ```JSON
 {
     "require": {
-        "rlanvin/php-rrule": "1.*"
+        "rlanvin/php-rrule": "2.*"
     }
 }
 ```

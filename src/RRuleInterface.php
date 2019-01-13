@@ -14,7 +14,7 @@ namespace RRule;
 /**
  * Common interface for RRule and RSet objects
  */
-interface RRuleInterface extends \Iterator, \ArrayAccess, \Countable
+interface RRuleInterface extends \ArrayAccess, \Countable, \IteratorAggregate
 {
 	/**
 	 * Return all the occurrences in an array of \DateTime.

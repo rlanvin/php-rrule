@@ -190,6 +190,8 @@ class RSetTest extends TestCase
 			'BYDAY' => 'TU, TH',
 			'DTSTART' => date_create('1997-09-02 09:00')
 		));
+		$this->assertEquals(6, count($rset));
+
 		$rset->addExdate('1997-09-04 09:00:00');
 		$rset->addExdate('1997-09-11 09:00:00');
 		$rset->addExdate('1997-09-18 09:00:00');

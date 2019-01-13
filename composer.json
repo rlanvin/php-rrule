@@ -6,7 +6,7 @@
     "homepage": "https://github.com/rlanvin/php-rrule",
     "license": "MIT",
     "require": {
-        "php": ">=5.3.0"
+        "php": ">=5.6.0"
     },
     "suggest": {
         "ext-intl": "Intl extension is needed for humanReadable()"

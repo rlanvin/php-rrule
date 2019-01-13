@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
 
-- n/a
+- Rewrite the core algorithm to use a native PHP generator, drop compability with PHP < 5.6 [#43](https://github.com/rlanvin/php-rrule/issues/43)
 
 ## [1.6.3] - 2019-01-13
 

@@ -585,15 +585,6 @@ class RSet implements RRuleInterface
 	protected $exlist_heap = null;
 	protected $exlist_iterator = null;
 
-	// local variables for iterate() (see comment in RRule about that)
-
-	/** @internal */
-	private $_previous_occurrence = null;
-	/** @internal */
-	private $_total = 0;
-	/** @internal */
-	private $_use_cache = 0;
-
 	/**
 	 * This method will iterate over a bunch of different iterators (rrules and arrays),
 	 * keeping the results *in order*, while never attempting to merge or sort
@@ -609,34 +600,15 @@ class RSet implements RRuleInterface
 	 * @param $reset (bool) Whether to restart the iteration, or keep going
 	 * @return \DateTime|null
 	 */
-	protected function iterate($reset = false)
+	public function getIterator()
 	{
-		$previous_occurrence = & $this->_previous_occurrence;
-		$total = & $this->_total;
-		$use_cache = & $this->_use_cache;
+		$previous_occurrence = null;
+		$total = 0;
 
-		if ( $reset ) {
-			$this->_previous_occurrence = null;
-			$this->_total = 0;
-			$this->_use_cache = true;
-			reset($this->cache);
-		}
+		foreach ( $this->cache as $occurrence ) {
+			yield clone $occurrence; // since DateTime is not immutable, avoid any problem
 
-		// go through the cache first
-		if ( $use_cache ) {
-			while ( ($occurrence = current($this->cache)) !== false ) {
-				next($this->cache);
-				$total += 1;
-				return clone $occurrence;
-			}
-			reset($this->cache);
-			// now set use_cache to false to skip the all thing on next iteration
-			// and start filling the cache instead
-			$use_cache = false;
-			// if the cache as been used up completely and we now there is nothing else
-			if ( $total === $this->total ) {
-				return null;
-			}
+			$total += 1;
 		}
 
 		if ( $this->rlist_heap === null ) {
@@ -645,7 +617,7 @@ class RSet implements RRuleInterface
 			$this->rlist_iterator = new \MultipleIterator(\MultipleIterator::MIT_NEED_ANY);
 			$this->rlist_iterator->attachIterator(new \ArrayIterator($this->rdates));
 			foreach ( $this->rrules as $rrule ) {
-				$this->rlist_iterator->attachIterator($rrule);
+				$this->rlist_iterator->attachIterator($rrule->getIterator());
 			}
 			$this->rlist_iterator->rewind();
 
@@ -655,7 +627,7 @@ class RSet implements RRuleInterface
 
 			$this->exlist_iterator->attachIterator(new \ArrayIterator($this->exdates));
 			foreach ( $this->exrules as $rrule ) {
-				$this->exlist_iterator->attachIterator($rrule);
+				$this->exlist_iterator->attachIterator($rrule->getIterator());
 			}
 			$this->exlist_iterator->rewind();
 		}
@@ -717,11 +689,11 @@ class RSet implements RRuleInterface
 			}
 
 			$total += 1;
-			$this->cache[] = $occurrence;
-			return clone $occurrence; // = yield
+			$this->cache[] = clone $occurrence;
+			yield clone $occurrence; // = yield
 		}
 
 		$this->total = $total; // save total for count cache
-		return null; // stop the iterator
+		return; // stop the iterator
 	}
 }
