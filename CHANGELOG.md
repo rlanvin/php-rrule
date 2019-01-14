@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added new methods to `RSet`: `removeDate`, `clearDates`, `removeExDate` and `clearExDates` [#66](https://github.com/rlanvin/php-rrule/pull/66)
+
 ## [2.0.0] - 2019-03-16
 
 - Add support for PHP 7.3
