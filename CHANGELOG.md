@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2019-03-16
+
+- Add support for PHP 7.3
+
 ## [2.0.0-rc1] - 2019-01-13
 
 - Rewrite the core algorithm to use a native PHP generator, drop compability with PHP < 5.6 [#43](https://github.com/rlanvin/php-rrule/issues/43)
@@ -163,8 +167,9 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.0.0-rc1...HEAD
-[1.6.3]: https://github.com/rlanvin/php-rrule/compare/v1.6.3...v2.0.0-rc1
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/rlanvin/php-rrule/compare/v2.0.0-rc1...v2.0.0
+[2.0.0-rc1]: https://github.com/rlanvin/php-rrule/compare/v1.6.3...v2.0.0-rc1
 [1.6.3]: https://github.com/rlanvin/php-rrule/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/rlanvin/php-rrule/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/rlanvin/php-rrule/compare/v1.6.0...v1.6.1
