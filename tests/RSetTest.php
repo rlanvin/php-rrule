@@ -473,7 +473,7 @@ class RSetTest extends TestCase
 			'DTSTART' => date_create('1997-09-02 09:00')
 		));
 
-		foreach ( $rset as $occurrence ) {
+		foreach ($rset as $occurrence) {
 			$this->assertEquals(date_create('1997-09-02 09:00'), $occurrence);
 			break;
 		}

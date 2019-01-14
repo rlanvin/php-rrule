@@ -35,8 +35,8 @@ class RfcParser
 			'value' => null
 		), $default);
 
-		if ( strpos($line,':') === false ) {
-			if ( ! $property['name'] ) {
+		if (strpos($line,':') === false) {
+			if (! $property['name']) {
 				throw new \InvalidArgumentException('Failed to parse RFC line, missing property name followed by ":"');
 			}
 			$property['value'] = $line;
@@ -47,8 +47,8 @@ class RfcParser
 			$tmp = explode(';',$property['name']);
 			$property['name'] = $tmp[0];
 			array_splice($tmp,0,1);
-			foreach ( $tmp as $pair ) {
-				if ( strpos($pair,'=') === false ) {
+			foreach ($tmp as $pair) {
+				if (strpos($pair,'=') === false) {
 					throw new \InvalidArgumentException('Failed to parse RFC line, invalid property parameters: '.$pair);
 				}
 				list($key,$value) = explode('=',$pair);
@@ -79,10 +79,10 @@ class RfcParser
 		$nb_rrule = 0;
 		$lines = explode("\n", $string);
 
-		if ( $dtstart ) {
+		if ($dtstart) {
 			$nb_dtstart = 1;
-			if ( is_string($dtstart) ) {
-				if ( strlen($dtstart) == 10 ) {
+			if (is_string($dtstart)) {
+				if (strlen($dtstart) == 10) {
 					$dtstart_type = 'date';
 				}
 				else {
@@ -95,34 +95,34 @@ class RfcParser
 			$parts['DTSTART'] = RRule::parseDate($dtstart);
 		}
 
-		foreach ( $lines as $line ) {
+		foreach ($lines as $line) {
 			$property = self::parseLine($line, array(
 				'name' => sizeof($lines) > 1 ? null : 'RRULE'  // allow missing property name for single-line RRULE
 			));
 
-			switch ( strtoupper($property['name']) ) {
+			switch (strtoupper($property['name'])) {
 				case 'DTSTART':
 					$nb_dtstart += 1;
-					if ( $nb_dtstart > 1 ) {
+					if ($nb_dtstart > 1) {
 						throw new \InvalidArgumentException('Too many DTSTART properties (there can be only one)');
 					}
 					$tmp = null;
 					$dtstart_type = 'date';
-					if ( ! preg_match($rfc_date_regexp, $property['value']) ) {
+					if (! preg_match($rfc_date_regexp, $property['value'])) {
 						throw new \InvalidArgumentException(
 							'Invalid DTSTART property: date or date time format incorrect'
 						);
 					}
-					if ( isset($property['params']['TZID']) ) {
+					if (isset($property['params']['TZID'])) {
 						// TZID must only be specified if this is a date-time (see section 3.3.4 & 3.3.5 of RFC 5545)
-						if ( strpos($property['value'], 'T') === false ) {
+						if (strpos($property['value'], 'T') === false) {
 							throw new \InvalidArgumentException(
 								'Invalid DTSTART property: TZID should not be specified if there is no time component'
 							);
 						}
 						// The "TZID" property parameter MUST NOT be applied to DATE-TIME
 						// properties whose time values are specified in UTC.
-						if ( strpos($property['value'], 'Z') !== false ) {
+						if (strpos($property['value'], 'Z') !== false) {
 							throw new \InvalidArgumentException(
 								'Invalid DTSTART property: TZID must not be applied when time is specified in UTC'
 							);
@@ -130,8 +130,8 @@ class RfcParser
 						$dtstart_type = 'tzid';
 						$tmp = new \DateTimeZone($property['params']['TZID']);
 					}
-					elseif ( strpos($property['value'], 'T') !== false ) {
-						if ( strpos($property['value'], 'Z') === false ) {
+					elseif (strpos($property['value'], 'T') !== false) {
+						if (strpos($property['value'], 'Z') === false) {
 							$dtstart_type = 'localtime'; // no timezone
 						}
 						else {
@@ -143,31 +143,31 @@ class RfcParser
 				case 'RRULE':
 				case 'EXRULE':
 					$nb_rrule += 1;
-					if ( $nb_rrule > 1 ) {
+					if ($nb_rrule > 1) {
 						throw new \InvalidArgumentException('Too many RRULE properties (there can be only one)');
 					}
-					foreach ( explode(';',$property['value']) as $pair ) {
+					foreach (explode(';',$property['value']) as $pair) {
 						$pair = explode('=', $pair);
-						if ( ! isset($pair[1]) || isset($pair[2]) ) {
+						if (! isset($pair[1]) || isset($pair[2])) {
 							throw new \InvalidArgumentException("Failed to parse RFC string, malformed RRULE property: {$property['value']}");
 						}
 						list($key, $value) = $pair;
-						if ( $key === 'UNTIL' ) {
-							if ( ! preg_match($rfc_date_regexp, $value) ) {
+						if ($key === 'UNTIL') {
+							if (! preg_match($rfc_date_regexp, $value)) {
 								throw new \InvalidArgumentException(
 									'Invalid UNTIL property: date or date time format incorrect'
 								);
 							}
-							switch ( $dtstart_type ) {
+							switch ($dtstart_type) {
 								case 'date':
-									if ( strpos($value, 'T') !== false) {
+									if (strpos($value, 'T') !== false) {
 										throw new \InvalidArgumentException(
 											'Invalid UNTIL property: The value of the UNTIL rule part MUST be a date if DTSTART is a date.'
 										);
 									}
 									break;
 								case 'localtime':
-									if ( strpos($value, 'T') === false || strpos($value, 'Z') !== false ) {
+									if (strpos($value, 'T') === false || strpos($value, 'Z') !== false) {
 										throw new \InvalidArgumentException(
 											'Invalid UNTIL property: if the "DTSTART" property is specified as a date with local time, then the UNTIL rule part MUST also be specified as a date with local time'
 										);
@@ -175,7 +175,7 @@ class RfcParser
 									break;
 								case 'tzid':
 								case 'utc':
-									if ( strpos($value, 'T') === false || strpos($value, 'Z') === false ) {
+									if (strpos($value, 'T') === false || strpos($value, 'Z') === false) {
 										throw new \InvalidArgumentException(
 											'Invalid UNTIL property: if the "DTSTART" property is specified as a date with UTC time or a date with local time and time zone reference, then the UNTIL rule part MUST be specified as a date with UTC time.'
 										);
@@ -185,8 +185,8 @@ class RfcParser
 
 							$value = new \DateTime($value);
 						}
-						elseif ( $key === 'DTSTART' ) {
-							if ( isset($parts['DTSTART']) ) {
+						elseif ($key === 'DTSTART') {
+							if (isset($parts['DTSTART'])) {
 								throw new \InvalidArgumentException('DTSTART cannot be part of RRULE and has already been defined');
 							}
 							// this is an invalid rule, however we'll support it since the JS lib is broken
@@ -210,19 +210,19 @@ class RfcParser
 	static public function parseRDate($line)
 	{
 		$property = self::parseLine($line);
-		if ( $property['name'] !== 'RDATE' ) {
+		if ($property['name'] !== 'RDATE') {
 			throw new \InvalidArgumentException("Failed to parse RDATE line, this is a {$property['name']} property");
 		}
 
 		$period = false;
 		$tz = null;
-		foreach ( $property['params'] as $name => $value ) {
-			switch ( strtoupper($name) ) {
+		foreach ($property['params'] as $name => $value) {
+			switch (strtoupper($name)) {
 				case 'TZID':
 					$tz = new \DateTimeZone($value);
 				break;
 				case 'VALUE':
-					switch ( $value ) {
+					switch ($value) {
 						case 'DATE':
 						case 'DATE-TIME':
 						break;
@@ -240,17 +240,17 @@ class RfcParser
 
 		$dates = array();
 
-		foreach ( explode(',',$property['value']) as $value ) {
-			if ( $period ) {
-				if ( strpos($value,'/') === false ) {
+		foreach (explode(',',$property['value']) as $value) {
+			if ($period) {
+				if (strpos($value,'/') === false) {
 					throw new \InvalidArgumentException('Invalid period in RDATE');
 				}
 				// period is unsupported!
 				trigger_error('VALUE=PERIOD is not supported and ignored', E_USER_NOTICE);
 			}
 			else {
-				if ( strpos($value, 'Z') ) {
-					if ( $tz !== null ) {
+				if (strpos($value, 'Z')) {
+					if ($tz !== null) {
 						throw new \InvalidArgumentException('Invalid RDATE property: TZID must not be applied when time is specified in UTC');
 					}
 					$dates[] = new \DateTime($value);
@@ -271,13 +271,13 @@ class RfcParser
 	static public function parseExDate($line)
 	{
 		$property = self::parseLine($line);
-		if ( $property['name'] !== 'EXDATE' ) {
+		if ($property['name'] !== 'EXDATE') {
 			throw new \InvalidArgumentException("Failed to parse EXDATE line, this is a {$property['name']} property");
 		}
 
 		$tz = null;
-		foreach ( $property['params'] as $name => $value ) {
-			switch ( strtoupper($name) ) {
+		foreach ($property['params'] as $name => $value) {
+			switch (strtoupper($name)) {
 				case 'VALUE':
 					// Ignore optional words
 					break;
@@ -291,9 +291,9 @@ class RfcParser
 
 		$dates = array();
 
-		foreach ( explode(',',$property['value']) as $value ) {
-			if ( strpos($value, 'Z') ) {
-				if ( $tz !== null ) {
+		foreach (explode(',',$property['value']) as $value) {
+			if (strpos($value, 'Z')) {
+				if ($tz !== null) {
 					throw new \InvalidArgumentException('Invalid EXDATE property: TZID must not be applied when time is specified in UTC');
 				}
 				$dates[] = new \DateTime($value);

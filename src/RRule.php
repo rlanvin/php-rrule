@@ -59,13 +59,13 @@ function pymod($a, $b)
  */
 function is_leap_year($year)
 {
-	if ( $year % 4 !== 0 ) {
+	if ($year % 4 !== 0) {
 		return false;
 	}
-	if ( $year % 100 !== 0 ) {
+	if ($year % 100 !== 0) {
 		return true;
 	}
-	if ( $year % 400 !== 0 ) {
+	if ($year % 400 !== 0) {
 		return false;
 	}
 	return true;
@@ -197,15 +197,15 @@ class RRule implements RRuleInterface
 	 */
 	public function __construct($parts, $dtstart = null)
 	{
-		if ( is_string($parts) ) {
+		if (is_string($parts)) {
 			$parts = RfcParser::parseRRule($parts, $dtstart);
 			$parts = array_change_key_case($parts, CASE_UPPER);
 		}
 		else {
-			if ( $dtstart ) {
+			if ($dtstart) {
 				throw new \InvalidArgumentException('$dtstart argument has no effect if not constructing from a string');
 			}
-			if ( is_array($parts) ) {
+			if (is_array($parts)) {
 				$parts = array_change_key_case($parts, CASE_UPPER);
 			}
 			else {
@@ -218,7 +218,7 @@ class RRule implements RRuleInterface
 
 		// validate extra parts
 		$unsupported = array_diff_key($parts, $this->rule);
-		if ( ! empty($unsupported) ) {
+		if (! empty($unsupported)) {
 			throw new \InvalidArgumentException(
 				'Unsupported parameter(s): '
 				.implode(',',array_keys($unsupported))
@@ -230,7 +230,7 @@ class RRule implements RRuleInterface
 
 		// WKST
 		$parts['WKST'] = strtoupper($parts['WKST']);
-		if ( ! array_key_exists($parts['WKST'], self::$week_days) ) {
+		if (! array_key_exists($parts['WKST'], self::$week_days)) {
 			throw new \InvalidArgumentException(
 				'The WKST rule part must be one of the following: '
 				.implode(', ',array_keys(self::$week_days))
@@ -239,8 +239,8 @@ class RRule implements RRuleInterface
 		$this->wkst = self::$week_days[$parts['WKST']];
 
 		// FREQ
-		if ( is_integer($parts['FREQ']) ) {
-			if ( $parts['FREQ'] > self::SECONDLY || $parts['FREQ'] < self::YEARLY ) {
+		if (is_integer($parts['FREQ'])) {
+			if ($parts['FREQ'] > self::SECONDLY || $parts['FREQ'] < self::YEARLY) {
 				throw new \InvalidArgumentException(
 					'The FREQ rule part must be one of the following: '
 					.implode(', ',array_keys(self::$frequencies))
@@ -250,7 +250,7 @@ class RRule implements RRuleInterface
 		}
 		else { // string
 			$parts['FREQ'] = strtoupper($parts['FREQ']);
-			if ( ! array_key_exists($parts['FREQ'], self::$frequencies) ) {
+			if (! array_key_exists($parts['FREQ'], self::$frequencies)) {
 				throw new \InvalidArgumentException(
 					'The FREQ rule part must be one of the following: '
 					.implode(', ',array_keys(self::$frequencies))
@@ -260,7 +260,7 @@ class RRule implements RRuleInterface
 		}
 
 		// INTERVAL
-		if ( filter_var($parts['INTERVAL'], FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) === false ) {
+		if (filter_var($parts['INTERVAL'], FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) === false) {
 			throw new \InvalidArgumentException(
 				'The INTERVAL rule part must be a positive integer (> 0)'
 			);
@@ -268,7 +268,7 @@ class RRule implements RRuleInterface
 		$this->interval = (int) $parts['INTERVAL'];
 
 		// DTSTART
-		if ( not_empty($parts['DTSTART']) ) {
+		if (not_empty($parts['DTSTART'])) {
 			try {
 				$this->dtstart = self::parseDate($parts['DTSTART']);
 			} catch (\Exception $e) {
@@ -279,7 +279,7 @@ class RRule implements RRuleInterface
 		} 
 		else {
 			$this->dtstart = new \DateTime(); // for PHP 7.1+ this contains microseconds which causes many problems
-			if ( version_compare(PHP_VERSION, '7.1.0') >= 0 ) {
+			if (version_compare(PHP_VERSION, '7.1.0') >= 0) {
 				// remove microseconds
 				$this->dtstart->setTime(
 					$this->dtstart->format('H'),
@@ -291,7 +291,7 @@ class RRule implements RRuleInterface
 		}
 
 		// UNTIL (optional)
-		if ( not_empty($parts['UNTIL']) ) {
+		if (not_empty($parts['UNTIL'])) {
 			try {
 				$this->until = self::parseDate($parts['UNTIL']);
 			} catch (\Exception $e) {
@@ -302,22 +302,22 @@ class RRule implements RRuleInterface
 		}
 
 		// COUNT (optional)
-		if ( not_empty($parts['COUNT']) ) {
-			if ( filter_var($parts['COUNT'], FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) === false ) {
+		if (not_empty($parts['COUNT'])) {
+			if (filter_var($parts['COUNT'], FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) === false) {
 				throw new \InvalidArgumentException('COUNT must be a positive integer (> 0)');
 			}
 			$this->count = (int) $parts['COUNT'];
 		}
 
-		if ( $this->until && $this->count ) {
+		if ($this->until && $this->count) {
 			throw new \InvalidArgumentException('The UNTIL or COUNT rule parts MUST NOT occur in the same rule');
 		}
 
 		// infer necessary BYXXX rules from DTSTART, if not provided
-		if ( ! (not_empty($parts['BYWEEKNO']) || not_empty($parts['BYYEARDAY']) || not_empty($parts['BYMONTHDAY']) || not_empty($parts['BYDAY'])) ) {
-			switch ( $this->freq ) {
+		if (! (not_empty($parts['BYWEEKNO']) || not_empty($parts['BYYEARDAY']) || not_empty($parts['BYMONTHDAY']) || not_empty($parts['BYDAY']))) {
+			switch ($this->freq) {
 				case self::YEARLY:
-					if ( ! not_empty($parts['BYMONTH']) ) {
+					if (! not_empty($parts['BYMONTH'])) {
 						$parts['BYMONTH'] = array((int) $this->dtstart->format('m'));
 					}
 					$parts['BYMONTHDAY'] = array((int) $this->dtstart->format('j'));
@@ -332,20 +332,20 @@ class RRule implements RRuleInterface
 		}
 
 		// BYDAY (translated to byweekday for convenience)
-		if ( not_empty($parts['BYDAY']) ) {
-			if ( ! is_array($parts['BYDAY']) ) {
+		if (not_empty($parts['BYDAY'])) {
+			if (! is_array($parts['BYDAY'])) {
 				$parts['BYDAY'] = explode(',',$parts['BYDAY']);
 			}
 			$this->byweekday = array();
 			$this->byweekday_nth = array();
-			foreach ( $parts['BYDAY'] as $value ) {
+			foreach ($parts['BYDAY'] as $value) {
 				$value = trim(strtoupper($value));
 				$valid = preg_match('/^([+-]?[0-9]+)?([A-Z]{2})$/', $value, $matches);
-				if ( ! $valid || (not_empty($matches[1]) && ($matches[1] == 0 || $matches[1] > 53 || $matches[1] < -53)) || ! array_key_exists($matches[2], self::$week_days) ) {
+				if (! $valid || (not_empty($matches[1]) && ($matches[1] == 0 || $matches[1] > 53 || $matches[1] < -53)) || ! array_key_exists($matches[2], self::$week_days)) {
 					throw new \InvalidArgumentException('Invalid BYDAY value: '.$value);
 				}
 
-				if ( $matches[1] ) {
+				if ($matches[1]) {
 					$this->byweekday_nth[] = array(self::$week_days[$matches[2]], (int)$matches[1]);
 				}
 				else {
@@ -353,11 +353,11 @@ class RRule implements RRuleInterface
 				}
 			}
 
-			if ( ! empty($this->byweekday_nth) ) {
-				if ( ! ($this->freq === self::MONTHLY || $this->freq === self::YEARLY) ) {
+			if (! empty($this->byweekday_nth)) {
+				if (! ($this->freq === self::MONTHLY || $this->freq === self::YEARLY)) {
 					throw new \InvalidArgumentException('The BYDAY rule part MUST NOT be specified with a numeric value when the FREQ rule part is not set to MONTHLY or YEARLY.');
 				}
-				if ( $this->freq === self::YEARLY && not_empty($parts['BYWEEKNO']) ) {
+				if ($this->freq === self::YEARLY && not_empty($parts['BYWEEKNO'])) {
 					throw new \InvalidArgumentException('The BYDAY rule part MUST NOT be specified with a numeric value with the FREQ rule part set to YEARLY when the BYWEEKNO rule part is specified.');
 				}
 			}
@@ -368,23 +368,23 @@ class RRule implements RRuleInterface
 		// example, -10 represents the tenth to the last day of the month.
 		// The BYMONTHDAY rule part MUST NOT be specified when the FREQ rule
 		// part is set to WEEKLY.
-		if ( not_empty($parts['BYMONTHDAY']) ) {
-			if ( $this->freq === self::WEEKLY ) {
+		if (not_empty($parts['BYMONTHDAY'])) {
+			if ($this->freq === self::WEEKLY) {
 				throw new \InvalidArgumentException('The BYMONTHDAY rule part MUST NOT be specified when the FREQ rule part is set to WEEKLY.');
 			}
 
-			if ( ! is_array($parts['BYMONTHDAY']) ) {
+			if (! is_array($parts['BYMONTHDAY'])) {
 				$parts['BYMONTHDAY'] = explode(',',$parts['BYMONTHDAY']);
 			}
 
 			$this->bymonthday = array();
 			$this->bymonthday_negative = array();
-			foreach ( $parts['BYMONTHDAY'] as $value ) {
-				if ( !$value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -31, 'max_range' => 31))) === false ) {
+			foreach ($parts['BYMONTHDAY'] as $value) {
+				if (!$value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -31, 'max_range' => 31))) === false) {
 					throw new \InvalidArgumentException('Invalid BYMONTHDAY value: '.$value.' (valid values are 1 to 31 or -31 to -1)');
 				}
 				$value = (int) $value;
-				if ( $value < 0 ) {
+				if ($value < 0) {
 					$this->bymonthday_negative[] = $value;
 				}
 				else {
@@ -393,18 +393,18 @@ class RRule implements RRuleInterface
 			}
 		}
 
-		if ( not_empty($parts['BYYEARDAY']) ) {
-			if ( $this->freq === self::DAILY || $this->freq === self::WEEKLY || $this->freq === self::MONTHLY ) {
+		if (not_empty($parts['BYYEARDAY'])) {
+			if ($this->freq === self::DAILY || $this->freq === self::WEEKLY || $this->freq === self::MONTHLY) {
 				throw new \InvalidArgumentException('The BYYEARDAY rule part MUST NOT be specified when the FREQ rule part is set to DAILY, WEEKLY, or MONTHLY.');
 			}
 
-			if ( ! is_array($parts['BYYEARDAY']) ) {
+			if (! is_array($parts['BYYEARDAY'])) {
 				$parts['BYYEARDAY'] = explode(',',$parts['BYYEARDAY']);
 			}
 
 			$this->bysetpos = array();
-			foreach ( $parts['BYYEARDAY'] as $value ) {
-				if ( ! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -366, 'max_range' => 366))) === false ) {
+			foreach ($parts['BYYEARDAY'] as $value) {
+				if (! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -366, 'max_range' => 366))) === false) {
 					throw new \InvalidArgumentException('Invalid BYSETPOS value: '.$value.' (valid values are 1 to 366 or -366 to -1)');
 				}
 
@@ -413,18 +413,18 @@ class RRule implements RRuleInterface
 		}
 
 		// BYWEEKNO
-		if ( not_empty($parts['BYWEEKNO']) ) {
-			if ( $this->freq !== self::YEARLY ) {
+		if (not_empty($parts['BYWEEKNO'])) {
+			if ($this->freq !== self::YEARLY) {
 				throw new \InvalidArgumentException('The BYWEEKNO rule part MUST NOT be used when the FREQ rule part is set to anything other than YEARLY.');
 			}
 
-			if ( ! is_array($parts['BYWEEKNO']) ) {
+			if (! is_array($parts['BYWEEKNO'])) {
 				$parts['BYWEEKNO'] = explode(',',$parts['BYWEEKNO']);
 			}
 
 			$this->byweekno = array();
-			foreach ( $parts['BYWEEKNO'] as $value ) {
-				if ( ! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -53, 'max_range' => 53))) === false ) {
+			foreach ($parts['BYWEEKNO'] as $value) {
+				if (! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -53, 'max_range' => 53))) === false) {
 					throw new \InvalidArgumentException('Invalid BYWEEKNO value: '.$value.' (valid values are 1 to 53 or -53 to -1)');
 				}
 				$this->byweekno[] = (int) $value;
@@ -433,35 +433,35 @@ class RRule implements RRuleInterface
 
 		// The BYMONTH rule part specifies a COMMA-separated list of months
 		// of the year.  Valid values are 1 to 12.
-		if ( not_empty($parts['BYMONTH']) ) {
-			if ( ! is_array($parts['BYMONTH']) ) {
+		if (not_empty($parts['BYMONTH'])) {
+			if (! is_array($parts['BYMONTH'])) {
 				$parts['BYMONTH'] = explode(',',$parts['BYMONTH']);
 			}
 
 			$this->bymonth = array();
-			foreach ( $parts['BYMONTH'] as $value ) {
-				if ( filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1, 'max_range' => 12))) === false ) {
+			foreach ($parts['BYMONTH'] as $value) {
+				if (filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1, 'max_range' => 12))) === false) {
 					throw new \InvalidArgumentException('Invalid BYMONTH value: '.$value);
 				}
 				$this->bymonth[] = (int) $value;
 			}
 		}
 
-		if ( not_empty($parts['BYSETPOS']) ) {
-			if ( ! (not_empty($parts['BYWEEKNO']) || not_empty($parts['BYYEARDAY'])
+		if (not_empty($parts['BYSETPOS'])) {
+			if (! (not_empty($parts['BYWEEKNO']) || not_empty($parts['BYYEARDAY'])
 				|| not_empty($parts['BYMONTHDAY']) || not_empty($parts['BYDAY'])
 				|| not_empty($parts['BYMONTH']) || not_empty($parts['BYHOUR'])
-				|| not_empty($parts['BYMINUTE']) || not_empty($parts['BYSECOND'])) ) {
+				|| not_empty($parts['BYMINUTE']) || not_empty($parts['BYSECOND']))) {
 				throw new \InvalidArgumentException('The BYSETPOS rule part MUST only be used in conjunction with another BYxxx rule part.');
 			}
 
-			if ( ! is_array($parts['BYSETPOS']) ) {
+			if (! is_array($parts['BYSETPOS'])) {
 				$parts['BYSETPOS'] = explode(',',$parts['BYSETPOS']);
 			}
 
 			$this->bysetpos = array();
-			foreach ( $parts['BYSETPOS'] as $value ) {
-				if ( ! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -366, 'max_range' => 366))) === false ) {
+			foreach ($parts['BYSETPOS'] as $value) {
+				if (! $value || filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => -366, 'max_range' => 366))) === false) {
 					throw new \InvalidArgumentException('Invalid BYSETPOS value: '.$value.' (valid values are 1 to 366 or -366 to -1)');
 				}
 
@@ -469,14 +469,14 @@ class RRule implements RRuleInterface
 			}
 		}
 
-		if ( not_empty($parts['BYHOUR']) ) {
-			if ( ! is_array($parts['BYHOUR']) ) {
+		if (not_empty($parts['BYHOUR'])) {
+			if (! is_array($parts['BYHOUR'])) {
 				$parts['BYHOUR'] = explode(',',$parts['BYHOUR']);
 			}
 
 			$this->byhour = array();
-			foreach ( $parts['BYHOUR'] as $value ) {
-				if ( filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 23))) === false ) {
+			foreach ($parts['BYHOUR'] as $value) {
+				if (filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 23))) === false) {
 					throw new \InvalidArgumentException('Invalid BYHOUR value: '.$value);
 				}
 				$this->byhour[] = (int) $value;
@@ -484,59 +484,59 @@ class RRule implements RRuleInterface
 
 			sort($this->byhour);
 		}
-		elseif ( $this->freq < self::HOURLY ) { 
+		elseif ($this->freq < self::HOURLY) {
 			$this->byhour = array((int) $this->dtstart->format('G'));
 		}
 
-		if ( not_empty($parts['BYMINUTE']) ) {
-			if ( ! is_array($parts['BYMINUTE']) ) {
+		if (not_empty($parts['BYMINUTE'])) {
+			if (! is_array($parts['BYMINUTE'])) {
 				$parts['BYMINUTE'] = explode(',',$parts['BYMINUTE']);
 			}
 
 			$this->byminute = array();
-			foreach ( $parts['BYMINUTE'] as $value ) {
-				if ( filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 59))) === false ) {
+			foreach ($parts['BYMINUTE'] as $value) {
+				if (filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 59))) === false) {
 					throw new \InvalidArgumentException('Invalid BYMINUTE value: '.$value);
 				}
 				$this->byminute[] = (int) $value;
 			}
 			sort($this->byminute);
 		}
-		elseif ( $this->freq < self::MINUTELY ) {
+		elseif ($this->freq < self::MINUTELY) {
 			$this->byminute = array((int) $this->dtstart->format('i'));
 		}
 
-		if ( not_empty($parts['BYSECOND']) ) {
-			if ( ! is_array($parts['BYSECOND']) ) {
+		if (not_empty($parts['BYSECOND'])) {
+			if (! is_array($parts['BYSECOND'])) {
 				$parts['BYSECOND'] = explode(',',$parts['BYSECOND']);
 			}
 
 			$this->bysecond = array();
-			foreach ( $parts['BYSECOND'] as $value ) {
+			foreach ($parts['BYSECOND'] as $value) {
 				// yes, "60" is a valid value, in (very rare) cases on leap seconds
 				//  December 31, 2005 23:59:60 UTC is a valid date...
 				// so is 2012-06-30T23:59:60UTC
-				if ( filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 60))) === false ) {
+				if (filter_var($value, FILTER_VALIDATE_INT, array('options' => array('min_range' => 0, 'max_range' => 60))) === false) {
 					throw new \InvalidArgumentException('Invalid BYSECOND value: '.$value);
 				}
 				$this->bysecond[] = (int) $value;
 			}
 			sort($this->bysecond);
 		}
-		elseif ( $this->freq < self::SECONDLY ) {
+		elseif ($this->freq < self::SECONDLY) {
 			$this->bysecond = array((int) $this->dtstart->format('s'));
 		}
 
-		if ( $this->freq < self::HOURLY ) {
+		if ($this->freq < self::HOURLY) {
 			// for frequencies DAILY, WEEKLY, MONTHLY AND YEARLY, we can build
 			// an array of every time of the day at which there should be an
 			// occurrence - default, if no BYHOUR/BYMINUTE/BYSECOND are provided
 			// is only one time, and it's the DTSTART time. This is a cached version
 			// if you will, since it'll never change at these frequencies
 			$this->timeset = array();
-			foreach ( $this->byhour as $hour ) {
-				foreach ( $this->byminute as $minute ) {
-					foreach ( $this->bysecond as $second ) {
+			foreach ($this->byhour as $hour) {
+				foreach ($this->byminute as $minute) {
+					foreach ($this->bysecond as $second) {
 						$this->timeset[] = array($hour,$minute,$second);
 					}
 				}
@@ -574,8 +574,8 @@ class RRule implements RRuleInterface
 	public function rfcString($include_timezone = true)
 	{
 		$str = '';
-		if ( $this->rule['DTSTART'] ) {
-			if ( ! $include_timezone ) {
+		if ($this->rule['DTSTART']) {
+			if (! $include_timezone) {
 				$str = sprintf(
 					"DTSTART:%s\nRRULE:",
 					$this->dtstart->format('Ymd\THis')
@@ -584,14 +584,14 @@ class RRule implements RRuleInterface
 			else {
 				$dtstart = clone $this->dtstart;
 				$timezone_name = $dtstart->getTimeZone()->getName();
-				if ( strpos($timezone_name,':') !== false ) {
+				if (strpos($timezone_name,':') !== false) {
 					// handle unsupported timezones like "+02:00"
 					// we convert them to UTC to generate a valid string
 					// note: there is possibly other weird timezones out there that we should catch
 					$dtstart->setTimezone(new \DateTimeZone('UTC'));
 					$timezone_name = 'UTC';
 				}
-				if ( in_array($timezone_name, array('UTC','GMT','Z')) ) {
+				if (in_array($timezone_name, array('UTC','GMT','Z'))) {
 					$str = sprintf(
 						"DTSTART:%s\nRRULE:",
 						$dtstart->format('Ymd\THis\Z')
@@ -608,18 +608,18 @@ class RRule implements RRuleInterface
 		}
 
 		$parts = array();
-		foreach ( $this->rule as $key => $value ) {
-			if ( $key === 'DTSTART' ) {
+		foreach ($this->rule as $key => $value) {
+			if ($key === 'DTSTART') {
 				continue;
 			}
-			if ( $key === 'INTERVAL' && $value == 1 ) {
+			if ($key === 'INTERVAL' && $value == 1) {
 				continue;
 			}
-			if ( $key === 'WKST' && $value === 'MO') {
+			if ($key === 'WKST' && $value === 'MO') {
 				continue;
 			}
-			if ( $key === 'UNTIL' && $value ) {
-				if ( ! $include_timezone ) {
+			if ($key === 'UNTIL' && $value) {
+				if (! $include_timezone) {
 					$tmp = clone $this->until;
 					// put until on the same timezone as DTSTART
 					$tmp->setTimeZone($this->dtstart->getTimezone());
@@ -633,14 +633,14 @@ class RRule implements RRuleInterface
 				}
 				continue;
 			}
-			if ( $key === 'FREQ' && $value && !array_key_exists($value, static::$frequencies) ) {
+			if ($key === 'FREQ' && $value && !array_key_exists($value, static::$frequencies)) {
 				$frequency_key = array_search($value, static::$frequencies);
 				if ($frequency_key !== false) {
 					$value = $frequency_key;
 				}
 			}
-			if ( $value !== NULL ) {
-				if ( is_array($value) ) {
+			if ($value !== NULL) {
+				if (is_array($value)) {
 					$value = implode(',',$value);
 				}
 				$parts[] = strtoupper(str_replace(' ','',"$key=$value"));
@@ -678,19 +678,19 @@ class RRule implements RRuleInterface
 	{
 		$class = '\RRule\RSet';
 
-		if ( ! $force_rset ) {
+		if (! $force_rset) {
 			// try to detect if we have a RRULE or a set
 			$uppercased_string = strtoupper($string);
 			$nb_rrule = substr_count($string, 'RRULE');
-			if ( $nb_rrule == 0 ) {
+			if ($nb_rrule == 0) {
 				$class = '\RRule\RRule';
 			}
-			elseif ( $nb_rrule > 1 ) {
+			elseif ($nb_rrule > 1) {
 				$class = '\RRule\RSet';
 			}
 			else {
 				$class = '\RRule\RRule';
-				if ( strpos($string, 'EXDATE') !== false ||  strpos($string, 'RDATE') !== false ||  strpos($string, 'EXRULE') !== false ) {
+				if (strpos($string, 'EXDATE') !== false ||  strpos($string, 'RDATE') !== false ||  strpos($string, 'EXRULE') !== false) {
 					$class = '\RRule\RSet';
 				}
 			}
@@ -754,28 +754,28 @@ class RRule implements RRuleInterface
 		// convert timezone to dtstart timezone for comparison
 		$date->setTimezone($this->dtstart->getTimezone());
 
-		if ( in_array($date, $this->cache) ) {
+		if (in_array($date, $this->cache)) {
 			// in the cache (whether cache is complete or not)
 			return true;
 		}
-		elseif ( $this->total !== null ) {
+		elseif ($this->total !== null) {
 			// cache complete and not in cache
 			return false;
 		}
 
 		// let's start with the obvious
-		if ( $date < $this->dtstart || ($this->until && $date > $this->until) ) {
+		if ($date < $this->dtstart || ($this->until && $date > $this->until)) {
 			return false;
 		}
 
 		// now the BYXXX rules (expect BYSETPOS)
-		if ( $this->byhour && ! in_array($date->format('G'), $this->byhour) ) {
+		if ($this->byhour && ! in_array($date->format('G'), $this->byhour)) {
 			return false;
 		}
-		if ( $this->byminute && ! in_array((int) $date->format('i'), $this->byminute) ) {
+		if ($this->byminute && ! in_array((int) $date->format('i'), $this->byminute)) {
 			return false;
 		}
-		if ( $this->bysecond && ! in_array((int) $date->format('s'), $this->bysecond) ) {
+		if ($this->bysecond && ! in_array((int) $date->format('s'), $this->bysecond)) {
 			return false;
 		}
 
@@ -784,7 +784,7 @@ class RRule implements RRuleInterface
 		$masks = array();
 		$masks['weekday_of_1st_yearday'] = date_create($year.'-01-01 00:00:00')->format('N');
 		$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
-		if ( is_leap_year($year) ) {
+		if (is_leap_year($year)) {
 			$masks['year_len'] = 366;
 			$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH_366;
 		}
@@ -794,40 +794,40 @@ class RRule implements RRuleInterface
 		}
 		$month_len = $masks['last_day_of_month'][$month] - $masks['last_day_of_month'][$month-1];
 
-		if ( $this->bymonth && ! in_array($month, $this->bymonth) ) {
+		if ($this->bymonth && ! in_array($month, $this->bymonth)) {
 			return false;
 		}
 
-		if ( $this->bymonthday || $this->bymonthday_negative ) {
+		if ($this->bymonthday || $this->bymonthday_negative) {
 			$monthday_negative = -1 * ($month_len - $day + 1);
 
-			if ( ! in_array($day, $this->bymonthday) && ! in_array($monthday_negative, $this->bymonthday_negative) ) {
+			if (! in_array($day, $this->bymonthday) && ! in_array($monthday_negative, $this->bymonthday_negative)) {
 				return false;
 			}
 		}
 
-		if ( $this->byyearday ) {
+		if ($this->byyearday) {
 			// caution here, yearday starts from 0 !
 			$yearday_negative = -1*($masks['year_len'] - $yearday);
 
-			if ( ! in_array($yearday+1, $this->byyearday) && ! in_array($yearday_negative, $this->byyearday) ) {
+			if (! in_array($yearday+1, $this->byyearday) && ! in_array($yearday_negative, $this->byyearday)) {
 				return false;
 			}
 		}
 
-		if ( $this->byweekday || $this->byweekday_nth ) {
+		if ($this->byweekday || $this->byweekday_nth) {
 			// we need to summon some magic here
 			$this->buildNthWeekdayMask($year, $month, $day, $masks);
 
-			if ( ! in_array($weekday, $this->byweekday) && ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
+			if (! in_array($weekday, $this->byweekday) && ! isset($masks['yearday_is_nth_weekday'][$yearday])) {
 				return false;
 			}
 		}
 
-		if ( $this->byweekno ) {
+		if ($this->byweekno) {
 			// more magic
 			$this->buildWeeknoMask($year, $month, $day, $masks);
-			if ( ! isset($masks['yearday_is_in_weekno'][$yearday]) ) {
+			if (! isset($masks['yearday_is_in_weekno'][$yearday])) {
 				return false;
 			}
 		}
@@ -835,9 +835,9 @@ class RRule implements RRuleInterface
 		// so now we have exhausted all the BYXXX rules (exept bysetpos),
 		// we still need to consider frequency and interval
 		list ($start_year, $start_month, $start_day) = explode('-',$this->dtstart->format('Y-m-d'));
-		switch ( $this->freq ) {
+		switch ($this->freq) {
 			case self::YEARLY:
-				if ( ($year - $start_year) % $this->interval !== 0 ) {
+				if (($year - $start_year) % $this->interval !== 0) {
 					return false;
 				}
 				break;
@@ -845,7 +845,7 @@ class RRule implements RRuleInterface
 				// we need to count the number of months elapsed
 				$diff = (12 - $start_month) + 12*($year - $start_year - 1) + $month;
 
-				if ( ($diff % $this->interval) !== 0 ) {
+				if (($diff % $this->interval) !== 0) {
 					return false;
 				}
 				break;
@@ -854,14 +854,14 @@ class RRule implements RRuleInterface
 				// we add some days to align dtstart with wkst
 				$diff = $date->diff($this->dtstart);
 				$diff = (int) (($diff->days + pymod($this->dtstart->format('N') - $this->wkst,7)) / 7);
-				if ( $diff % $this->interval !== 0 ) {
+				if ($diff % $this->interval !== 0) {
 					return false;
 				}
 				break;
 			case self::DAILY:
 				// count nb of days
 				$diff = $date->diff($this->dtstart);
-				if ( $diff->days % $this->interval !== 0 ) {
+				if ($diff->days % $this->interval !== 0) {
 					return false;
 				}
 				break;
@@ -869,14 +869,14 @@ class RRule implements RRuleInterface
 			case self::HOURLY:
 				$diff = $date->diff($this->dtstart);
 				$diff = $diff->h + $diff->days * 24;
-				if ( $diff % $this->interval !== 0 ) {
+				if ($diff % $this->interval !== 0) {
 					return false;
 				}
 				break;
 			case self::MINUTELY:
 				$diff = $date->diff($this->dtstart);
 				$diff  = $diff->i + $diff->h * 60 + $diff->days * 1440;
-				if ( $diff % $this->interval !== 0 ) {
+				if ($diff % $this->interval !== 0) {
 					return false;
 				}
 				break;
@@ -884,7 +884,7 @@ class RRule implements RRuleInterface
 				$diff = $date->diff($this->dtstart);
 				// XXX does not account for leap second (should it?)
 				$diff  = $diff->s + $diff->i * 60 + $diff->h * 3600 + $diff->days * 86400;
-				if ( $diff % $this->interval !== 0 ) {
+				if ($diff % $this->interval !== 0) {
 					return false;
 				}
 				break;
@@ -902,16 +902,16 @@ class RRule implements RRuleInterface
 		// might sometimes be dropped (e.g. a 29 Feb on a normal year, or during
 		// the switch to DST) and not counted in the final set
 
-		if ( ! $this->count && ! $this->bysetpos ) {
+		if (! $this->count && ! $this->bysetpos) {
 			return true;
 		}
 
 		// so... as a fallback we have to loop
-		foreach ( $this as $occurrence ) {
-			if ( $occurrence == $date ) {
+		foreach ($this as $occurrence) {
+			if ($occurrence == $date) {
 				return true; // lucky you!
 			}
-			if ( $occurrence > $date ) {
+			if ($occurrence > $date) {
 				break;
 			}
 		}
@@ -988,27 +988,27 @@ class RRule implements RRuleInterface
 	 */
 	public function offsetGet($offset)
 	{
-		if ( ! is_numeric($offset) || $offset < 0 || is_float($offset) ) {
+		if (! is_numeric($offset) || $offset < 0 || is_float($offset)) {
 			throw new \InvalidArgumentException('Illegal offset type: '.gettype($offset));
 		}
 
-		if ( isset($this->cache[$offset]) ) {
+		if (isset($this->cache[$offset])) {
 			// found in cache
 			return clone $this->cache[$offset];
 		}
-		elseif ( $this->total !== null ) {
+		elseif ($this->total !== null) {
 			// cache complete and not found in cache
 			return null;
 		}
 
 		// not in cache and cache not complete, we have to loop to find it
 		$i = 0;
-		foreach ( $this as $occurrence ) {
-			if ( $i == $offset ) {
+		foreach ($this as $occurrence) {
+			if ($i == $offset) {
 				return $occurrence;
 			}
 			$i++;
-			if ( $i > $offset ) {
+			if ($i > $offset) {
 				break;
 			}
 		}
@@ -1043,12 +1043,12 @@ class RRule implements RRuleInterface
 	 */
 	public function count()
 	{
-		if ( $this->isInfinite() ) {
+		if ($this->isInfinite()) {
 			throw new \LogicException('Cannot count an infinite recurrence rule.');
 		}
 
-		if ( $this->total === null ) {
-			foreach ( $this as $occurrence ) {}
+		if ($this->total === null) {
+			foreach ($this as $occurrence) {}
 		}
 
 		return $this->total;
@@ -1070,7 +1070,7 @@ class RRule implements RRuleInterface
 	 */
 	protected function getDaySet($year, $month, $day, array $masks)
 	{
-		switch ( $this->freq ) {
+		switch ($this->freq) {
 			case self::YEARLY:
 				return range(0,$masks['year_len']-1);
 
@@ -1088,10 +1088,10 @@ class RRule implements RRuleInterface
 				$set = array();
 				$i = (int) date_create($year.'-'.$month.'-'.$day.' 00:00:00')->format('z');
 				$start = $i;
-				for ( $j = 0; $j < 7; $j++ ) {
+				for ($j = 0; $j < 7; $j++) {
 					$set[] = $i;
 					$i += 1;
-					if ( $masks['yearday_to_weekday'][$i] == $this->wkst ) {
+					if ($masks['yearday_to_weekday'][$i] == $this->wkst) {
 						break;
 					}
 				}
@@ -1126,11 +1126,11 @@ class RRule implements RRuleInterface
 	{
 		$masks['yearday_is_nth_weekday'] = array();
 
-		if ( $this->byweekday_nth ) {
+		if ($this->byweekday_nth) {
 			$ranges = array();
-			if ( $this->freq == self::YEARLY ) {
-				if ( $this->bymonth ) {
-					foreach ( $this->bymonth as $bymonth ) {
+			if ($this->freq == self::YEARLY) {
+				if ($this->bymonth) {
+					foreach ($this->bymonth as $bymonth) {
 						$ranges[] = array(
 							$masks['last_day_of_month'][$bymonth - 1],
 							$masks['last_day_of_month'][$bymonth] - 1
@@ -1141,21 +1141,21 @@ class RRule implements RRuleInterface
 					$ranges = array(array(0, $masks['year_len'] - 1));
 				}
 			}
-			elseif ( $this->freq == self::MONTHLY ) {
+			elseif ($this->freq == self::MONTHLY) {
 				$ranges[] = array(
 					$masks['last_day_of_month'][$month - 1],
 					$masks['last_day_of_month'][$month] - 1
 				);
 			}
 
-			if ( $ranges ) {
+			if ($ranges) {
 				// Weekly frequency won't get here, so we may not
 				// care about cross-year weekly periods.
-				foreach ( $ranges as $tmp ) {
+				foreach ($ranges as $tmp) {
 					list($first, $last) = $tmp;
-					foreach ( $this->byweekday_nth as $tmp ) {
+					foreach ($this->byweekday_nth as $tmp) {
 						list($weekday, $nth) = $tmp;
-						if ( $nth < 0 ) {
+						if ($nth < 0) {
 							$i = $last + ($nth + 1) * 7;
 							$i = $i - pymod($masks['yearday_to_weekday'][$i] - $weekday, 7);
 						}
@@ -1164,7 +1164,7 @@ class RRule implements RRuleInterface
 							$i = $i + (7 - $masks['yearday_to_weekday'][$i] + $weekday) % 7;
 						}
 
-						if ( $i >= $first && $i <= $last ) {
+						if ($i >= $first && $i <= $last) {
 							$masks['yearday_is_nth_weekday'][$i] = true;
 						}
 					}
@@ -1197,7 +1197,7 @@ class RRule implements RRuleInterface
 		// n means there is n days before the first wkst day of the year.
 		// if n >= 4, this is the first day of the year (even though it started the year before)
 		$first_wkst = (7 - $masks['weekday_of_1st_yearday'] + $this->wkst) % 7;
-		if( $first_wkst >= 4 ) {
+		if($first_wkst >= 4) {
 			$first_wkst_offset = 0;
 			// Number of days in the year, plus the days we got from last year.
 			$nb_days = $masks['year_len'] + $masks['weekday_of_1st_yearday'] - $this->wkst;
@@ -1214,16 +1214,16 @@ class RRule implements RRuleInterface
 		// and the number of weeks of the year
 		// so we can generate a map of every yearday that are in the weeks
 		// specified in byweekno
-		foreach ( $this->byweekno as $n ) {
-			if ( $n < 0 ) {
+		foreach ($this->byweekno as $n) {
+			if ($n < 0) {
 				$n = $n + $nb_weeks + 1;
 			}
-			if ( $n <= 0 || $n > $nb_weeks ) {
+			if ($n <= 0 || $n > $nb_weeks) {
 				continue;
 			}
-			if ( $n > 1 ) {
+			if ($n > 1) {
 				$i = $first_wkst_offset + ($n - 1) * 7;
-				if ( $first_wkst_offset != $first_wkst ) {
+				if ($first_wkst_offset != $first_wkst) {
 					// if week #1 started the previous year
 					// realign the start of the week
 					$i = $i - (7 - $first_wkst);
@@ -1235,10 +1235,10 @@ class RRule implements RRuleInterface
 
 			// now add 7 days into the resultset, stopping either at 7 or
 			// if we reach wkst before (in the case of short first week of year)
-			for ( $j = 0; $j < 7; $j++ ) {
+			for ($j = 0; $j < 7; $j++) {
 				$masks['yearday_is_in_weekno'][$i] = true;
 				$i = $i + 1;
-				if ( $masks['yearday_to_weekday'][$i] == $this->wkst ) {
+				if ($masks['yearday_to_weekday'][$i] == $this->wkst) {
 					break;
 				}
 			}
@@ -1247,35 +1247,35 @@ class RRule implements RRuleInterface
 		// if we asked for week #1, it's possible that the week #1 of next year
 		// already started this year. Therefore we need to return also the matching
 		// days of next year.
-		if ( in_array(1, $this->byweekno) ) {
+		if (in_array(1, $this->byweekno)) {
 			// Check week number 1 of next year as well
 			// TODO: Check -numweeks for next year.
 			$i = $first_wkst_offset + $nb_weeks * 7;
-			if ( $first_wkst_offset != $first_wkst ) {
+			if ($first_wkst_offset != $first_wkst) {
 				$i = $i - (7 - $first_wkst);
 			}
-			if ( $i < $masks['year_len'] ) {
+			if ($i < $masks['year_len']) {
 				// If week starts in next year, we don't care about it.
-				for ( $j = 0; $j < 7; $j++ ) {
+				for ($j = 0; $j < 7; $j++) {
 					$masks['yearday_is_in_weekno'][$i] = true;
 					$i += 1;
-					if ( $masks['yearday_to_weekday'][$i] == $this->wkst ) {
+					if ($masks['yearday_to_weekday'][$i] == $this->wkst) {
 						break;
 					}
 				}
 			}
 		}
 
-		if ( $first_wkst_offset ) {
+		if ($first_wkst_offset) {
 			// Check last week number of last year as well.
 			// If first_wkst_offset is 0, either the year started on week start,
 			// or week number 1 got days from last year, so there are no
 			// days from last year's last week number in this year.
-			if ( ! in_array(-1, $this->byweekno) ) {
+			if (! in_array(-1, $this->byweekno)) {
 				$weekday_of_1st_yearday = date_create(($year-1).'-01-01 00:00:00')->format('N');
 				$first_wkst_offset_last_year = (7 - $weekday_of_1st_yearday + $this->wkst) % 7;
 				$last_year_len = 365 + is_leap_year($year - 1);
-				if ( $first_wkst_offset_last_year >= 4) {
+				if ($first_wkst_offset_last_year >= 4) {
 					$first_wkst_offset_last_year = 0;
 					$nb_weeks_last_year = 52 + (int) ((($last_year_len + ($weekday_of_1st_yearday - $this->wkst) % 7) % 7) / 4);
 				}
@@ -1287,8 +1287,8 @@ class RRule implements RRuleInterface
 				$nb_weeks_last_year = -1;
 			}
 
-			if ( in_array($nb_weeks_last_year, $this->byweekno) ) {
-				for ( $i = 0; $i < $first_wkst_offset; $i++ ) {
+			if (in_array($nb_weeks_last_year, $this->byweekno)) {
+				for ($i = 0; $i < $first_wkst_offset; $i++) {
 					$masks['yearday_is_in_weekno'][$i] = true;
 				}
 			}
@@ -1315,11 +1315,11 @@ class RRule implements RRuleInterface
 	 */
 	protected function getTimeSet($hour, $minute, $second)
 	{
-		switch ( $this->freq ) {
+		switch ($this->freq) {
 			case self::HOURLY:
 				$set = array();
-				foreach ( $this->byminute as $minute ) {
-					foreach ( $this->bysecond as $second ) {
+				foreach ($this->byminute as $minute) {
+					foreach ($this->bysecond as $second) {
 						// should we use another type?
 						$set[] = array($hour, $minute, $second);
 					}
@@ -1328,7 +1328,7 @@ class RRule implements RRuleInterface
 				return $set;
 			case self::MINUTELY:
 				$set = array();
-				foreach ( $this->bysecond as $second ) {
+				foreach ($this->bysecond as $second) {
 					// should we use another type?
 					$set[] = array($hour, $minute, $second);
 				}
@@ -1397,7 +1397,7 @@ class RRule implements RRuleInterface
 		$dayset = null;
 
 		// go through the cache first
-		foreach ( $this->cache as $occurrence ) {
+		foreach ($this->cache as $occurrence) {
 			yield clone $occurrence; // since DateTime is not immutable, avoid any problem
 
 			$total += 1;
@@ -1405,14 +1405,14 @@ class RRule implements RRuleInterface
 
 		// if the cache as been used up completely and we now there is nothing else,
 		// we can stop the generator
-		if ( $total === $this->total ) {
+		if ($total === $this->total) {
 			return; // end generator
 		}
 
-		if ( $occurrence ) {
+		if ($occurrence) {
 			$dtstart = clone $occurrence; // since DateTime is not immutable, clone to avoid any problem
 			// so we skip the last occurrence of the cache
-			if ( $this->freq === self::SECONDLY ) {
+			if ($this->freq === self::SECONDLY) {
 				$dtstart->modify('+'.$this->interval.'second');
 			}
 			else {
@@ -1420,11 +1420,11 @@ class RRule implements RRuleInterface
 			}
 		}
 
-		if ( $dtstart === null ) {
+		if ($dtstart === null) {
 			$dtstart = clone $this->dtstart;
 		}
 
-		if ( $this->freq === self::WEEKLY ) {
+		if ($this->freq === self::WEEKLY) {
 			// we align the start date to the WKST, so we can then
 			// simply loop by adding +7 days. The Python lib does some
 			// calculation magic at the end of the loop (when incrementing)
@@ -1442,7 +1442,7 @@ class RRule implements RRuleInterface
 		$second = (int) $second;
 
 		// we initialize the timeset
-		if ( $this->freq < self::HOURLY ) {
+		if ($this->freq < self::HOURLY) {
 			// daily, weekly, monthly or yearly
 			// we don't need to calculate a new timeset
 			$timeset = $this->timeset;
@@ -1462,24 +1462,24 @@ class RRule implements RRuleInterface
 		}
 
 		$max_cycles = self::$REPEAT_CYCLES[$this->freq <= self::DAILY ? $this->freq : self::DAILY];
-		for ( $i = 0; $i < $max_cycles; $i++ ) {
+		for ($i = 0; $i < $max_cycles; $i++) {
 			// 1. get an array of all days in the next interval (day, month, week, etc.)
 			// we filter out from this array all days that do not match the BYXXX conditions
 			// to speed things up, we use days of the year (day numbers) instead of date
-			if ( $dayset === null ) {
+			if ($dayset === null) {
 				// rebuild the various masks and converters
 				// these arrays will allow fast date operations
 				// without relying on date() methods
-				if ( empty($masks) || $masks['year'] != $year || $masks['month'] != $month ) {
+				if (empty($masks) || $masks['year'] != $year || $masks['month'] != $month) {
 					$masks = array('year' => '','month'=>'');
 					// only if year has changed
-					if ( $masks['year'] != $year ) {
+					if ($masks['year'] != $year) {
 						$masks['leap_year'] = is_leap_year($year);
 						$masks['year_len'] = 365 + (int) $masks['leap_year'];
 						$masks['next_year_len'] = 365 + is_leap_year($year + 1);
 						$masks['weekday_of_1st_yearday'] = date_create($year."-01-01 00:00:00")->format('N');
 						$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
-						if ( $masks['leap_year'] ) {
+						if ($masks['leap_year']) {
 							$masks['yearday_to_month'] = self::$MONTH_MASK_366;
 							$masks['yearday_to_monthday'] = self::$MONTHDAY_MASK_366;
 							$masks['yearday_to_monthday_negative'] = self::$NEGATIVE_MONTHDAY_MASK_366;
@@ -1491,12 +1491,12 @@ class RRule implements RRuleInterface
 							$masks['yearday_to_monthday_negative'] = self::$NEGATIVE_MONTHDAY_MASK;
 							$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH;
 						}
-						if ( $this->byweekno ) {
+						if ($this->byweekno) {
 							$this->buildWeeknoMask($year, $month, $day, $masks);
 						}
 					}
 					// everytime month or year changes
-					if ( $this->byweekday_nth ) {
+					if ($this->byweekday_nth) {
 						$this->buildNthWeekdayMask($year, $month, $day, $masks);
 					}
 					$masks['year'] = $year;
@@ -1509,37 +1509,37 @@ class RRule implements RRuleInterface
 				$filtered_set = array();
 
 				// filter out the days based on the BYXXX rules
-				foreach ( $dayset as $yearday ) {
-					if ( $this->bymonth && ! in_array($masks['yearday_to_month'][$yearday], $this->bymonth) ) {
+				foreach ($dayset as $yearday) {
+					if ($this->bymonth && ! in_array($masks['yearday_to_month'][$yearday], $this->bymonth)) {
 						continue;
 					}
 
-					if ( $this->byweekno && ! isset($masks['yearday_is_in_weekno'][$yearday]) ) {
+					if ($this->byweekno && ! isset($masks['yearday_is_in_weekno'][$yearday])) {
 						continue;
 					}
 
-					if ( $this->byyearday ) {
-						if ( $yearday < $masks['year_len'] ) {
-							if ( ! in_array($yearday + 1, $this->byyearday) && ! in_array(- $masks['year_len'] + $yearday,$this->byyearday) ) {
+					if ($this->byyearday) {
+						if ($yearday < $masks['year_len']) {
+							if (! in_array($yearday + 1, $this->byyearday) && ! in_array(- $masks['year_len'] + $yearday,$this->byyearday)) {
 								continue;
 							}
 						}
 						else { // if ( ($yearday >= $masks['year_len']
-							if ( ! in_array($yearday + 1 - $masks['year_len'], $this->byyearday) && ! in_array(- $masks['next_year_len'] + $yearday - $mask['year_len'], $this->byyearday) ) {
+							if (! in_array($yearday + 1 - $masks['year_len'], $this->byyearday) && ! in_array(- $masks['next_year_len'] + $yearday - $mask['year_len'], $this->byyearday)) {
 								continue;
 							}
 						}
 					}
 
-					if ( ($this->bymonthday || $this->bymonthday_negative)
+					if (($this->bymonthday || $this->bymonthday_negative)
 						&& ! in_array($masks['yearday_to_monthday'][$yearday], $this->bymonthday)
-						&& ! in_array($masks['yearday_to_monthday_negative'][$yearday], $this->bymonthday_negative) ) {
+						&& ! in_array($masks['yearday_to_monthday_negative'][$yearday], $this->bymonthday_negative)) {
 						continue;
 					}
 
-					if ( ( $this->byweekday || $this->byweekday_nth )
+					if (($this->byweekday || $this->byweekday_nth)
 						&& ! in_array($masks['yearday_to_weekday'][$yearday], $this->byweekday)
-						&& ! isset($masks['yearday_is_nth_weekday'][$yearday]) ) {
+						&& ! isset($masks['yearday_is_nth_weekday'][$yearday])) {
 						continue;
 					}
 
@@ -1552,11 +1552,11 @@ class RRule implements RRuleInterface
 				// so we make a special loop to return while generating
 				// TODO this is not needed with a generator anymore
 				// we can yield directly within the loop
-				if ( $this->bysetpos && $timeset ) {
+				if ($this->bysetpos && $timeset) {
 					$filtered_set = array();
-					foreach ( $this->bysetpos as $pos ) {
+					foreach ($this->bysetpos as $pos) {
 						$n = count($timeset);
-						if ( $pos < 0 ) {
+						if ($pos < 0) {
 							$pos = $n * count($dayset) + $pos;
 						}
 						else {
@@ -1565,12 +1565,12 @@ class RRule implements RRuleInterface
 
 						$div = (int) ($pos / $n); // daypos
 						$mod = $pos % $n; // timepos
-						if ( isset($dayset[$div]) && isset($timeset[$mod]) ) {
+						if (isset($dayset[$div]) && isset($timeset[$mod])) {
 							$yearday = $dayset[$div];
 							$time = $timeset[$mod];
 							// used as array key to ensure uniqueness
 							$tmp = $year.':'.$yearday.':'.$time[0].':'.$time[1].':'.$time[2];
-							if ( ! isset($filtered_set[$tmp]) ) {
+							if (! isset($filtered_set[$tmp])) {
 								$occurrence = \DateTime::createFromFormat(
 									'Y z',
 									"$year $yearday",
@@ -1589,18 +1589,18 @@ class RRule implements RRuleInterface
 			// 2. loop, generate a valid date, and return the result (fake "yield")
 			// at the same time, we check the end condition and return null if
 			// we need to stop
-			if ( $this->bysetpos && $timeset ) {
+			if ($this->bysetpos && $timeset) {
 				// while ( ($occurrence = current($dayset)) !== false ) {
-				foreach ( $dayset as $occurrence ) {
+				foreach ($dayset as $occurrence) {
 					// consider end conditions
-					if ( $this->until && $occurrence > $this->until ) {
+					if ($this->until && $occurrence > $this->until) {
 						$this->total = $total; // save total for count() cache
 						return;
 					}
 
 					// next($dayset);
-					if ( $occurrence >= $dtstart ) { // ignore occurrences before DTSTART
-						if ( $this->count && $total >= $this->count ) {
+					if ($occurrence >= $dtstart) { // ignore occurrences before DTSTART
+						if ($this->count && $total >= $this->count) {
 							$this->total = $total;
 							return;
 						}
@@ -1613,7 +1613,7 @@ class RRule implements RRuleInterface
 			else {
 				// normal loop, without BYSETPOS
 				// while ( ($yearday = current($dayset)) !== false ) {
-				foreach ( $dayset as $yearday ) {
+				foreach ($dayset as $yearday) {
 					$occurrence = \DateTime::createFromFormat(
 						'Y z',
 						"$year $yearday",
@@ -1621,17 +1621,17 @@ class RRule implements RRuleInterface
 					);
 
 					// while ( ($time = current($timeset)) !== false ) {
-					foreach ( $timeset as $time ) {
+					foreach ($timeset as $time) {
 						$occurrence->setTime($time[0], $time[1], $time[2]);
 						// consider end conditions
-						if ( $this->until && $occurrence > $this->until ) {
+						if ($this->until && $occurrence > $this->until) {
 							$this->total = $total; // save total for count() cache
 							return;
 						}
 
 						// next($timeset);
-						if ( $occurrence >= $dtstart ) { // ignore occurrences before DTSTART
-							if ( $this->count && $total >= $this->count ) {
+						if ($occurrence >= $dtstart) { // ignore occurrences before DTSTART
+							if ($this->count && $total >= $this->count) {
 								$this->total = $total;
 								return;
 							}
@@ -1647,7 +1647,7 @@ class RRule implements RRuleInterface
 
 			// 3. we reset the loop to the next interval
 			$days_increment = 0;
-			switch ( $this->freq ) {
+			switch ($this->freq) {
 				case self::YEARLY:
 					// we do not care about $month or $day not existing,
 					// they are not used in yearly frequency
@@ -1657,12 +1657,12 @@ class RRule implements RRuleInterface
 					// we do not care about the day of the month not existing
 					// it is not used in monthly frequency
 					$month = $month + $this->interval;
-					if ( $month > 12 ) {
+					if ($month > 12) {
 						$div = (int) ($month / 12);
 						$mod = $month % 12;
 						$month = $mod;
 						$year = $year + $div;
-						if ( $month == 0 ) {
+						if ($month == 0) {
 							$month = 12;
 							$year = $year - 1;
 						}
@@ -1683,7 +1683,7 @@ class RRule implements RRuleInterface
 				// call the DateTime method at the very end.
 
 				case self::HOURLY:
-					if ( empty($dayset) ) {
+					if (empty($dayset)) {
 						// an empty set means that this day has been filtered out
 						// by one of the BYXXX rule. So there is no need to
 						// examine it any further, we know nothing is going to
@@ -1693,21 +1693,21 @@ class RRule implements RRuleInterface
 					}
 
 					$found = false;
-					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::HOURLY]; $j++ ) {
+					for ($j = 0; $j < self::$REPEAT_CYCLES[self::HOURLY]; $j++) {
 						$hour += $this->interval;
 						$div = (int) ($hour / 24);
 						$mod = $hour % 24;
-						if ( $div ) {
+						if ($div) {
 							$hour = $mod;
 							$days_increment += $div;
 						}
-						if ( ! $this->byhour || in_array($hour, $this->byhour)) {
+						if (! $this->byhour || in_array($hour, $this->byhour)) {
 							$found = true;
 							break;
 						}
 					}
 
-					if ( ! $found ) {
+					if (! $found) {
 						$this->total = $total; // save total for count cache
 						return; // stop the iterator
 					}
@@ -1715,33 +1715,33 @@ class RRule implements RRuleInterface
 					$timeset = $this->getTimeSet($hour, $minute, $second);
 					break;
 				case self::MINUTELY:
-					if ( empty($dayset) ) {
+					if (empty($dayset)) {
 						$minute += ((int) ((1439 - ($hour*60+$minute)) / $this->interval)) * $this->interval;
 					}
 
 					$found = false;
-					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::MINUTELY]; $j++ ) {
+					for ($j = 0; $j < self::$REPEAT_CYCLES[self::MINUTELY]; $j++) {
 						$minute += $this->interval;
 						$div = (int) ($minute / 60);
 						$mod = $minute % 60;
-						if ( $div ) {
+						if ($div) {
 							$minute = $mod;
 							$hour += $div;
 							$div = (int) ($hour / 24);
 							$mod = $hour % 24;
-							if ( $div ) {
+							if ($div) {
 								$hour = $mod;
 								$days_increment += $div;
 							}
 						}
-						if ( (! $this->byhour || in_array($hour, $this->byhour)) &&
-						(! $this->byminute || in_array($minute, $this->byminute)) ) {
+						if ((! $this->byhour || in_array($hour, $this->byhour)) &&
+						(! $this->byminute || in_array($minute, $this->byminute))) {
 							$found = true;
 							break;
 						}
 					}
 
-					if ( ! $found ) {
+					if (! $found) {
 						$this->total = $total; // save total for count cache
 						return; // stop the iterator
 					}
@@ -1749,40 +1749,40 @@ class RRule implements RRuleInterface
 					$timeset = $this->getTimeSet($hour, $minute, $second);
 					break;
 				case self::SECONDLY:
-					if ( empty($dayset) ) {
+					if (empty($dayset)) {
 						$second += ((int) ((86399 - ($hour*3600 + $minute*60 + $second)) / $this->interval)) * $this->interval;
 					}
 
 					$found = false;
-					for ( $j = 0; $j < self::$REPEAT_CYCLES[self::SECONDLY]; $j++ ) {
+					for ($j = 0; $j < self::$REPEAT_CYCLES[self::SECONDLY]; $j++) {
 						$second += $this->interval;
 						$div = (int) ($second / 60);
 						$mod = $second % 60;
-						if ( $div ) {
+						if ($div) {
 							$second = $mod;
 							$minute += $div;
 							$div = (int) ($minute / 60);
 							$mod = $minute % 60;
-							if ( $div ) {
+							if ($div) {
 								$minute = $mod;
 								$hour += $div;
 								$div = (int) ($hour / 24);
 								$mod = $hour % 24;
-								if ( $div ) {
+								if ($div) {
 									$hour = $mod;
 									$days_increment += $div;
 								}
 							}
 						}
-						if ( ( ! $this->byhour || in_array($hour, $this->byhour) )
-							&& ( ! $this->byminute || in_array($minute, $this->byminute) ) 
-							&& ( ! $this->bysecond || in_array($second, $this->bysecond) ) ) {
+						if ((! $this->byhour || in_array($hour, $this->byhour))
+							&& (! $this->byminute || in_array($minute, $this->byminute)) 
+							&& (! $this->bysecond || in_array($second, $this->bysecond))) {
 							$found = true;
 							break;
 						}
 					}
 
-					if ( ! $found ) {
+					if (! $found) {
 						$this->total = $total; // save total for count cache
 						return; // stop the iterator
 					}
@@ -1791,7 +1791,7 @@ class RRule implements RRuleInterface
 					break;
 			}
 			// here we take a little shortcut from the Python version, by using DateTime
-			if ( $days_increment ) {
+			if ($days_increment) {
 				list($year,$month,$day) = explode('-',date_create("$year-$month-$day")->modify("+ $days_increment days")->format('Y-n-j'));
 			}
 			$dayset = null; // reset the loop
@@ -2005,14 +2005,14 @@ class RRule implements RRuleInterface
 	 */
 	static protected function i18nSelect($array, $n)
 	{
-		if ( ! is_array($array) ) {
+		if (! is_array($array)) {
 			return $array;
 		}
 
-		if ( array_key_exists($n, $array) ) {
+		if (array_key_exists($n, $array)) {
 			return $array[$n];
 		}
-		elseif ( array_key_exists('else', $array) ) {
+		elseif (array_key_exists('else', $array)) {
 			return $array['else'];
 		}
 		else {
@@ -2031,7 +2031,7 @@ class RRule implements RRuleInterface
 	 */
 	static protected function i18nList(array $array, $and = 'and')
 	{
-		if ( count($array) > 1 ) {
+		if (count($array) > 1) {
 			$last = array_splice($array, -1);
 			return sprintf(
 				'%s %s %s',
@@ -2051,7 +2051,7 @@ class RRule implements RRuleInterface
 	 */
 	static protected function intlLoaded()
 	{
-		if ( self::$intl_loaded === null ) {
+		if (self::$intl_loaded === null) {
 			self::$intl_loaded = extension_loaded('intl');
 		}
 		return self::$intl_loaded;
@@ -2068,25 +2068,25 @@ class RRule implements RRuleInterface
 	 */
 	static protected function i18nFilesToLoad($locale, $use_intl = null)
 	{
-		if ( $use_intl === null ) {
+		if ($use_intl === null) {
 			$use_intl = self::intlLoaded();
 		}
 		$files = array();
 		
-		if ( $use_intl ) {
+		if ($use_intl) {
 			$parsed = \Locale::parseLocale($locale);
 			$files[] = $parsed['language'];
-			if ( isset($parsed['region']) ) {
+			if (isset($parsed['region'])) {
 				$files[] = $parsed['language'].'_'.$parsed['region'];
 			}
 		}
 		else {
-			if ( ! preg_match('/^([a-z]{2})(?:(?:_|-)[A-Z][a-z]+)?(?:(?:_|-)([A-Za-z]{2}))?(?:(?:_|-)[A-Z]*)?(?:\.[a-zA-Z\-0-9]*)?$/', $locale, $matches) ) {
+			if (! preg_match('/^([a-z]{2})(?:(?:_|-)[A-Z][a-z]+)?(?:(?:_|-)([A-Za-z]{2}))?(?:(?:_|-)[A-Z]*)?(?:\.[a-zA-Z\-0-9]*)?$/', $locale, $matches)) {
 				throw new \InvalidArgumentException("The locale option does not look like a valid locale: $locale. For more option install the intl extension.");
 			}
 
 			$files[] = $matches[1];
-			if ( isset($matches[2]) ) {
+			if (isset($matches[2])) {
 				$files[] = $matches[1].'_'.strtoupper($matches[2]);
 			}
 		}
@@ -2115,20 +2115,20 @@ class RRule implements RRuleInterface
 		$base_path = __DIR__.'/i18n';
 
 		$result = array();
-		foreach ( $files as $file ) {
+		foreach ($files as $file) {
 
 			// if the file exists in $custom_path, it overrides the default
-			if ( $custom_path && is_file("$custom_path/$file.php") ) {
+			if ($custom_path && is_file("$custom_path/$file.php")) {
 				$path = "$custom_path/$file.php";
 			}
 			else {
 				$path = "$base_path/$file.php";
 			}
 
-			if ( isset(self::$i18n[$path]) ) {
+			if (isset(self::$i18n[$path])) {
 				$result = array_merge($result, self::$i18n[$path]);
 			}
-			elseif ( is_file($path) && is_readable($path) ) {
+			elseif (is_file($path) && is_readable($path)) {
 				self::$i18n[$path] = include $path;
 				$result = array_merge($result, self::$i18n[$path]);
 			}
@@ -2137,7 +2137,7 @@ class RRule implements RRuleInterface
 			}
 		}
 
-		if ( empty($result) ) {
+		if (empty($result)) {
 			if (!is_null($fallback)) {
 				return self::i18nLoad($fallback, null, $use_intl);
 			}
@@ -2171,7 +2171,7 @@ class RRule implements RRuleInterface
 	 */
 	public function humanReadable(array $opt = array())
 	{
-		if ( ! isset($opt['use_intl']) ) {
+		if (! isset($opt['use_intl'])) {
 			$opt['use_intl'] = self::intlLoaded();
 		}
 
@@ -2187,21 +2187,21 @@ class RRule implements RRuleInterface
 		);
 
 		// attempt to detect default locale
-		if ( $opt['use_intl'] ) {
+		if ($opt['use_intl']) {
 			$default_opt['locale'] = \Locale::getDefault();
 		} else {
 			$default_opt['locale'] = setlocale(LC_ALL, 0);
-			if ( $default_opt['locale'] == 'C' ) {
+			if ($default_opt['locale'] == 'C') {
 				$default_opt['locale'] = 'en';
 			}
 		}
 
-		if ( $opt['use_intl'] ) {
+		if ($opt['use_intl']) {
 			$default_opt['date_format'] = \IntlDateFormatter::SHORT;
-			if ( $this->freq >= self::SECONDLY || not_empty($this->rule['BYSECOND']) ) {
+			if ($this->freq >= self::SECONDLY || not_empty($this->rule['BYSECOND'])) {
 				$default_opt['time_format'] = \IntlDateFormatter::LONG;
 			}
-			elseif ( $this->freq >= self::HOURLY || not_empty($this->rule['BYHOUR']) || not_empty($this->rule['BYMINUTE']) ) {
+			elseif ($this->freq >= self::HOURLY || not_empty($this->rule['BYHOUR']) || not_empty($this->rule['BYMINUTE'])) {
 				$default_opt['time_format'] = \IntlDateFormatter::SHORT;
 			}
 			else {
@@ -2213,17 +2213,17 @@ class RRule implements RRuleInterface
 
 		$i18n = self::i18nLoad($opt['locale'], $opt['fallback'], $opt['use_intl'], $opt['custom_path']);
 
-		if ( $opt['date_formatter'] && ! is_callable($opt['date_formatter']) ) {
+		if ($opt['date_formatter'] && ! is_callable($opt['date_formatter'])) {
 			throw new \InvalidArgumentException('The option date_formatter must callable');
 		}
 
-		if ( ! $opt['date_formatter'] ) {
-			if (  $opt['use_intl'] ) {
+		if (! $opt['date_formatter']) {
+			if ($opt['use_intl']) {
 				$timezone = $this->dtstart->getTimezone()->getName();
 
-				if ( $timezone === 'Z' ) {
+				if ($timezone === 'Z') {
 					$timezone = 'GMT'; // otherwise IntlDateFormatter::create fails because... reasons.
-				} elseif ( preg_match('/[-+]\d{2}/',$timezone) ) {
+				} elseif (preg_match('/[-+]\d{2}/',$timezone)) {
 					$timezone = 'GMT'.$timezone; // otherwise IntlDateFormatter::create fails because... other reasons.
 				}
 				$formatter = \IntlDateFormatter::create(
@@ -2232,7 +2232,7 @@ class RRule implements RRuleInterface
 					$opt['time_format'],
 					$timezone
 				);
-				if ( ! $formatter ) {
+				if (! $formatter) {
 					throw new \RuntimeException('IntlDateFormatter::create() failed. Error Code: '.intl_get_error_code().' "'. intl_get_error_message().'" (this should not happen, please open a bug report!)');
 				}
 				$opt['date_formatter'] = function($date) use ($formatter) {
@@ -2269,9 +2269,9 @@ class RRule implements RRuleInterface
 		);
 
 		// BYXXX rules
-		if ( not_empty($this->rule['BYMONTH']) ) {
+		if (not_empty($this->rule['BYMONTH'])) {
 			$tmp = $this->bymonth;
-			foreach ( $tmp as & $value) {
+			foreach ($tmp as & $value) {
 				$value = $i18n['months'][$value];
 			}
 			$parts['bymonth'] = strtr(self::i18nSelect($i18n['bymonth'], count($tmp)), array(
@@ -2279,10 +2279,10 @@ class RRule implements RRuleInterface
 			));
 		}
 
-		if ( not_empty($this->rule['BYWEEKNO']) ) {
+		if (not_empty($this->rule['BYWEEKNO'])) {
 			// XXX negative week number are not great here
 			$tmp = $this->byweekno;
-			foreach ( $tmp as & $value ) {
+			foreach ($tmp as & $value) {
 				$value = strtr($i18n['nth_weekno'], array(
 					'%{n}' => $value
 				));
@@ -2295,9 +2295,9 @@ class RRule implements RRuleInterface
 			);
 		}
 
-		if ( not_empty($this->rule['BYYEARDAY']) ) {
+		if (not_empty($this->rule['BYYEARDAY'])) {
 			$tmp = $this->byyearday;
-			foreach ( $tmp as & $value ) {
+			foreach ($tmp as & $value) {
 				$value = strtr(self::i18nSelect($i18n[$value>0?'nth_yearday':'-nth_yearday'],$value), array(
 					'%{n}' => abs($value)
 				));
@@ -2312,11 +2312,11 @@ class RRule implements RRuleInterface
 			$parts['byyearday'] = $tmp;
 		}
 
-		if ( not_empty($this->rule['BYMONTHDAY']) ) {
+		if (not_empty($this->rule['BYMONTHDAY'])) {
 			$parts['bymonthday'] = array();
-			if ( $this->bymonthday ) {
+			if ($this->bymonthday) {
 				$tmp = $this->bymonthday;
-				foreach ( $tmp as & $value ) {
+				foreach ($tmp as & $value) {
 					$value = strtr(self::i18nSelect($i18n['nth_monthday'],$value), array(
 						'%{n}' => $value
 					));
@@ -2330,9 +2330,9 @@ class RRule implements RRuleInterface
 				));
 				$parts['bymonthday'][] = $tmp;
 			}
-			if ( $this->bymonthday_negative ) {
+			if ($this->bymonthday_negative) {
 				$tmp = $this->bymonthday_negative;
-				foreach ( $tmp as & $value ) {
+				foreach ($tmp as & $value) {
 					$value = strtr(self::i18nSelect($i18n['-nth_monthday'],$value), array(
 						'%{n}' => -$value
 					));
@@ -2349,20 +2349,20 @@ class RRule implements RRuleInterface
 			$parts['bymonthday'] = implode(' '.$i18n['and'],$parts['bymonthday']);
 		}
 
-		if ( not_empty($this->rule['BYDAY']) ) {
+		if (not_empty($this->rule['BYDAY'])) {
 			$parts['byweekday'] = array();
-			if ( $this->byweekday ) {
+			if ($this->byweekday) {
 				$tmp = $this->byweekday;
-				foreach ( $tmp as & $value ) {
+				foreach ($tmp as & $value) {
 					$value = $i18n['weekdays'][$value];
 				}
 				$parts['byweekday'][] = strtr(self::i18nSelect($i18n['byweekday'], count($tmp)), array(
 					'%{weekdays}' =>  self::i18nList($tmp, $i18n['and'])
 				));
 			}
-			if ( $this->byweekday_nth ) {
+			if ($this->byweekday_nth) {
 				$tmp = $this->byweekday_nth;
-				foreach ( $tmp as & $value ) {
+				foreach ($tmp as & $value) {
 					list($day, $n) = $value;
 					$value = strtr(self::i18nSelect($i18n[$n>0?'nth_weekday':'-nth_weekday'], $n), array(
 						'%{weekday}' => $i18n['weekdays'][$day],
@@ -2381,9 +2381,9 @@ class RRule implements RRuleInterface
 			$parts['byweekday'] = implode(' '.$i18n['and'],$parts['byweekday']);
 		}
 
-		if ( not_empty($this->rule['BYHOUR']) ) {
+		if (not_empty($this->rule['BYHOUR'])) {
 			$tmp = $this->byhour;
-			foreach ( $tmp as &$value) {
+			foreach ($tmp as &$value) {
 				$value = strtr($i18n['nth_hour'], array(
 					'%{n}' => $value
 				));
@@ -2393,9 +2393,9 @@ class RRule implements RRuleInterface
 			));
 		}
 
-		if ( not_empty($this->rule['BYMINUTE']) ) {
+		if (not_empty($this->rule['BYMINUTE'])) {
 			$tmp = $this->byminute;
-			foreach ( $tmp as &$value) {
+			foreach ($tmp as &$value) {
 				$value = strtr($i18n['nth_minute'], array(
 					'%{n}' => $value
 				));
@@ -2405,9 +2405,9 @@ class RRule implements RRuleInterface
 			));
 		}
 
-		if ( not_empty($this->rule['BYSECOND']) ) {
+		if (not_empty($this->rule['BYSECOND'])) {
 			$tmp = $this->bysecond;
-			foreach ( $tmp as &$value) {
+			foreach ($tmp as &$value) {
 				$value = strtr($i18n['nth_second'], array(
 					'%{n}' => $value
 				));
@@ -2417,9 +2417,9 @@ class RRule implements RRuleInterface
 			));
 		}
 
-		if ( $this->bysetpos ) {
+		if ($this->bysetpos) {
 			$tmp = $this->bysetpos;
-			foreach ( $tmp as & $value ) {
+			foreach ($tmp as & $value) {
 				$value = strtr(self::i18nSelect($i18n[$value>0?'nth_setpos':'-nth_setpos'],$value), array(
 					'%{n}' => abs($value)
 				));
@@ -2430,7 +2430,7 @@ class RRule implements RRuleInterface
 			$parts['bysetpos'] = $tmp;
 		}
 
-		if ( $opt['include_start'] ) {
+		if ($opt['include_start']) {
 			// from X
 			$parts['start'] = strtr($i18n['dtstart'], array(
 				'%{date}' => $opt['date_formatter']($this->dtstart)
@@ -2438,18 +2438,18 @@ class RRule implements RRuleInterface
 		}
 
 		// to X, or N times, or indefinitely
-		if ( $opt['include_until'] ) {
-			if ( ! $this->until && ! $this->count ) {
-				if ( $opt['explicit_infinite'] ) {
+		if ($opt['include_until']) {
+			if (! $this->until && ! $this->count) {
+				if ($opt['explicit_infinite']) {
 					$parts['end'] = $i18n['infinite'];
 				}
 			}
-			elseif ( $this->until ) {
+			elseif ($this->until) {
 				$parts['end'] = strtr($i18n['until'], array(
 					'%{date}' => $opt['date_formatter']($this->until)
 				));
 			}
-			elseif ( $this->count ) {
+			elseif ($this->count) {
 				$parts['end'] = strtr(
 					self::i18nSelect($i18n['count'], $this->count),
 					array(

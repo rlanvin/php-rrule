@@ -26,25 +26,25 @@ trait RRuleTrait
 	 */
 	public function getOccurrences($limit = null)
 	{
-		if ( ! $limit && $this->isInfinite() ) {
+		if (! $limit && $this->isInfinite()) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
-		if ( $limit !== null && $limit !== false && $limit < 0 ) {
+		if ($limit !== null && $limit !== false && $limit < 0) {
 			throw new \InvalidArgumentException('$limit cannot be negative');
 		}
 
 		// cached version already computed
 		$iterator = $this;
-		if ( $this->total !== null ) {
+		if ($this->total !== null) {
 			$iterator = $this->cache;
 		}
 
 		$res = array();
 		$n = 0;
-		foreach ( $iterator as $occurrence ) {
+		foreach ($iterator as $occurrence) {
 			$res[] = clone $occurrence; // we have to clone because DateTime is not immutable
 			$n += 1;
-			if ( $limit && $n >= $limit ) {
+			if ($limit && $n >= $limit) {
 				break;
 			}
 		}
@@ -61,38 +61,38 @@ trait RRuleTrait
 	 */
 	public function getOccurrencesBetween($begin, $end, $limit = null)
 	{
-		if ( $begin !== null ) {
+		if ($begin !== null) {
 			$begin = self::parseDate($begin);
 		}
 
-		if ( $end !== null ) {
+		if ($end !== null) {
 			$end = self::parseDate($end);
 		}
-		elseif ( ! $limit && $this->isInfinite() ) {
+		elseif (! $limit && $this->isInfinite()) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence rule.');
 		}
 
-		if ( $limit !== null && $limit !== false && $limit < 0 ) {
+		if ($limit !== null && $limit !== false && $limit < 0) {
 			throw new \InvalidArgumentException('$limit cannot be negative');
 		}
 
 		$iterator = $this;
-		if ( $this->total !== null ) {
+		if ($this->total !== null) {
 			$iterator = $this->cache;
 		}
 
 		$res = array();
 		$n = 0;
-		foreach ( $iterator as $occurrence ) {
-			if ( $begin !== null && $occurrence < $begin ) {
+		foreach ($iterator as $occurrence) {
+			if ($begin !== null && $occurrence < $begin) {
 				continue;
 			}
-			if ( $end !== null && $occurrence > $end ) {
+			if ($end !== null && $occurrence > $end) {
 				break;
 			}
 			$res[] = clone $occurrence;
 			$n += 1;
-			if ( $limit && $n >= $limit ) {
+			if ($limit && $n >= $limit) {
 				break;
 			}
 		}
@@ -101,7 +101,7 @@ trait RRuleTrait
 
 	public function getOccurrencesAfter($date, $inclusive = false,  $limit = null)
 	{
-		if ( $inclusive || ! $this->occursAt($date) ) {
+		if ($inclusive || ! $this->occursAt($date)) {
 			return $this->getOccurrencesBetween($date, null, $limit);
 		}
 
@@ -112,7 +112,7 @@ trait RRuleTrait
 
 	public function getNthOccurrenceAfter($date, $index)
 	{
-		if ( $index <= 0 ) {
+		if ($index <= 0) {
 			throw new \InvalidArgumentException("Index must be a positive integer");
 		}
 
@@ -126,12 +126,12 @@ trait RRuleTrait
 		// we need to get everything
 		$occurrences = $this->getOccurrencesBetween(null, $date);
 
-		if ( ! $inclusive && $this->occursAt($date) ) {
+		if (! $inclusive && $this->occursAt($date)) {
 			array_pop($occurrences);
 		}
 
 		// the limit is counted from $date
-		if ( $limit ) {
+		if ($limit) {
 			$occurrences = array_slice($occurrences, -1 * $limit);
 		}
 
@@ -140,13 +140,13 @@ trait RRuleTrait
 
 	public function getNthOccurrenceBefore($date, $index)
 	{
-		if ( $index <= 0 ) {
+		if ($index <= 0) {
 			throw new \InvalidArgumentException("Index must be a positive integer");
 		}
 
 		$occurrences = $this->getOccurrencesBefore($date, false, $index);
 
-		if ( sizeof($occurrences) < $index ) {
+		if (sizeof($occurrences) < $index) {
 			return null;
 		}
 
@@ -155,14 +155,14 @@ trait RRuleTrait
 
 	public function getNthOccurrenceFrom($date, $index)
 	{
-		if ( ! is_numeric($index) ) {
+		if (! is_numeric($index)) {
 			throw new \InvalidArgumentException('Malformed index (must be a numeric)');
 		}
 
-		if ( $index == 0 ) {
+		if ($index == 0) {
 			return $this->occursAt($date) ? self::parseDate($date) : null;
 		}
-		elseif ( $index > 0 ) {
+		elseif ($index > 0) {
 			return $this->getNthOccurrenceAfter($date, $index);
 		}
 		else {
@@ -180,9 +180,9 @@ trait RRuleTrait
 	static public function parseDate($date)
 	{
 		// DateTimeInterface is only on PHP 5.5+, and includes DateTimeImmutable
-		if ( ! $date instanceof \DateTime && ! $date instanceof \DateTimeInterface ) {
+		if (! $date instanceof \DateTime && ! $date instanceof \DateTimeInterface) {
 			try {
-				if ( is_integer($date) ) {
+				if (is_integer($date)) {
 					$date = \DateTime::createFromFormat('U',$date);
 					$date->setTimezone(new \DateTimeZone('UTC')); // default is +00:00 (see issue #15)
 				}

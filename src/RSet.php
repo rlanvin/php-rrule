@@ -62,7 +62,7 @@ class RSet implements RRuleInterface
 	 */
 	public function __construct($string = null, $default_dtstart = null)
 	{
-		if ( $string && is_string($string) ) {
+		if ($string && is_string($string)) {
 			$string = trim($string);
 			$rrules = array();
 			$exrules = array();
@@ -72,19 +72,19 @@ class RSet implements RRuleInterface
 
 			// parse
 			$lines = explode("\n", $string);
-			foreach ( $lines as $line ) {
+			foreach ($lines as $line) {
 				$line = trim($line);
 
-				if ( strpos($line,':') === false ) {
+				if (strpos($line,':') === false) {
 					throw new \InvalidArgumentException('Failed to parse RFC string, line is not starting with a property name followed by ":"');
 				}
 
 				list($property_name,$property_value) = explode(':',$line);
 				$tmp = explode(";",$property_name);
 				$property_name = $tmp[0];
-				switch ( strtoupper($property_name) ) {
+				switch (strtoupper($property_name)) {
 					case 'DTSTART':
-						if ( $default_dtstart || $dtstart !== null ) {
+						if ($default_dtstart || $dtstart !== null) {
 							throw new \InvalidArgumentException('Failed to parse RFC string, multiple DTSTART found');
 						}
 						$dtstart = $line;
@@ -105,26 +105,26 @@ class RSet implements RRuleInterface
 						throw new \InvalidArgumentException("Failed to parse RFC, unknown property: $property_name");
 				}
 			}
-			foreach ( $rrules as $rrule ) {
-				if ( $dtstart ) {
+			foreach ($rrules as $rrule) {
+				if ($dtstart) {
 					$rrule = $dtstart."\n".$rrule;
 				}
 
 				$this->addRRule(new RRule($rrule, $default_dtstart));
 			}
 
-			foreach ( $exrules as $rrule ) {
-				if ( $dtstart ) {
+			foreach ($exrules as $rrule) {
+				if ($dtstart) {
 					$rrule = $dtstart."\n".$rrule;
 				}
 				$this->addExRule(new RRule($rrule, $default_dtstart));
 			}
 
-			foreach ( $rdates as $date ) {
+			foreach ($rdates as $date) {
 				$this->addDate($date);
 			}
 
-			foreach ( $exdates as $date ) {
+			foreach ($exdates as $date) {
 				$this->addExDate($date);
 			}
 		}
@@ -138,10 +138,10 @@ class RSet implements RRuleInterface
 	 */
 	public function addRRule($rrule)
 	{
-		if ( is_string($rrule) || is_array($rrule) ) {
+		if (is_string($rrule) || is_array($rrule)) {
 			$rrule = new RRule($rrule);
 		}
-		elseif ( ! $rrule instanceof RRuleInterface ) {
+		elseif (! $rrule instanceof RRuleInterface) {
 			throw new \InvalidArgumentException('The rule must be a string, an array, or implement RRuleInterface');
 		}
 
@@ -174,10 +174,10 @@ class RSet implements RRuleInterface
 	 */
 	public function addExRule($rrule)
 	{
-		if ( is_string($rrule) || is_array($rrule) ) {
+		if (is_string($rrule) || is_array($rrule)) {
 			$rrule = new RRule($rrule);
 		}
-		elseif ( ! $rrule instanceof RRuleInterface ) {
+		elseif (! $rrule instanceof RRuleInterface) {
 			throw new \InvalidArgumentException('The rule must be a string, an array or implement RRuleInterface');
 		}
 
@@ -235,7 +235,7 @@ class RSet implements RRuleInterface
 			$date_to_remove = RRule::parseDate($date);
 			$index = array_search($date_to_remove, $this->rdates);
 
-			if ( $index !== false ) {
+			if ($index !== false) {
 				unset($this->rdates[$index]);
 				$this->rdates = array_values($this->rdates);
 			}
@@ -309,7 +309,7 @@ class RSet implements RRuleInterface
 			$date_to_remove = RRule::parseDate($date);
 			$index = array_search($date_to_remove, $this->exdates);
 
-			if ( $index !== false ) {
+			if ($index !== false) {
 				unset($this->exdates[$index]);
 				$this->exdates = array_values($this->exdates);
 			}
@@ -388,10 +388,10 @@ class RSet implements RRuleInterface
 	 */
 	public function isInfinite()
 	{
-		if ( $this->infinite === null ) {
+		if ($this->infinite === null) {
 			$this->infinite = false;
-			foreach ( $this->rrules as $rrule ) {
-				if ( $rrule->isInfinite() ) {
+			foreach ($this->rrules as $rrule) {
+				if ($rrule->isInfinite()) {
 					$this->infinite = true;
 					break;
 				}
@@ -408,22 +408,22 @@ class RSet implements RRuleInterface
 	 */
 	public function getOccurrences($limit = null)
 	{
-		if ( !$limit && $this->isInfinite() ) {
+		if (!$limit && $this->isInfinite()) {
 			throw new \LogicException('Cannot get all occurrences of an infinite recurrence set.');
 		}
 
 		// cached version already computed
 		$iterator = $this;
-		if ( $this->total !== null ) {
+		if ($this->total !== null) {
 			$iterator = $this->cache;
 		}
 
 		$res = array();
 		$n = 0;
-		foreach ( $iterator as $occurrence ) {
+		foreach ($iterator as $occurrence) {
 			$res[] = clone $occurrence; // we have to clone because DateTime is not immutable
 			$n += 1;
-			if ( $limit && $n >= $limit ) {
+			if ($limit && $n >= $limit) {
 				break;
 			}
 		}
@@ -440,26 +440,26 @@ class RSet implements RRuleInterface
 	{
 		$date = RRule::parseDate($date);
 
-		if ( in_array($date, $this->cache) ) {
+		if (in_array($date, $this->cache)) {
 			// in the cache (whether cache is complete or not)
 			return true;
 		}
-		elseif ( $this->total !== null ) {
+		elseif ($this->total !== null) {
 			// cache complete and not in cache
 			return false;
 		}
 
 		// test if it *should* occur (before exclusion)
 		$occurs = false;
-		foreach ( $this->rdates as $rdate ) {
-			if ( $rdate == $date ) {
+		foreach ($this->rdates as $rdate) {
+			if ($rdate == $date) {
 				$occurs = true;
 				break;
 			}
 		}
-		if ( ! $occurs ) {
-			foreach ( $this->rrules as $rrule ) {
-				if ( $rrule->occursAt($date) ) {
+		if (! $occurs) {
+			foreach ($this->rrules as $rrule) {
+				if ($rrule->occursAt($date)) {
 					$occurs = true;
 					break;
 				}
@@ -467,14 +467,14 @@ class RSet implements RRuleInterface
 		}
 
 		// if it should occur, test if it's excluded
-		if ( $occurs ) {
-			foreach ( $this->exdates as $exdate ) {
-				if ( $exdate == $date ) {
+		if ($occurs) {
+			foreach ($this->exdates as $exdate) {
+				if ($exdate == $date) {
 					return false;
 				}
 			}
-			foreach ( $this->exrules as $exrule ) {
-				if ( $exrule->occursAt($date) ) {
+			foreach ($this->exrules as $exrule) {
+				if ($exrule->occursAt($date)) {
 					return false;
 				}
 			}
@@ -549,27 +549,27 @@ class RSet implements RRuleInterface
 	 */
 	public function offsetGet($offset)
 	{
-		if ( ! is_numeric($offset) || $offset < 0 || is_float($offset) ) {
+		if (! is_numeric($offset) || $offset < 0 || is_float($offset)) {
 			throw new \InvalidArgumentException('Illegal offset type: '.gettype($offset));
 		}
 
-		if ( isset($this->cache[$offset]) ) {
+		if (isset($this->cache[$offset])) {
 			// found in cache
 			return clone $this->cache[$offset];
 		}
-		elseif ( $this->total !== null ) {
+		elseif ($this->total !== null) {
 			// cache complete and not found in cache
 			return null;
 		}
 
 		// not in cache and cache not complete, we have to loop to find it
 		$i = 0;
-		foreach ( $this as $occurrence ) {
-			if ( $i == $offset ) {
+		foreach ($this as $occurrence) {
+			if ($i == $offset) {
 				return $occurrence;
 			}
 			$i++;
-			if ( $i > $offset ) {
+			if ($i > $offset) {
 				break;
 			}
 		}
@@ -603,12 +603,12 @@ class RSet implements RRuleInterface
 	 */
 	public function count()
 	{
-		if ( $this->isInfinite() ) {
+		if ($this->isInfinite()) {
 			throw new \LogicException('Cannot count an infinite recurrence set.');
 		}
 
-		if ( $this->total === null ) {
-			foreach ( $this as $occurrence ) {}
+		if ($this->total === null) {
+			foreach ($this as $occurrence) {}
 		}
 
 		return $this->total;
@@ -643,18 +643,18 @@ class RSet implements RRuleInterface
 		$previous_occurrence = null;
 		$total = 0;
 
-		foreach ( $this->cache as $occurrence ) {
+		foreach ($this->cache as $occurrence) {
 			yield clone $occurrence; // since DateTime is not immutable, avoid any problem
 
 			$total += 1;
 		}
 
-		if ( $this->rlist_heap === null ) {
+		if ($this->rlist_heap === null) {
 			// rrules + rdate
 			$this->rlist_heap = new \SplMinHeap();
 			$this->rlist_iterator = new \MultipleIterator(\MultipleIterator::MIT_NEED_ANY);
 			$this->rlist_iterator->attachIterator(new \ArrayIterator($this->rdates));
-			foreach ( $this->rrules as $rrule ) {
+			foreach ($this->rrules as $rrule) {
 				$this->rlist_iterator->attachIterator($rrule->getIterator());
 			}
 			$this->rlist_iterator->rewind();
@@ -664,28 +664,28 @@ class RSet implements RRuleInterface
 			$this->exlist_iterator = new \MultipleIterator(\MultipleIterator::MIT_NEED_ANY);
 
 			$this->exlist_iterator->attachIterator(new \ArrayIterator($this->exdates));
-			foreach ( $this->exrules as $rrule ) {
+			foreach ($this->exrules as $rrule) {
 				$this->exlist_iterator->attachIterator($rrule->getIterator());
 			}
 			$this->exlist_iterator->rewind();
 		}
 
-		while ( true ) {
-			foreach ( $this->rlist_iterator->current() as $date ) {
-				if ( $date !== null ) {
+		while (true) {
+			foreach ($this->rlist_iterator->current() as $date) {
+				if ($date !== null) {
 					$this->rlist_heap->insert($date);
 				}
 			}
 			$this->rlist_iterator->next(); // advance the iterator for the next call
 
-			if ( $this->rlist_heap->isEmpty() ) {
+			if ($this->rlist_heap->isEmpty()) {
 				break; // exit the loop to stop the iterator
 			}
 
 			$occurrence = $this->rlist_heap->top();
 			$this->rlist_heap->extract(); // remove the occurrence from the heap
 
-			if ( $occurrence == $previous_occurrence ) {
+			if ($occurrence == $previous_occurrence) {
 				continue; // skip, was already considered
 			}
 
@@ -694,24 +694,24 @@ class RSet implements RRuleInterface
 			// (they will be discarded), and then check if the date is the same
 			// as occurrence (in which case it is discarded)
 			$excluded = false;
-			while ( true ) {
-				foreach ( $this->exlist_iterator->current() as $date ) {
-					if ( $date !== null ) {
+			while (true) {
+				foreach ($this->exlist_iterator->current() as $date) {
+					if ($date !== null) {
 						$this->exlist_heap->insert($date);
 					}
 				}
 				$this->exlist_iterator->next(); // advance the iterator for the next call
 
-				if ( $this->exlist_heap->isEmpty() ) {
+				if ($this->exlist_heap->isEmpty()) {
 					break 1; // break this loop only
 				}
 
 				$exdate = $this->exlist_heap->top();
-				if ( $exdate < $occurrence ) {
+				if ($exdate < $occurrence) {
 					$this->exlist_heap->extract();
 					continue;
 				}
-				elseif ( $exdate == $occurrence ) {
+				elseif ($exdate == $occurrence) {
 					$excluded = true;
 					break 1;
 				}
@@ -722,7 +722,7 @@ class RSet implements RRuleInterface
 
 			$previous_occurrence = $occurrence;
 
-			if ( $excluded ) {
+			if ($excluded) {
 				continue;
 			}
 

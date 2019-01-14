@@ -57,6 +57,8 @@ You will also find useful information in the [RFC 5545 section 3.3.10](https://t
 
 Feel free to contribute! Just create a new issue or a new pull request.
 
+The coding style is (mostly) PSR-2, but with tabs.
+
 ## Note
 
 I started this library because I wasn't happy with the existing implementations
