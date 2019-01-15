@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.1.0] - 2019-05-30
+
+### Fixed
+
+- Fix locale format for i18n files without `intl` extension [#67](https://github.com/rlanvin/php-rrule/issues/67)
+
 ### Added
 
 - Added new methods to `RSet`: `removeDate`, `clearDates`, `removeExDate` and `clearExDates` [#66](https://github.com/rlanvin/php-rrule/pull/66)
@@ -171,7 +177,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/rlanvin/php-rrule/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/rlanvin/php-rrule/compare/v2.0.0-rc1...v2.0.0
 [2.0.0-rc1]: https://github.com/rlanvin/php-rrule/compare/v1.6.3...v2.0.0-rc1
 [1.6.3]: https://github.com/rlanvin/php-rrule/compare/v1.6.2...v1.6.3
