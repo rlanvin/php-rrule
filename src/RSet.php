@@ -258,6 +258,47 @@ class RSet implements RRuleInterface
 	}
 
 	/**
+	 * Remove an EXDATE
+	 *
+	 * @param mixed $date a valid date representation or a \DateTime object
+	 * @return $this
+	 */
+	public function removeExDate($date)
+	{
+		try {
+			$dateToRemove = RRule::parseDate($date);
+			$index = array_search($dateToRemove, $this->exdates);
+
+			if ( $index !== false ) {
+				unset($this->exdates[$index]);
+				$this->exdates = array_values($this->exdates);
+			}
+
+		} catch (\Exception $e) {
+			throw new \InvalidArgumentException(
+				'Failed to parse EXDATE - it must be a valid date, timestamp or \DateTime object'
+			);
+		}
+
+		$this->clearCache();
+
+		return $this;
+	}
+
+	/**
+	 * Removes all EXDATEs
+	 *
+	 * @return $this
+	 */
+	public function clearExDates()
+	{
+		$this->exdates = [];
+		$this->clearCache();
+
+		return $this;
+	}
+
+	/**
 	 * Return the EXDATE(s) contained in this set
 	 *
 	 * @todo check if a deep copy is needed.
