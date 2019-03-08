@@ -2771,6 +2771,7 @@ class RRuleTest extends TestCase
 				$method->invokeArgs(null, array($locale, false));
 				$this->fail('Expected InvalidArgumentException not thrown (files was '.json_encode($files).')');
 			} catch (\InvalidArgumentException $e) {
+				$this->assertStringStartsWith("The locale option does not look like a valid locale:", $e->getMessage());
 			}
 		}
 		else {
