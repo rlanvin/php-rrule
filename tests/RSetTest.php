@@ -87,6 +87,55 @@ class RSetTest extends TestCase
 		$this->assertFalse($rset->occursAt('1997-09-03 09:00'));
 	}
 
+	public function testRemoveDateFromRSet()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 1,
+			'BYDAY' => 'TU',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$rset->addDate(date_create('1997-09-04 09:00'));
+		$rset->addDate(date_create('1997-09-09 09:00'));
+		$this->assertEquals(array(
+			date_create('1997-09-02 09:00'),
+			date_create('1997-09-04 09:00'),
+			date_create('1997-09-09 09:00')
+		), $rset->getOccurrences());
+
+		$rset->removeDate(date_create('1997-09-09 09:00'));
+
+		$this->assertEquals(array(
+			date_create('1997-09-02 09:00'),
+			date_create('1997-09-04 09:00')
+		), $rset->getOccurrences());
+	}
+
+	public function testClearDatesFromRSet()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 1,
+			'BYDAY' => 'TU',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$rset->addDate(date_create('1997-09-04 09:00'));
+		$rset->addDate(date_create('1997-09-09 09:00'));
+		$this->assertEquals(array(
+			date_create('1997-09-02 09:00'),
+			date_create('1997-09-04 09:00'),
+			date_create('1997-09-09 09:00')
+		), $rset->getOccurrences());
+
+		$rset->clearDates();
+
+		$this->assertEquals(array(
+			date_create('1997-09-02 09:00'),
+		), $rset->getOccurrences());
+	}
+
 	public function testCombineRRuleAndExRule()
 	{
 		$rset = new RSet();
