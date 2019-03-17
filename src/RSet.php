@@ -224,6 +224,46 @@ class RSet implements RRuleInterface
 	}
 
 	/**
+	 * Remove an RDATE
+	 *
+	 * @param mixed $date a valid date representation or a \DateTime object
+	 * @return $this
+	 */
+	public function removeDate($date)
+	{
+		try {
+			$date_to_remove = RRule::parseDate($date);
+			$index = array_search($date_to_remove, $this->rdates);
+
+			if ( $index !== false ) {
+				unset($this->rdates[$index]);
+				$this->rdates = array_values($this->rdates);
+			}
+		} catch (\Exception $e) {
+			throw new \InvalidArgumentException(
+				'Failed to parse RDATE - it must be a valid date, timestamp or \DateTime object'
+			);
+		}
+
+		$this->clearCache();
+
+		return $this;
+	}
+
+	/**
+	 * Remove all RDATEs
+	 *
+	 * @return $this
+	 */
+	public function clearDates()
+	{
+		$this->rdates = [];
+		$this->clearCache();
+
+		return $this;
+	}
+
+	/**
 	 * Return the RDATE(s) contained in this set
 	 *
 	 * @todo check if a deep copy is needed.
@@ -252,6 +292,46 @@ class RSet implements RRuleInterface
 			);
 		}
 
+		$this->clearCache();
+
+		return $this;
+	}
+
+	/**
+	 * Remove an EXDATE
+	 *
+	 * @param mixed $date a valid date representation or a \DateTime object
+	 * @return $this
+	 */
+	public function removeExDate($date)
+	{
+		try {
+			$date_to_remove = RRule::parseDate($date);
+			$index = array_search($date_to_remove, $this->exdates);
+
+			if ( $index !== false ) {
+				unset($this->exdates[$index]);
+				$this->exdates = array_values($this->exdates);
+			}
+		} catch (\Exception $e) {
+			throw new \InvalidArgumentException(
+				'Failed to parse EXDATE - it must be a valid date, timestamp or \DateTime object'
+			);
+		}
+
+		$this->clearCache();
+
+		return $this;
+	}
+
+	/**
+	 * Removes all EXDATEs
+	 *
+	 * @return $this
+	 */
+	public function clearExDates()
+	{
+		$this->exdates = [];
 		$this->clearCache();
 
 		return $this;

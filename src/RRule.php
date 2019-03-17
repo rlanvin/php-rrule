@@ -2061,6 +2061,9 @@ class RRule implements RRuleInterface
 	 * Parse a locale and returns a list of files to load.
 	 * For example "fr_FR" will produce "fr" and "fr_FR"
 	 *
+	 * @param $locale
+	 * @param null $use_intl
+	 *
 	 * @return array
 	 */
 	static protected function i18nFilesToLoad($locale, $use_intl = null)
