@@ -2396,7 +2396,7 @@ class RRule implements RRuleInterface
 
 		if (not_empty($this->rule['BYMINUTE'])) {
 			$tmp = $this->byminute;
-			foreach ($tmp as &$value) {
+            foreach ($tmp as &$value) {
 				$value = strtr($i18n['nth_minute'], array(
 					'%{n}' => $value
 				));
