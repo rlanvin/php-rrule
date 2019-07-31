@@ -2388,6 +2388,7 @@ class RRule implements RRuleInterface
 					'%{n}' => $value
 				));
 			}
+			$value = sprintf("%02d", $value);
 			$parts['byhour'] = strtr(self::i18nSelect($i18n['byhour'],count($tmp)), array(
 				'%{hours}' => self::i18nList($tmp, $i18n['and'])
 			));
@@ -2400,6 +2401,7 @@ class RRule implements RRuleInterface
 					'%{n}' => $value
 				));
 			}
+			$value = sprintf("%02d", $value);
 			$parts['byminute'] = strtr(self::i18nSelect($i18n['byminute'],count($tmp)), array(
 				'%{minutes}' => self::i18nList($tmp, $i18n['and'])
 			));
