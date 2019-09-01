@@ -104,13 +104,8 @@ class RRule implements RRuleInterface
 	/**
 	 * Frequency names.
 	 * Used internally for conversion but public if a reference list is needed.
-	 *
-	 * @todo should probably be protected, with a static getter instead to avoid
-	 * unintended modification.
-	 *
-	 * @var array The name as the key
 	 */
-	public static $frequencies = array(
+	const FREQUENCIES = array(
 		'SECONDLY' => self::SECONDLY,
 		'MINUTELY' => self::MINUTELY,
 		'HOURLY' => self::HOURLY,
@@ -123,13 +118,8 @@ class RRule implements RRuleInterface
 	/** 
 	 * Weekdays numbered from 1 (ISO-8601 or `date('N')`).
 	 * Used internally but public if a reference list is needed.
-	 *
-	 * @todo should probably be protected, with a static getter instead
-	 * to avoid unintended modification
-	 *
-	 * @var array The name as the key
 	 */
-	public static $week_days = array(
+	const WEEKDAYS = array(
 		'MO' => 1,
 		'TU' => 2,
 		'WE' => 3,
@@ -230,33 +220,33 @@ class RRule implements RRuleInterface
 
 		// WKST
 		$parts['WKST'] = strtoupper($parts['WKST']);
-		if (! array_key_exists($parts['WKST'], self::$week_days)) {
+		if (! array_key_exists($parts['WKST'], self::WEEKDAYS)) {
 			throw new \InvalidArgumentException(
 				'The WKST rule part must be one of the following: '
-				.implode(', ',array_keys(self::$week_days))
+				.implode(', ',array_keys(self::WEEKDAYS))
 			);
 		}
-		$this->wkst = self::$week_days[$parts['WKST']];
+		$this->wkst = self::WEEKDAYS[$parts['WKST']];
 
 		// FREQ
 		if (is_integer($parts['FREQ'])) {
 			if ($parts['FREQ'] > self::SECONDLY || $parts['FREQ'] < self::YEARLY) {
 				throw new \InvalidArgumentException(
 					'The FREQ rule part must be one of the following: '
-					.implode(', ',array_keys(self::$frequencies))
+					.implode(', ',array_keys(self::FREQUENCIES))
 				);
 			}
 			$this->freq = $parts['FREQ'];
 		}
 		else { // string
 			$parts['FREQ'] = strtoupper($parts['FREQ']);
-			if (! array_key_exists($parts['FREQ'], self::$frequencies)) {
+			if (! array_key_exists($parts['FREQ'], self::FREQUENCIES)) {
 				throw new \InvalidArgumentException(
 					'The FREQ rule part must be one of the following: '
-					.implode(', ',array_keys(self::$frequencies))
+					.implode(', ',array_keys(self::FREQUENCIES))
 				);
 			}
-			$this->freq = self::$frequencies[$parts['FREQ']];
+			$this->freq = self::FREQUENCIES[$parts['FREQ']];
 		}
 
 		// INTERVAL
@@ -326,7 +316,7 @@ class RRule implements RRuleInterface
 					$parts['BYMONTHDAY'] = array((int) $this->dtstart->format('j'));
 					break;
 				case self::WEEKLY:
-					$parts['BYDAY'] = array(array_search($this->dtstart->format('N'), self::$week_days));
+					$parts['BYDAY'] = array(array_search($this->dtstart->format('N'), self::WEEKDAYS));
 					break;
 			}
 		}
@@ -341,15 +331,15 @@ class RRule implements RRuleInterface
 			foreach ($parts['BYDAY'] as $value) {
 				$value = trim(strtoupper($value));
 				$valid = preg_match('/^([+-]?[0-9]+)?([A-Z]{2})$/', $value, $matches);
-				if (! $valid || (not_empty($matches[1]) && ($matches[1] == 0 || $matches[1] > 53 || $matches[1] < -53)) || ! array_key_exists($matches[2], self::$week_days)) {
+				if (! $valid || (not_empty($matches[1]) && ($matches[1] == 0 || $matches[1] > 53 || $matches[1] < -53)) || ! array_key_exists($matches[2], self::WEEKDAYS)) {
 					throw new \InvalidArgumentException('Invalid BYDAY value: '.$value);
 				}
 
 				if ($matches[1]) {
-					$this->byweekday_nth[] = array(self::$week_days[$matches[2]], (int)$matches[1]);
+					$this->byweekday_nth[] = array(self::WEEKDAYS[$matches[2]], (int)$matches[1]);
 				}
 				else {
-					$this->byweekday[] = self::$week_days[$matches[2]];
+					$this->byweekday[] = self::WEEKDAYS[$matches[2]];
 				}
 			}
 
@@ -633,8 +623,8 @@ class RRule implements RRuleInterface
 				}
 				continue;
 			}
-			if ($key === 'FREQ' && $value && !array_key_exists($value, static::$frequencies)) {
-				$frequency_key = array_search($value, static::$frequencies);
+			if ($key === 'FREQ' && $value && !array_key_exists($value, self::FREQUENCIES)) {
+				$frequency_key = array_search($value, self::FREQUENCIES);
 				if ($frequency_key !== false) {
 					$value = $frequency_key;
 				}
@@ -783,14 +773,14 @@ class RRule implements RRuleInterface
 		list($year, $month, $day, $yearday, $weekday) = explode(' ',$date->format('Y n j z N'));
 		$masks = array();
 		$masks['weekday_of_1st_yearday'] = date_create($year.'-01-01 00:00:00')->format('N');
-		$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
+		$masks['yearday_to_weekday'] = array_slice(self::WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
 		if (is_leap_year($year)) {
 			$masks['year_len'] = 366;
-			$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH_366;
+			$masks['last_day_of_month'] = self::LAST_DAY_OF_MONTH_366;
 		}
 		else {
 			$masks['year_len'] = 365;
-			$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH;
+			$masks['last_day_of_month'] = self::LAST_DAY_OF_MONTH;
 		}
 		$month_len = $masks['last_day_of_month'][$month] - $masks['last_day_of_month'][$month-1];
 
@@ -1407,7 +1397,7 @@ class RRule implements RRuleInterface
 			}
 		}
 
-		$max_cycles = self::$REPEAT_CYCLES[$this->freq <= self::DAILY ? $this->freq : self::DAILY];
+		$max_cycles = self::REPEAT_CYCLES[$this->freq <= self::DAILY ? $this->freq : self::DAILY];
 		for ($i = 0; $i < $max_cycles; $i++) {
 			// 1. get an array of all days in the next interval (day, month, week, etc.)
 			// we filter out from this array all days that do not match the BYXXX conditions
@@ -1423,18 +1413,18 @@ class RRule implements RRuleInterface
 						$masks['leap_year'] = is_leap_year($year);
 						$masks['year_len'] = 365 + (int) $masks['leap_year'];
 						$masks['weekday_of_1st_yearday'] = date_create($year."-01-01 00:00:00")->format('N');
-						$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
+						$masks['yearday_to_weekday'] = array_slice(self::WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
 						if ($masks['leap_year']) {
-							$masks['yearday_to_month'] = self::$MONTH_MASK_366;
-							$masks['yearday_to_monthday'] = self::$MONTHDAY_MASK_366;
-							$masks['yearday_to_monthday_negative'] = self::$NEGATIVE_MONTHDAY_MASK_366;
-							$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH_366;
+							$masks['yearday_to_month'] = self::MONTH_MASK_366;
+							$masks['yearday_to_monthday'] = self::MONTHDAY_MASK_366;
+							$masks['yearday_to_monthday_negative'] = self::NEGATIVE_MONTHDAY_MASK_366;
+							$masks['last_day_of_month'] = self::LAST_DAY_OF_MONTH_366;
 						}
 						else {
-							$masks['yearday_to_month'] = self::$MONTH_MASK;
-							$masks['yearday_to_monthday'] = self::$MONTHDAY_MASK;
-							$masks['yearday_to_monthday_negative'] = self::$NEGATIVE_MONTHDAY_MASK;
-							$masks['last_day_of_month'] = self::$LAST_DAY_OF_MONTH;
+							$masks['yearday_to_month'] = self::MONTH_MASK;
+							$masks['yearday_to_monthday'] = self::MONTHDAY_MASK;
+							$masks['yearday_to_monthday_negative'] = self::NEGATIVE_MONTHDAY_MASK;
+							$masks['last_day_of_month'] = self::LAST_DAY_OF_MONTH;
 						}
 						if ($this->byweekno) {
 							$this->buildWeeknoMask($year, $month, $day, $masks);
@@ -1630,7 +1620,7 @@ class RRule implements RRuleInterface
 					}
 
 					$found = false;
-					for ($j = 0; $j < self::$REPEAT_CYCLES[self::HOURLY]; $j++) {
+					for ($j = 0; $j < self::REPEAT_CYCLES[self::HOURLY]; $j++) {
 						$hour += $this->interval;
 						$div = (int) ($hour / 24);
 						$mod = $hour % 24;
@@ -1657,7 +1647,7 @@ class RRule implements RRuleInterface
 					}
 
 					$found = false;
-					for ($j = 0; $j < self::$REPEAT_CYCLES[self::MINUTELY]; $j++) {
+					for ($j = 0; $j < self::REPEAT_CYCLES[self::MINUTELY]; $j++) {
 						$minute += $this->interval;
 						$div = (int) ($minute / 60);
 						$mod = $minute % 60;
@@ -1691,7 +1681,7 @@ class RRule implements RRuleInterface
 					}
 
 					$found = false;
-					for ($j = 0; $j < self::$REPEAT_CYCLES[self::SECONDLY]; $j++) {
+					for ($j = 0; $j < self::REPEAT_CYCLES[self::SECONDLY]; $j++) {
 						$second += $this->interval;
 						$div = (int) ($second / 60);
 						$mod = $second % 60;
@@ -1742,10 +1732,7 @@ class RRule implements RRuleInterface
 // constants
 // Every mask is 7 days longer to handle cross-year weekly periods.
 
-	/** 
-	 * @var array
-	 */
-	protected static $MONTH_MASK = array(
+	const MONTH_MASK = [
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 		3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
@@ -1759,12 +1746,9 @@ class RRule implements RRuleInterface
 		11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
 		12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
 		1,1,1,1,1,1,1
-	);
+	];
 
-	/** 
-	 * @var array
-	 */
-	protected static $MONTH_MASK_366 = array(
+	const MONTH_MASK_366 = [
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 		3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
@@ -1778,12 +1762,9 @@ class RRule implements RRuleInterface
 		11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
 		12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
 		1,1,1,1,1,1,1
-	);
+	];
 
-	/** 
-	 * @var array
-	 */
-	protected static $MONTHDAY_MASK = array(
+	const MONTHDAY_MASK = [
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
@@ -1797,12 +1778,9 @@ class RRule implements RRuleInterface
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
 		1,2,3,4,5,6,7
-	);
+	];
 
-	/** 
-	 * @var array
-	 */
-	protected static $MONTHDAY_MASK_366 = array(
+	const MONTHDAY_MASK_366 = [
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
@@ -1816,12 +1794,9 @@ class RRule implements RRuleInterface
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,
 		1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
 		1,2,3,4,5,6,7
-	);
+	];
 
-	/** 
-	 * @var array
-	 */
-	protected static $NEGATIVE_MONTHDAY_MASK = array(
+	const NEGATIVE_MONTHDAY_MASK = [
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
@@ -1835,12 +1810,9 @@ class RRule implements RRuleInterface
 		-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-31,-30,-29,-28,-27,-26,-25
-	);
+	];
 
-	/** 
-	 * @var array
-	 */
-	protected static $NEGATIVE_MONTHDAY_MASK_366 = array(
+	const NEGATIVE_MONTHDAY_MASK_366 = [
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
@@ -1854,12 +1826,9 @@ class RRule implements RRuleInterface
 		-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
 		-31,-30,-29,-28,-27,-26,-25
-	);
+	];
 
-	/** 
-	 * @var array
-	 */
-	protected static $WEEKDAY_MASK = array(
+	const WEEKDAY_MASK = [
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
@@ -1871,21 +1840,15 @@ class RRule implements RRuleInterface
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,
 		1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7
-	);
+	];
 
-	/** 
-	 * @var array
-	 */
-	protected static $LAST_DAY_OF_MONTH_366 = array(
+	const LAST_DAY_OF_MONTH_366 = [
 		0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366
-	);
+	];
 
-	/** 
-	 * @var array
-	 */
-	protected static $LAST_DAY_OF_MONTH = array(
+	const LAST_DAY_OF_MONTH = [
 		0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
-	);
+	];
 
 	/**
 	 * @var array
@@ -1901,7 +1864,7 @@ class RRule implements RRuleInterface
 	 * going to be a problem anytime soon, so at the moment I use the 28 years
 	 * cycle.
 	 */
-	protected static $REPEAT_CYCLES = array(
+	const REPEAT_CYCLES = [
 		// self::YEARLY => 400,
 		// self::MONTHLY => 4800,
 		// self::WEEKLY => 20871,
@@ -1914,7 +1877,7 @@ class RRule implements RRuleInterface
 		self::HOURLY => 24,
 		self::MINUTELY => 1440,
 		self::SECONDLY => 86400 // that's a lot of cycles too
-	);
+	];
 
 ///////////////////////////////////////////////////////////////////////////////
 // i18n methods
@@ -2197,7 +2160,7 @@ class RRule implements RRuleInterface
 		);
 
 		// Every (INTERVAL) FREQ...
-		$freq_str = strtolower(array_search($this->freq, self::$frequencies));
+		$freq_str = strtolower(array_search($this->freq, self::FREQUENCIES));
 		$parts['freq'] = strtr(
 			self::i18nSelect($i18n[$freq_str], $this->interval),
 			array(

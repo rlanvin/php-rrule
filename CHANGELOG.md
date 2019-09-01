@@ -9,7 +9,8 @@
 
 ### Fixed
 
-- Fixed RRule::createFromRfcString not detecting RSet properly if the rule was lowercase
+- Fix `RRule::createFromRfcString` not detecting RSet properly if the rule was lowercase
+- [internal] Replace static variables by array constants (permitted since PHP 5.6). Shouldn't break backward compatibility unless you were doing weird things with this lib in the first place.
 
 ## [2.1.0] - 2019-05-30
 
