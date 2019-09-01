@@ -680,7 +680,7 @@ class RRule implements RRuleInterface
 
 		if (! $force_rset) {
 			// try to detect if we have a RRULE or a set
-			$uppercased_string = strtoupper($string);
+			$string = strtoupper($string);
 			$nb_rrule = substr_count($string, 'RRULE');
 			if ($nb_rrule == 0) {
 				$class = '\RRule\RRule';
@@ -834,7 +834,7 @@ class RRule implements RRuleInterface
 
 		// so now we have exhausted all the BYXXX rules (exept bysetpos),
 		// we still need to consider frequency and interval
-		list ($start_year, $start_month, $start_day) = explode('-',$this->dtstart->format('Y-m-d'));
+		list($start_year, $start_month) = explode('-',$this->dtstart->format('Y-m'));
 		switch ($this->freq) {
 			case self::YEARLY:
 				if (($year - $start_year) % $this->interval !== 0) {
@@ -919,58 +919,6 @@ class RRule implements RRuleInterface
 		// we ended the loop without finding
 		return false; 
 	}
-
-///////////////////////////////////////////////////////////////////////////////
-// Iterator interface
-// Note: if cache is complete, we could probably avoid completely calling iterate()
-// and instead iterate directly on the $this->cache array
-
-	// /** @internal */
-	// protected $current = 0;
-	// /** @internal */
-	// protected $key = 0;
-
-	// /**
-	//  * @internal
-	//  */
-	// public function rewind()
-	// {
-	// 	$this->current = $this->iterate(true);
-	// 	$this->key = 0;
-	// }
-
-	// /**
-	//  * @internal
-	//  */
-	// public function current()
-	// {
-	// 	return $this->current;
-	// }
-
-	// /**
-	//  * @internal
-	//  */
-	// public function key()
-	// {
-	// 	return $this->key;
-	// }
-
-	// /**
-	//  * @internal
-	//  */
-	// public function next()
-	// {
-	// 	$this->current = $this->iterate();
-	// 	$this->key += 1;
-	// }
-
-	// /**
-	//  * @internal
-	//  */
-	// public function valid()
-	// {
-	// 	return $this->current !== null;
-	// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // ArrayAccess interface
@@ -1115,12 +1063,12 @@ class RRule implements RRuleInterface
 	 * the first Sunday of Jan 1998 is yearday 3 (counting from 0) and the
 	 * last Sunday of Jan 1998 is yearday 24 (counting from 0).
 	 *
-	 * @param int $year
+	 * @param int $year (not used)
 	 * @param int $month
-	 * @param int $day
+	 * @param int $day (not used)
 	 * @param array $masks
 	 *
-	 * @return null (modifies $mask parameter)
+	 * @return null (modifies $masks parameter)
 	 */
 	protected function buildNthWeekdayMask($year, $month, $day, array & $masks)
 	{
@@ -1182,11 +1130,11 @@ class RRule implements RRuleInterface
 	 * algorithm is quite long.
 	 *
 	 * @param int $year
-	 * @param int $month
-	 * @param int $day
+	 * @param int $month (not used)
+	 * @param int $day (not used)
 	 * @param array $masks
 	 *
-	 * @return null (modifies $mask)
+	 * @return null (modifies $masks)
 	 */
 	protected function buildWeeknoMask($year, $month, $day, array & $masks)
 	{
@@ -1344,9 +1292,8 @@ class RRule implements RRuleInterface
 	/**
 	 * This is the main method, where all of the magic happens.
 	 *
-	 * This method is a generator that works for PHP 5.3/5.4 (using static variables)
-	 *
-	 * The main idea is: a brute force made fast by not relying on date() functions
+	 * The main idea is: a brute force loop testing all the dates, made fast by
+	 * not relying on date() functions
 	 * 
 	 * There is one big loop that examines every interval of the given frequency
 	 * (so every day, every week, every month or every year), constructs an
@@ -1386,7 +1333,6 @@ class RRule implements RRuleInterface
 	 * (I don't know yet which one first), and then if that results in a change of
 	 * month, attempt to jump to the next BYMONTH, and so on.
 	 *
-	 * @param $reset (bool) Whether to restart the iteration, or keep going
 	 * @return \DateTime|null
 	 */
 	public function getIterator()
@@ -1476,7 +1422,6 @@ class RRule implements RRuleInterface
 					if ($masks['year'] != $year) {
 						$masks['leap_year'] = is_leap_year($year);
 						$masks['year_len'] = 365 + (int) $masks['leap_year'];
-						$masks['next_year_len'] = 365 + is_leap_year($year + 1);
 						$masks['weekday_of_1st_yearday'] = date_create($year."-01-01 00:00:00")->format('N');
 						$masks['yearday_to_weekday'] = array_slice(self::$WEEKDAY_MASK, $masks['weekday_of_1st_yearday']-1);
 						if ($masks['leap_year']) {
@@ -1507,7 +1452,6 @@ class RRule implements RRuleInterface
 				$dayset = $this->getDaySet($year, $month, $day, $masks);
 
 				$filtered_set = array();
-
 				// filter out the days based on the BYXXX rules
 				foreach ($dayset as $yearday) {
 					if ($this->bymonth && ! in_array($masks['yearday_to_month'][$yearday], $this->bymonth)) {
@@ -1519,15 +1463,8 @@ class RRule implements RRuleInterface
 					}
 
 					if ($this->byyearday) {
-						if ($yearday < $masks['year_len']) {
-							if (! in_array($yearday + 1, $this->byyearday) && ! in_array(- $masks['year_len'] + $yearday,$this->byyearday)) {
-								continue;
-							}
-						}
-						else { // if ( ($yearday >= $masks['year_len']
-							if (! in_array($yearday + 1 - $masks['year_len'], $this->byyearday) && ! in_array(- $masks['next_year_len'] + $yearday - $mask['year_len'], $this->byyearday)) {
-								continue;
-							}
+						if (! in_array($yearday + 1, $this->byyearday) && ! in_array(- $masks['year_len'] + $yearday,$this->byyearday)) {
+							continue;
 						}
 					}
 

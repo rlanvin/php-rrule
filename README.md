@@ -19,7 +19,7 @@ $rrule = new RRule([
 	'COUNT' => 6
 ]);
 
-foreach ( $rrule as $occurrence ) {
+foreach ($rrule as $occurrence) {
 	echo $occurrence->format('D d M Y'),", ";
 }
 // Mon 01 Jun 2015, Wed 01 Jul 2015, Sat 01 Aug 2015, Tue 01 Sep 2015, Thu 01 Oct 2015, Sun 01 Nov 2015

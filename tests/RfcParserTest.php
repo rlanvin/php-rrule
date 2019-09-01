@@ -9,23 +9,24 @@ class RfcParserTest extends TestCase
 {
 	public function rfcLines()
 	{
-		return array(
-			array(
+		// line, default, expected
+		return [
+			[
 				'RDATE;TZID=America/New_York:19970714T083000',
-				array(),
-				array('name' => 'RDATE', 'params' => array('TZID' => 'America/New_York'), 'value' => '19970714T083000')
-			),
-			array(
+				[],
+				['name' => 'RDATE', 'params' => ['TZID' => 'America/New_York'], 'value' => '19970714T083000']
+			],
+			[
 				'RRULE:FREQ=YEARLY;UNTIL=20170202',
-				array(),
-				array('name' => 'RRULE', 'params' => array(), 'value' => 'FREQ=YEARLY;UNTIL=20170202')
-			),
-			array(
+				[],
+				['name' => 'RRULE', 'params' => [], 'value' => 'FREQ=YEARLY;UNTIL=20170202']
+			],
+			[
 				'DTSTART=20160202T000000Z;FREQ=DAILY;UNTIL=20160205T000000Z',
-				array('name' => 'RRULE'),
-				array('name' => 'RRULE', 'params' => array(), 'value' => 'DTSTART=20160202T000000Z;FREQ=DAILY;UNTIL=20160205T000000Z')
-			)
-		);
+				['name' => 'RRULE'],
+				['name' => 'RRULE', 'params' => [], 'value' => 'DTSTART=20160202T000000Z;FREQ=DAILY;UNTIL=20160205T000000Z']
+			]
+		];
 	}
 
 	/**

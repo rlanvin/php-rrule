@@ -151,14 +151,26 @@ class RRuleTest extends TestCase
 				date_create('1998-01-01'),date_create('1998-02-03'),date_create('1998-03-03'))),
 			array(array('BYMONTHDAY' => array(1,3), 'BYDAY' => array('TU','TH'), 'BYMONTH' => array(1,3)), array(
 				date_create('1998-01-01'),date_create('1998-03-03'),date_create('2001-03-01'))),
-			array(array('BYYEARDAY' => array(1,100,200,365), 'COUNT' => 4), array(
+			'byyearday positive' => array(array('BYYEARDAY' => array(1,100,200,365), 'COUNT' => 4), array(
 				date_create('1997-12-31'),date_create('1998-01-01'),date_create('1998-04-10'), date_create('1998-07-19'))),
-			array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'COUNT' => 4), array(
+			'byyearday negative' => array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'COUNT' => 4), array(
 				date_create('1997-12-31'),date_create('1998-01-01'),date_create('1998-04-10'), date_create('1998-07-19'))),
-			array(array('BYYEARDAY' => array(1,100,200,365), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
+			'byyearday positive + bymonth' => array(array('BYYEARDAY' => array(1,100,200,365), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
 				date_create('1998-04-10'),date_create('1998-07-19'),date_create('1999-04-10'), date_create('1999-07-19'))),
-			array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
+			'byyearday negative + bymonth' => array(array('BYYEARDAY' => array(-365, -266, -166, -1), 'BYMONTH' => array(4,7), 'COUNT' => 4), array(
 				date_create('1998-04-10'),date_create('1998-07-19'),date_create('1999-04-10'), date_create('1999-07-19'))),
+			'byyearday, 29 February' => [
+				['BYYEARDAY' => '60'],
+				[date_create('1998-03-01'), date_create('1999-03-01'), date_create('2000-02-29')]
+			],
+			'byyearday, 366th day' => [
+				['BYYEARDAY' => '366'],
+				[date_create('2000-12-31'), date_create('2004-12-31'), date_create('2008-12-31')]
+			],
+			'byyearday, -366th day' => [
+				['BYYEARDAY' => '-366'],
+				[date_create('2000-01-01'), date_create('2004-01-01'), date_create('2008-01-01')]
+			],
 			array(array('BYWEEKNO' => 20),array(
 				date_create('1998-05-11'),date_create('1998-05-12'),date_create('1998-05-13'))),
 			// That's a nice one. The first days of week number one may be in the last year.
@@ -551,6 +563,18 @@ class RRuleTest extends TestCase
 				date_create('1998-04-10 01:00'),
 				date_create('1998-04-10 02:00'),
 				date_create('1998-04-10 03:00'))),
+			'byyearday, 29 February' => [
+				['BYYEARDAY' => '60'],
+				[date_create('1998-03-01 00:00'), date_create('1998-03-01 01:00'), date_create('1998-03-01 02:00')]
+			],
+			'byyearday, 366th day' => [
+				['BYYEARDAY' => '366'],
+				[date_create('2000-12-31 00:00'), date_create('2000-12-31 01:00'), date_create('2000-12-31 02:00')]
+			],
+			'byyearday, -366th day' => [
+				['BYYEARDAY' => '-366'],
+				[date_create('2000-01-01 00:00'), date_create('2000-01-01 01:00'), date_create('2000-01-01 02:00')]
+			],
 			array(array('byhour'=>'6, 18'), array(
 				date_create('1997-09-02 18:00'),
 				date_create('1997-09-03 06:00'),
@@ -2369,7 +2393,15 @@ class RRuleTest extends TestCase
 			array(
 				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY\nEXRULE:FREQ=YEARLY\nEXDATE;TZID=America/New_York:19970902T090000",
 				'\RRule\RSet'
-			)
+			),
+			'lowercase rrule' => [
+				"rrule:freq=yearly;count=3",
+				"\RRule\RRule"
+			],
+			'lowercase rset with 2 rrules' => [
+				"rrule:freq=yearly;count=3\nrrule:freq=monthly",
+				"\RRule\RSet"
+			]
 		);
 	}
 
