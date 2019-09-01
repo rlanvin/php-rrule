@@ -2044,6 +2044,17 @@ class RRuleTest extends TestCase
 			array("FREQ=YEARLY;UNTIL=20170202T090000Z",
 				null
 			),
+
+			// non-standard timezones
+			'Windows timezone' => [
+				'DTSTART;TZID=W. Europe Standard Time:19970901T090000
+			RRULE:FREQ=DAILY;COUNT=3',
+				[
+					date_create('1997-09-01 09:00:00', new DateTimeZone('Europe/Berlin')),
+					date_create('1997-09-02 09:00:00', new DateTimeZone('Europe/Berlin')),
+					date_create('1997-09-03 09:00:00', new DateTimeZone('Europe/Berlin')),
+				]
+			],
 		);
 	}
 
@@ -2213,18 +2224,16 @@ class RRuleTest extends TestCase
 
 	public function testUnsupportedTimezoneConvertedToUtc()
 	{
-		if (version_compare(PHP_VERSION, '5.5', '>=')) {
-			$date = new DateTime('2016-07-08 12:00:00', new DateTimeZone('+06:00'));
-			$rrule = new RRule(array(
-				"freq" => "WEEKLY",
-				"dtstart" => $date,
-				"interval" => 1
-			));
+		$date = new DateTime('2016-07-08 12:00:00', new DateTimeZone('+06:00'));
+		$rrule = new RRule(array(
+			"freq" => "WEEKLY",
+			"dtstart" => $date,
+			"interval" => 1
+		));
 
-			$str = $rrule->rfcString();
-			$this->assertTrue(strpos($str, '20160708T060000Z')!== false);
-			$new_rrule = new RRule($str);
-		}
+		$str = $rrule->rfcString();
+		$this->assertTrue(strpos($str, '20160708T060000Z')!== false);
+		$new_rrule = new RRule($str);
 	}
 
 	public function rfcStringsWithoutTimezone()

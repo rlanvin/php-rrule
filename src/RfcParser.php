@@ -22,6 +22,8 @@ namespace RRule;
  */
 class RfcParser
 {
+	static $tzdata = null;
+
 	/**
 	 * High level "line".
 	 * Explode a line into property name, property parameters and property value
@@ -128,7 +130,7 @@ class RfcParser
 							);
 						}
 						$dtstart_type = 'tzid';
-						$tmp = new \DateTimeZone($property['params']['TZID']);
+						$tmp = self::parseTimeZone($property['params']['TZID']);
 					}
 					elseif (strpos($property['value'], 'T') !== false) {
 						if (strpos($property['value'], 'Z') === false) {
@@ -306,4 +308,21 @@ class RfcParser
 		return $dates;
 	}
 
+	/**
+	 * Create a new DateTimeZone object, converting non-standard timezone.
+	 *
+	 * @see https://github.com/rlanvin/php-rrule/issues/69
+	 */
+	static public function parseTimeZone($tzid)
+	{
+		if (self::$tzdata === null) {
+			self::$tzdata = require __DIR__.'/tzdata/windows.php';
+		}
+
+		if (isset(self::$tzdata[$tzid])) {
+			return new \DateTimeZone(self::$tzdata[$tzid]);
+		}
+
+		return new \DateTimeZone($tzid);
+	}
 }

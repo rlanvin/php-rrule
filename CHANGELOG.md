@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Persian (Farsi) translation [#72](https://github.com/rlanvin/php-rrule/pull/72)
+- Support for Windows timezone [#69](https://github.com/rlanvin/php-rrule/issues/69)
+
 ## [2.1.0] - 2019-05-30
 
 ### Fixed
