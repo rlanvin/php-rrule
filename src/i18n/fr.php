@@ -129,8 +129,8 @@ return array(
 	),
 	'nth_hour' => '%{n}h',
 	'byminute' => array(
-		'1' => ' à %{minutes}',
-		'else' => ' à %{minutes}'
+		'1' => ' à la minute %{minutes}',
+		'else' => ' à la minute %{minutes}'
 	),
 	'nth_minute' => '%{n}min',
 	'bysecond' => array(
