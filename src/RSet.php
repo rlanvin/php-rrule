@@ -484,56 +484,6 @@ class RSet implements RRuleInterface
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
-// Iterator interface
-
-	/** @internal */
-	protected $current = 0;
-	/** @internal */
-	protected $key = 0;
-
-	/**
-	 * @internal
-	 */
-	public function rewind()
-	{
-		$this->current = $this->iterate(true);
-		$this->key = 0;
-	}
-
-	/**
-	 * @internal
-	 */
-	public function current()
-	{
-		return $this->current;
-	}
-
-	/**
-	 * @internal
-	 */
-	public function key()
-	{
-		return $this->key;
-	}
-
-	/**
-	 * @internal
-	 */
-	public function next()
-	{
-		$this->current = $this->iterate();
-		$this->key += 1;
-	}
-
-	/**
-	 * @internal
-	 */
-	public function valid()
-	{
-		return $this->current !== null;
-	}
-
-///////////////////////////////////////////////////////////////////////////////
 // ArrayAccess interface
 
 	/**
