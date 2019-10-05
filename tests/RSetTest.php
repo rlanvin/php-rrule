@@ -322,6 +322,18 @@ class RSetTest extends TestCase
 		$this->assertEquals(3, count($rset));
 	}
 
+	public function testCannotCountInfinite()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		));
+		$this->expectException('LogicException');
+		count($rset);
+	}
+
 	public function testOffsetExists()
 	{
 		$rset = new RSet();
@@ -366,6 +378,37 @@ class RSetTest extends TestCase
 		$this->assertEquals(null, $rset['3']);
 	}
 
+	public function testOffsetSetUnsupported()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00:00')
+		));
+		$rset->addExdate('1997-09-04 09:00:00');
+		$rset->addExdate('1997-09-11 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00');
+		$this->expectException('LogicException');
+		$rset[] = 'blah';
+	}
+
+	public function testOffsetUnsetUnsupported()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 6,
+			'BYDAY' => 'TU, TH',
+			'DTSTART' => date_create('1997-09-02 09:00:00')
+		));
+		$rset->addExdate('1997-09-04 09:00:00');
+		$rset->addExdate('1997-09-11 09:00:00');
+		$rset->addExdate('1997-09-18 09:00:00');
+		$this->expectException('LogicException');
+		unset($rset[0]);
+	}
 
 	public function illegalOffsets()
 	{

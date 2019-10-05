@@ -878,6 +878,7 @@ class RRule implements RRuleInterface
 					return false;
 				}
 				break;
+			default:
 				throw new \Exception('Unimplemented frequency');
 		}
 

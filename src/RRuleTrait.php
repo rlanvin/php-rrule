@@ -189,9 +189,13 @@ trait RRuleTrait
 				else {
 					$date = new \DateTime($date);
 				}
-			} catch (\Exception $e) {
+			} catch (\Exception $e) { // PHP 5.6
 				throw new \InvalidArgumentException(
-					"Failed to parse the date"
+					"Failed to parse the date ({$e->getMessage()})"
+				);
+			} catch (\Throwable $e) { // PHP 7+
+				throw new \InvalidArgumentException(
+					"Failed to parse the date ({$e->getMessage()})"
 				);
 			}
 		}
