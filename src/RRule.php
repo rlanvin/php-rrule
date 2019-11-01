@@ -1398,7 +1398,7 @@ class RRule implements RRuleInterface
 			}
 		}
 
-		$max_cycles = self::REPEAT_CYCLES[$this->freq <= self::DAILY ? $this->freq : self::DAILY];
+		$max_cycles = self::MAX_CYCLES[$this->freq <= self::DAILY ? $this->freq : self::DAILY];
 		for ($i = 0; $i < $max_cycles; $i++) {
 			// 1. get an array of all days in the next interval (day, month, week, etc.)
 			// we filter out from this array all days that do not match the BYXXX conditions
@@ -1514,7 +1514,7 @@ class RRule implements RRuleInterface
 				}
 			}
 
-			// 2. loop, generate a valid date, and return the result (fake "yield")
+			// 2. loop, generate a valid date, and yield the result
 			// at the same time, we check the end condition and return null if
 			// we need to stop
 			if ($this->bysetpos && $timeset) {
@@ -1535,12 +1535,12 @@ class RRule implements RRuleInterface
 						$total += 1;
 						$this->cache[] = clone $occurrence;
 						yield clone $occurrence; // yield
+						$i = 0; // reset the max cycles counter, since we yieled a result
 					}
 				}
 			}
 			else {
 				// normal loop, without BYSETPOS
-				// while ( ($yearday = current($dayset)) !== false ) {
 				foreach ($dayset as $yearday) {
 					$occurrence = \DateTime::createFromFormat(
 						'Y z',
@@ -1566,10 +1566,9 @@ class RRule implements RRuleInterface
 							$total += 1;
 							$this->cache[] = clone $occurrence;
 							yield clone $occurrence; // yield
+							$i = 0; // reset the max cycles counter, since we yieled a result
 						}
 					}
-					// reset($timeset);
-					// next($dayset);
 				}
 			}
 
@@ -1621,7 +1620,7 @@ class RRule implements RRuleInterface
 					}
 
 					$found = false;
-					for ($j = 0; $j < self::REPEAT_CYCLES[self::HOURLY]; $j++) {
+					for ($j = 0; $j < self::MAX_CYCLES[self::HOURLY]; $j++) {
 						$hour += $this->interval;
 						$div = (int) ($hour / 24);
 						$mod = $hour % 24;
@@ -1648,7 +1647,7 @@ class RRule implements RRuleInterface
 					}
 
 					$found = false;
-					for ($j = 0; $j < self::REPEAT_CYCLES[self::MINUTELY]; $j++) {
+					for ($j = 0; $j < self::MAX_CYCLES[self::MINUTELY]; $j++) {
 						$minute += $this->interval;
 						$div = (int) ($minute / 60);
 						$mod = $minute % 60;
@@ -1682,7 +1681,7 @@ class RRule implements RRuleInterface
 					}
 
 					$found = false;
-					for ($j = 0; $j < self::REPEAT_CYCLES[self::SECONDLY]; $j++) {
+					for ($j = 0; $j < self::MAX_CYCLES[self::SECONDLY]; $j++) {
 						$second += $this->interval;
 						$div = (int) ($second / 60);
 						$mod = $second % 60;
@@ -1865,7 +1864,7 @@ class RRule implements RRuleInterface
 	 * going to be a problem anytime soon, so at the moment I use the 28 years
 	 * cycle.
 	 */
-	const REPEAT_CYCLES = [
+	const MAX_CYCLES = [
 		// self::YEARLY => 400,
 		// self::MONTHLY => 4800,
 		// self::WEEKLY => 20871,

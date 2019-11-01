@@ -1793,6 +1793,28 @@ class RRuleTest extends TestCase
 		}
 	}
 
+	public function rulesBeyondMaxCycles()
+	{
+		return [
+			['yearly' => 'YEARLY', 30],
+			['monthly' => 'MONTHLY', 400],
+			['weekly' => 'WEEKLY', 1500],
+			['daily' => 'DAILY', 11000],
+			['hourly' => 'HOURLY', 30],
+			['minutely' => 'MINUTELY', 1500]
+		];
+	}
+
+	/**
+	 * @dataProvider rulesBeyondMaxCycles
+	 */
+	public function testMaxCyclesDoesntKickInIfTheRuleProduceOccurrences($frequency, $count)
+	{
+		// see https://github.com/rlanvin/php-rrule/issues/78
+		$rrule = new RRule(['FREQ' => $frequency, 'COUNT' => $count]);
+		$this->assertEquals($count, $rrule->count());
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GetOccurrences
 
