@@ -2924,6 +2924,10 @@ class RRuleTest extends TestCase
 	 */
 	public function testI18nFilesToLoadWithIntl($locale, $files)
 	{
+		if (!extension_loaded('intl')) {
+			$this->markTestSkipped('intl extension is not loaded');
+		}
+
 		$reflector = new ReflectionClass('RRule\RRule');
 		$method = $reflector->getMethod('i18nFilesToLoad');
 		$method->setAccessible(true);
@@ -2980,6 +2984,10 @@ class RRuleTest extends TestCase
 	 */
 	public function testI18nLoadWithIntl($locale)
 	{
+		if (!extension_loaded('intl')) {
+			$this->markTestSkipped('intl extension is not loaded');
+		}
+
 		$reflector = new ReflectionClass('RRule\RRule');
 		$method = $reflector->getMethod('i18nLoad');
 		$method->setAccessible(true);
@@ -3068,59 +3076,70 @@ class RRuleTest extends TestCase
 		return array(
 			array(
 				"DTSTART:20170202T000000Z\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
-				array('locale' => "en"),
-				"daily, starting from 2/2/17, until 2/5/17"
+				['locale' => "en"],
+				"daily, starting from 2/2/17, until 2/5/17",
+				'daily, starting from 2017-02-02 00:00:00, until 2017-02-05 00:00:00',
 			),
 			array(
 				"RRULE:FREQ=DAILY;UNTIL=20190405T055959Z",
-				array('locale' => "en"),
+				['locale' => "en"],
 				"daily, starting from 1/10/19, until 4/5/19",
+				'daily, starting from 2019-01-10 12:00:00, until 2019-04-05 05:59:59',
 				'2019-01-10T12:00:00-05:00'
 			),
 			array(
 				"DTSTART:20170202T000000Z\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
 				array('locale' => "en_IE"),
-				"daily, starting from 02/02/2017, until 05/02/2017"
+				"daily, starting from 02/02/2017, until 05/02/2017",
+				'daily, starting from 2017-02-02 00:00:00, until 2017-02-05 00:00:00'
 			),
 			array(
 				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
 				array('locale' => "en_IE"),
-				"daily, starting from 01/09/1997, until 04/02/2017"
+				"daily, starting from 01/09/1997, until 04/02/2017",
+				'daily, starting from 1997-09-01 09:00:00, until 2017-02-05 00:00:00'
 			),
 			array(
 				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;UNTIL=20170205T000000Z",
 				array('locale' => "en_IE", 'include_start' => false),
-				"daily, until 04/02/2017"
+				"daily, until 04/02/2017",
+				'daily, until 2017-02-05 00:00:00'
 			),
 			array(
 				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY",
 				array('locale' => "en_IE", 'explicit_infinite' => false),
-				"daily, starting from 01/09/1997"
+				"daily, starting from 01/09/1997",
+				'daily, starting from 1997-09-01 09:00:00'
 			),
 			array(
 				"DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=YEARLY;INTERVAL=2",
 				array('locale' => "en_IE", 'explicit_infinite' => false),
-				"every 2 years, starting from 01/09/1997"
+				"every 2 years, starting from 01/09/1997",
+				'every 2 years, starting from 1997-09-01 09:00:00'
 			),
 			array(
 				"FREQ=DAILY",
 				array('locale' => "en_IE", 'include_start' => false, 'explicit_infinite' => false),
+				"daily",
 				"daily"
 			),
 			// with custom_path
 			'custom_path' => array(
 				"DTSTART:20170202T000000Z\nRRULE:FREQ=YEARLY;UNTIL=20170205T000000Z",
 				array('locale' => "fr_BE", "custom_path" => __DIR__."/i18n"),
-				"chaque année, à partir du 2/02/17, jusqu'au 5/02/17"
+				"chaque année, à partir du 2/02/17, jusqu'au 5/02/17",
+				"chaque année, à partir du 2017-02-02 00:00:00, jusqu'au 2017-02-05 00:00:00"
 			),
 			'custom_path cached separately' => array(
 				"DTSTART:20170202T000000Z\nRRULE:FREQ=YEARLY;UNTIL=20170205T000000Z",
 				array('locale' => "fr_BE"),
 				"tous les ans, à partir du 2/02/17, jusqu'au 5/02/17",
+				"tous les ans, à partir du 2017-02-02 00:00:00, jusqu'au 2017-02-05 00:00:00"
 			),
 			array(
 				"RRULE:FREQ=DAILY;UNTIL=20190405T055959Z",
 				array('locale' => "xx", "custom_path" => __DIR__."/i18n", "date_formatter" => function($date) { return "X"; }),
+				"daily, starting from X, until X",
 				"daily, starting from X, until X"
 			),
 		);
@@ -3129,12 +3148,13 @@ class RRuleTest extends TestCase
 	/**
 	 * @dataProvider humanReadableStrings
 	 */
-	public function testHumanReadable($rrule, $options, $string, $dtstart = null)
+	public function testHumanReadable($rrule, $options, $withIntl, $withoutIntl, $dtstart = null)
 	{
 		if ($dtstart) {
 			$dtstart = new DateTime($dtstart);
 		}
 		$rrule = new RRule($rrule, $dtstart);
-		$this->assertEquals($string, $rrule->humanReadable($options));
+		$expected = extension_loaded('intl') ? $withIntl : $withoutIntl;
+		$this->assertEquals($expected, $rrule->humanReadable($options));
 	}
 }
