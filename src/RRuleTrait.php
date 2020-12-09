@@ -179,13 +179,19 @@ trait RRuleTrait
 	 */
 	static public function parseDate($date)
 	{
-		// DateTimeInterface is only on PHP 5.5+, and includes DateTimeImmutable
-		if (! $date instanceof \DateTime && ! $date instanceof \DateTimeInterface) {
+		if (! $date instanceof \DateTime) {
 			try {
 				if (is_integer($date)) {
 					$date = \DateTime::createFromFormat('U',$date);
 					$date->setTimezone(new \DateTimeZone('UTC')); // default is +00:00 (see issue #15)
 				}
+                                elseif($date instanceof \DateTimeImmutable) {
+                                    if(method_exists(\DateTime::class,'createFromImmutable')) { // php 7.3
+                                        $date = \DateTime::createFromImmutable($date);
+                                    } else {
+                                        $date = new \DateTime($date->format(\DateTime::ATOM));
+                                    }
+                                }
 				else {
 					$date = new \DateTime($date);
 				}
