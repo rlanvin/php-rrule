@@ -1,0 +1,39 @@
+name: Tests
+
+on: push
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4']
+    name: PHP ${{ matrix.php }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        extensions: intl
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v2
+      with:
+        path: vendor
+        key: ${{ matrix.php }}-composer
+
+    - name: Composer install
+      if: steps.composer-cache.outputs.cache-hit != 'true'
+      run: composer install -n
+
+    - name: Display versions
+      run: |
+        php -v
+        php -i
+        vendor/bin/phpunit -v
+
+    - run: vendor/bin/phpunit

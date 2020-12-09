@@ -3,7 +3,7 @@
 Lightweight and fast implementation of recurrence rules for PHP (`RRULE` from RFC 5545), to easily calculate recurring/repeating dates and events (such as in a calendar).
 This library started as a port of [python-dateutil](https://labix.org/python-dateutil).
 
-[![Build Status](https://travis-ci.org/rlanvin/php-rrule.svg?branch=master)](https://travis-ci.org/rlanvin/php-rrule)
+[![Build status](https://github.com/rlanvin/php-rrule/workflows/Tests/badge.svg)](https://github.com/rlanvin/php-rrule/actions)
 [![Latest Stable Version](https://poser.pugx.org/rlanvin/php-rrule/v/stable)](https://packagist.org/packages/rlanvin/php-rrule)
 [![Total Downloads](https://poser.pugx.org/rlanvin/php-rrule/downloads)](https://packagist.org/packages/rlanvin/php-rrule)
 
