@@ -425,10 +425,10 @@ class RSetTest extends TestCase
 
 	/**
 	 * @dataProvider illegalOffsets
-	 * @expectedException InvalidArgumentException
 	 */
 	public function testOffsetGetInvalidArgument($offset)
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		$rset = new RSet();
 		$rset->addRRule(array(
 			'FREQ' => 'YEARLY',
@@ -621,12 +621,10 @@ class RSetTest extends TestCase
 		), $rset->getOccurrences(5));
 	}
 
-	/**
-	 * @expectedException LogicException
-	 * @expectedExceptionMessage Cannot get all occurrences of an infinite recurrence set.
-	 */
 	public function testGetOccurrencesThrowsLogicException()
 	{
+		$this->expectException(\LogicException::class);
+		$this->expectExceptionMessage("Cannot get all occurrences of an infinite recurrence set.");
 		$rset = new RSet();
 		$rset->addRRule(new RRule(array(
 			'FREQ' => 'DAILY',
@@ -664,12 +662,12 @@ class RSetTest extends TestCase
 		$this->assertEquals($expected, $rset->getOccurrencesBetween($begin, $end, $limit));
 	}
 
-	/**
-	 * @expectedException LogicException
-	 * @expectedExceptionMessage Cannot get all occurrences of an infinite recurrence rule.
-	 */
+
 	public function testGetOccurrencesBetweenThrowsLogicException()
 	{
+		$this->expectException(\LogicException::class);
+		$this->expectExceptionMessage("Cannot get all occurrences of an infinite recurrence rule.");
+
 		$rset = new RSet();
 		$rset->addRRule(new RRule(array(
 			'FREQ' => 'DAILY',
@@ -828,12 +826,10 @@ class RSetTest extends TestCase
 		), $rset->getOccurrences());
 	}
 
-	/**
-	 * @expectedException InvalidArgumentException
-	 * @expectedExcpetionMessage Failed to parse RFC string, multiple DTSTART found
-	 */
 	public function testParseRfcStringWithMultipleDtStart()
 	{
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage("Failed to parse RFC string, multiple DTSTART found");
 		$rset = new RSet(
 			"DTSTART:DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=DAILY;COUNT=3\nEXRULE:FREQ=DAILY;INTERVAL=2;COUNT=1",
 			date_create('2017-01-01')
@@ -859,10 +855,11 @@ class RSetTest extends TestCase
 
 	/**
 	 * @dataProvider quirkyRfcStrings
-	 * @expectedException PHPUnit\Framework\Error\Notice 
 	 */
 	public function testParseQuirkyRfcStringNotice($string, $occurrences)
 	{
+		$this->expectException(\PHPUnit\Framework\Error\Notice::class);
+
 		$object = new RSet($string);
 	}
 

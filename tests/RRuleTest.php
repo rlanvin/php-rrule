@@ -94,10 +94,10 @@ class RRuleTest extends TestCase
 
 	/**
 	 * @dataProvider invalidRules
-	 * @expectedException InvalidArgumentException
 	 */
 	public function testInvalidRules($rule)
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		new RRule($rule);
 	}
 
@@ -1834,12 +1834,10 @@ class RRuleTest extends TestCase
 		), $rrule->getOccurrences(5));
 	}
 
-	/**
-	 * @expectedException LogicException
-	 * @expectedExceptionMessage Cannot get all occurrences of an infinite recurrence rule.
-	 */
 	public function testGetOccurrencesThrowsLogicException()
 	{
+		$this->expectException(\LogicException::class);
+		$this->expectExceptionMessage("Cannot get all occurrences of an infinite recurrence rule.");
 		$rrule = new RRule(array(
 			'FREQ' => 'DAILY',
 			'DTSTART' => '2017-01-01'
@@ -1889,12 +1887,10 @@ class RRuleTest extends TestCase
 		$this->assertEquals($expected, $rrule->getOccurrencesBetween($begin, $end, $limit));
 	}
 
-	/**
-	 * @expectedException LogicException
-	 * @expectedExceptionMessage Cannot get all occurrences of an infinite recurrence rule.
-	 */
 	public function testGetOccurrencesBetweenThrowsLogicException()
 	{
+		$this->expectException(\LogicException::class);
+		$this->expectExceptionMessage("Cannot get all occurrences of an infinite recurrence rule.");
 		$rrule = new RRule(array(
 			'FREQ' => 'DAILY',
 			'DTSTART' => '2017-01-01'
@@ -1987,21 +1983,21 @@ class RRuleTest extends TestCase
 	public function testGetNthOccurrenceFromInvalidIndex()
 	{
 		$rrule = new RRule(['FREQ' => 'DAILY']);
-		$this->expectException('InvalidArgumentException');
+		$this->expectException(\InvalidArgumentException::class);
 		$rrule->getNthOccurrenceFrom(date_create('2017-01-09'), []);
 	}
 
 	public function testGetNthOccurrenceBeforeInvalidIndex()
 	{
 		$rrule = new RRule(['FREQ' => 'DAILY']);
-		$this->expectException('InvalidArgumentException');
+		$this->expectException(\InvalidArgumentException::class);
 		$rrule->getNthOccurrenceBefore(date_create('2017-01-09'), -1);
 	}
 
 	public function testGetNthOccurrenceAfterInvalidIndex()
 	{
 		$rrule = new RRule(['FREQ' => 'DAILY']);
-		$this->expectException('InvalidArgumentException');
+		$this->expectException(\InvalidArgumentException::class);
 		$rrule->getNthOccurrenceAfter(date_create('2017-01-09'), -1);
 	}
 
@@ -2178,12 +2174,11 @@ class RRuleTest extends TestCase
 		$this->assertEquals('2017-01-01', $rrule[0]->format('Y-m-d'));
 	}
 
-	/**
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Too many DTSTART properties (there can be only one)
-	 */
 	public function testRfcStringParserWithMultipleDtStart()
 	{
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage("Too many DTSTART properties (there can be only one)");
+
 		$rrule = new RRule("DTSTART:19970512\nRRULE:FREQ=YEARLY", date_create('2017-01-01'));
 	}
 
@@ -2214,10 +2209,10 @@ class RRuleTest extends TestCase
 
 	/** 
 	 * @dataProvider quirkyRfcStrings
-	 * @expectedException PHPUnit\Framework\Error\Notice 
 	 */
 	public function testQuirkyRfcStringsParserNotice($str,$occurrences)
 	{
+		$this->expectException(\PHPUnit\Framework\Error\Notice::class);
 		$rule = new RRule($str);
 	}
 
@@ -2283,11 +2278,11 @@ class RRuleTest extends TestCase
 	}
 
 	/**
-	 * @expectedException InvalidArgumentException 
 	 * @dataProvider invalidRfcStrings
 	 */
 	public function testInvalidRfcStrings($str)
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		$rule = new RRule($str);
 	}
 
@@ -2801,7 +2796,7 @@ class RRuleTest extends TestCase
 		$rrule = new RRule(array(
 			'freq' => 'yearly'
 		));
-		$this->expectException('LogicException');
+		$this->expectException(\LogicException::class);
 		count($rrule);
 	}
 
@@ -2845,7 +2840,7 @@ class RRuleTest extends TestCase
 			'byday' => 'TU,TH',
 			'dtstart' => '2007-01-01'
 		));
-		$this->expectException('LogicException');
+		$this->expectException(\LogicException::class);
 		$rrule[] = 'blah';
 	}
 
@@ -2857,7 +2852,7 @@ class RRuleTest extends TestCase
 			'byday' => 'TU,TH',
 			'dtstart' => '2007-01-01'
 		));
-		$this->expectException('LogicException');
+		$this->expectException(\LogicException::class);
 		unset($rrule[0]);
 	}
 
@@ -2876,10 +2871,10 @@ class RRuleTest extends TestCase
 
 	/**
 	 * @dataProvider illegalOffsets
-	 * @expectedException InvalidArgumentException
 	 */
 	public function testOffsetGetInvalidArgument($offset)
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		$rrule = new RRule(array(
 			'freq' => 'daily',
 			'count' => 3,
@@ -3014,11 +3009,10 @@ class RRuleTest extends TestCase
 
 	/**
 	 * Tests that the RRule::i18nLoad() fails as expected on invalid $locale settings
-	 *
-	 * @expectedException \InvalidArgumentException
 	 */
 	public function testI18nLoadFailsWithoutIntl()
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		$reflector = new ReflectionClass('RRule\RRule');
 
 		$method = $reflector->getMethod('i18nLoad');
@@ -3028,11 +3022,10 @@ class RRuleTest extends TestCase
 
 	/**
 	 * Tests that the RRule::i18nLoad() fails as expected on invalid $fallback settings
-	 *
-	 * @expectedException \InvalidArgumentException
 	 */
 	public function testI18nLoadFallbackFailsWitoutIntl()
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		$reflector = new ReflectionClass('RRule\RRule');
 
 		$method = $reflector->getMethod('i18nLoad');
@@ -3040,11 +3033,9 @@ class RRuleTest extends TestCase
 		$method->invokeArgs(null, array('xx', 'invalid', false));
 	}
 
-	/**
-	 * @expectedException RuntimeException
-	 */
 	public function testHumanReadableRuntimeException()
 	{
+		$this->expectException(\RuntimeException::class);
 		$rrule = new RRule(array(
 			'freq' => 'daily',
 			'count' => 10,
