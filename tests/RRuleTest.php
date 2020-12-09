@@ -2779,6 +2779,41 @@ class RRuleTest extends TestCase
 		$this->assertTrue($rule['DTSTART'] instanceof \DateTime);
 	}
 
+	/**
+	 * Test Bug #90
+	 * @see https://github.com/rlanvin/php-rrule/issues/90
+	 */
+	public function testDateImmutable()
+	{
+		$dtstart_immutable = \DateTimeImmutable::createFromFormat('Y-m-d H:i', '2021-01-08 08:00');
+		//$dtstart_mutable = \DateTime::createFromFormat('Y-m-d H:i', '2021-01-08 08:00');
+
+		$rrule = new RRule([
+			'BYDAY' => ['MO', 'WE', 'FR'],
+			'FREQ' => 'WEEKLY',
+			'WKST' => 'SU',
+			'DTSTART' => $dtstart_immutable,
+		]);
+
+		$start = \DateTimeImmutable::createFromFormat('Y-m-d', '2020-01-01');
+		$end = \DateTimeImmutable::createFromFormat('Y-m-d', '2021-12-31');
+
+		$occurrences = $rrule->getOccurrencesBetween($start, $end, 10);
+
+		$this->assertEquals([
+			new DateTime('Friday, January 8, 2021 08:00'),
+			new DateTime('Monday, January 11, 2021 08:00'),
+			new DateTime('Wednesday, January 13, 2021 08:00'),
+			new DateTime('Friday, January 15, 2021 08:00'),
+			new DateTime('Monday, January 18, 2021 08:00'),
+			new DateTime('Wednesday, January 20, 2021 08:00'),
+			new DateTime('Friday, January 22, 2021 08:00'),
+			new DateTime('Monday, January 25, 2021 08:00'),
+			new DateTime('Wednesday, January 27, 2021 08:00'),
+			new DateTime('Friday, January 29, 2021 08:00')
+		], $occurrences, 'DateTimeImmutable produces valid results');
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Array access and countable interfaces
 

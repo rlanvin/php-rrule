@@ -1350,10 +1350,10 @@ class RRule implements RRuleInterface
 			$dtstart = clone $occurrence; // since DateTime is not immutable, clone to avoid any problem
 			// so we skip the last occurrence of the cache
 			if ($this->freq === self::SECONDLY) {
-				$dtstart->modify('+'.$this->interval.'second');
+				$dtstart = $dtstart->modify('+'.$this->interval.'second');
 			}
 			else {
-				$dtstart->modify('+1second');
+				$dtstart = $dtstart->modify('+1second');
 			}
 		}
 
@@ -1367,7 +1367,7 @@ class RRule implements RRuleInterface
 			// calculation magic at the end of the loop (when incrementing)
 			// to realign on first pass.
 			$tmp = clone $dtstart;
-			$tmp->modify('-'.pymod($dtstart->format('N') - $this->wkst,7).'days');
+			$tmp = $tmp->modify('-'.pymod($dtstart->format('N') - $this->wkst,7).'days');
 			list($year,$month,$day,$hour,$minute,$second) = explode(' ',$tmp->format('Y n j G i s'));
 			unset($tmp);
 		}

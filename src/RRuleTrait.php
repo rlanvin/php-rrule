@@ -173,7 +173,7 @@ trait RRuleTrait
 	 * Convert any date into a DateTime object.
 	 *
 	 * @param mixed $date
-	 * @return \DateTime
+	 * @return \DateTimeInterface Returns a DateTimeImmutable if a DateTimeImmutable is passed, or DateTime otherwise
 	 *
 	 * @throws \InvalidArgumentException on error
 	 */
