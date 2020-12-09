@@ -263,7 +263,7 @@ class RRule implements RRuleInterface
 				$this->dtstart = self::parseDate($parts['DTSTART']);
 			} catch (\Exception $e) {
 				throw new \InvalidArgumentException(
-					'Failed to parse DTSTART ; it must be a valid date, timestamp or \DateTime object'
+					"Failed to parse DTSTART ; it must be a valid date, timestamp or \DateTime object ({$e->getMessage()})"
 				);
 			}
 		} 
