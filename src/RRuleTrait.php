@@ -105,7 +105,9 @@ trait RRuleTrait
 			return $this->getOccurrencesBetween($date, null, $limit);
 		}
 
-		$limit += 1;
+		if ($limit !== null) {
+			$limit += 1;
+		}
 		$occurrences = $this->getOccurrencesBetween($date, null, $limit);
 		return array_slice($occurrences, 1);
 	}

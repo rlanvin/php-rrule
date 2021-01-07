@@ -1911,6 +1911,7 @@ class RRuleTest extends TestCase
 	public function occurrencesAfter()
 	{
 		return [
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;UNTIL=20170103", '2017-01-01', false, null, [date_create('2017-01-02'), date_create('2017-01-03')]],
 			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', false, 2, [date_create('2017-02-02'),date_create('2017-02-03')]],
 			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', true, 2, [date_create('2017-02-01'),date_create('2017-02-02')]],
 			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-02', true, 2, [date_create('2017-01-03'),date_create('2017-01-05')]],
