@@ -1253,7 +1253,7 @@ class RRuleTest extends TestCase
 				date_create('1999-03-11 09:00:00'),
 				date_create('1999-03-12 09:00:00'),
 				date_create('1999-03-13 09:00:00'))),
-			// Every Tuesday, every other month, 6 occurences.
+			// Every Tuesday, every other month, 6 occurrences.
 			array(
 				array('freq' => 'monthly', 'count' => 6, 'interval' => 2, 'byday' => 'TU', 'dtstart' => '1997-09-02 09:00:00'),
 				array(date_create('1997-09-02 09:00:00'),
@@ -1501,7 +1501,7 @@ class RRuleTest extends TestCase
 	}
 
 	/**
-	 * Rules that generate no occurence, because of a bad combination of BYXXX parts
+	 * Rules that generate no occurrence, because of a bad combination of BYXXX parts
 	 * This tests are here to ensure that the lib will not go into an infinite loop.
 	 */
 	public function rulesWithoutOccurrences()
@@ -1525,7 +1525,7 @@ class RRuleTest extends TestCase
 				'count' => 1
 			)),
 
-			// haven't found a weekly rule with no occurence yet
+			// haven't found a weekly rule with no occurrence yet
 
 			// every 7 days, monday, starting a wednesday (still nope)
 			array(array(
@@ -1785,10 +1785,10 @@ class RRuleTest extends TestCase
 	/**
 	 * @dataProvider notOccurrences
 	 */
-	public function testNotOccurrences($rule, $not_occurences)
+	public function testNotOccurrences($rule, $not_occurrences)
 	{
 		$rule = new RRule($rule);
-		foreach ($not_occurences as $date) {
+		foreach ($not_occurrences as $date) {
 			$this->assertFalse($rule->occursAt($date), "Rule must not match $date");
 		}
 	}
@@ -1912,6 +1912,7 @@ class RRuleTest extends TestCase
 	{
 		return [
 			["DTSTART:20170101\nRRULE:FREQ=DAILY;UNTIL=20170103", '2017-01-01', false, null, [date_create('2017-01-02'), date_create('2017-01-03')]],
+			["DTSTART:20170101\nRRULE:FREQ=DAILY;UNTIL=20170103", '2017-01-01', true, null, [date_create('2017-01-01'), date_create('2017-01-02'), date_create('2017-01-03')]],
 			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', false, 2, [date_create('2017-02-02'),date_create('2017-02-03')]],
 			["DTSTART:20170101\nRRULE:FREQ=DAILY", '2017-02-01', true, 2, [date_create('2017-02-01'),date_create('2017-02-02')]],
 			["DTSTART:20170101\nRRULE:FREQ=DAILY;INTERVAL=2", '2017-01-02', true, 2, [date_create('2017-01-03'),date_create('2017-01-05')]],
@@ -1927,6 +1928,17 @@ class RRuleTest extends TestCase
 		$rrule = new RRule($rrule);
 		$occurrences = $rrule->getOccurrencesAfter($date, $inclusive, $limit);
 		$this->assertEquals($expected, $occurrences);
+	}
+
+	public function testGetOccurrencesAfterThrowsLogicException()
+	{
+		$this->expectException(\LogicException::class);
+		$this->expectExceptionMessage("Cannot get all occurrences of an infinite recurrence rule.");
+		$rrule = new RRule(array(
+			'FREQ' => 'DAILY',
+			'DTSTART' => '2017-01-01'
+		));
+		$rrule->getOccurrencesAfter('2017-01-01');
 	}
 
 	public function occurrencesBefore()
@@ -2730,31 +2742,31 @@ class RRuleTest extends TestCase
 		$occurrence->modify('+1 day');
 		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with foreach (cached)'); 
 
-		// getOccurences
+		// getOccurrences
 		$occurrences = $rrule->getOccurrences();
 		$this->assertEquals(date_create('2007-01-01'), $occurrences[0]);
 		$occurrences[0]->modify('+1 day');
 		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
-		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (uncached version)');
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurrences (uncached version)');
 
 		$occurrences = $rrule->getOccurrences();
 		$this->assertEquals(date_create('2007-01-01'), $occurrences[0]);
 		$occurrences[0]->modify('+1 day');
 		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
-		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (cached version)');
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurrences (cached version)');
 
 		// getOccurrencesBetween
 		$occurrences = $rrule->getOccurrencesBetween(null, null);
 		$this->assertEquals(date_create('2007-01-01'), $occurrences[0]);
 		$occurrences[0]->modify('+1 day');
 		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
-		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (uncached version)');
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurrences (uncached version)');
 
 		$occurrences = $rrule->getOccurrencesBetween(null, null);
 		$this->assertEquals(date_create('2007-01-01'), $occurrences[0]);
 		$occurrences[0]->modify('+1 day');
 		$this->assertEquals(date_create('2007-01-02'), $occurrences[0]);
-		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurences (cached version)');
+		$this->assertEquals(date_create('2007-01-01'), $rrule[0], 'No modification possible with getOccurrences (cached version)');
 	}
 
 	public function testGetRule()

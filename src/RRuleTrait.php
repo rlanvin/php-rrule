@@ -99,7 +99,7 @@ trait RRuleTrait
 		return $res;
 	}
 
-	public function getOccurrencesAfter($date, $inclusive = false,  $limit = null)
+	public function getOccurrencesAfter($date, $inclusive = false, $limit = null)
 	{
 		if ($inclusive || ! $this->occursAt($date)) {
 			return $this->getOccurrencesBetween($date, null, $limit);

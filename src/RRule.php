@@ -1314,7 +1314,7 @@ class RRule implements RRuleInterface
 	 * at year 1 to Jan 1st 10.00 at year 2.
 	 *
 	 * In order to make a "smart jump", we would have to have a way to determine
-	 * the gap between the next occurence arithmetically. I think that would require
+	 * the gap between the next occurrence arithmetically. I think that would require
 	 * to analyze each "BYXXX" rule part that "Limit" the set (see the RFC page 43)
 	 * at the given frequency. For example, a YEARLY frequency doesn't need "smart
 	 * jump" at all; MONTHLY and WEEKLY frequencies only need to check BYMONTH;
