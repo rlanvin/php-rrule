@@ -52,7 +52,7 @@ return array(
         '1' => ', één keer',
         'else' => ', %{count} keren'
     ),
-    'and' => 'en',
+    'and' => 'en ',
     'x_of_the_y' => array(
         'yearly' => '%{x} van het jaar', // e.g. the first Monday of the year, or the first day of the year
         'monthly' => '%{x} van de maand',

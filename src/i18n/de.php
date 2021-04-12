@@ -50,7 +50,7 @@ return array(
 		'1' => ', einmalig',
 		'else' => ', %{count} Mal insgesamt'
 	),
-	'and' => 'und',
+	'and' => 'und ',
 	'x_of_the_y' => array(
 		'yearly' => '%{x} des Jahres', // e.g. the first Monday of the year, or the first day of the year
 		'monthly' => '%{x} des Monats',

@@ -44,7 +44,7 @@ return array(
 		'1' => ', una volta',
 		'else' => ', %{count} volte'
 	),
-	'and' => 'e',
+	'and' => 'e ',
 	'x_of_the_y' => array(
 		'yearly' => '%{x} dell\'anno', // e.g. the first Monday of the year, or the first day of the year
 		'monthly' => '%{x} del mese',

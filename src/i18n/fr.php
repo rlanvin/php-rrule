@@ -50,7 +50,7 @@ return array(
 		'1' => ', une fois',
 		'else' => ', %{count} fois'
 	),
-	'and' => 'et',
+	'and' => 'et ',
 	'x_of_the_y' => array(
 		'yearly' => '%{x} de l\'année', // e.g. the first Monday of the year, or the first day of the year
 		'monthly' => '%{x} du mois',

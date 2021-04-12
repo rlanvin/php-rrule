@@ -1934,7 +1934,7 @@ class RRule implements RRuleInterface
 		if (count($array) > 1) {
 			$last = array_splice($array, -1);
 			return sprintf(
-				'%s %s %s',
+				'%s %s%s',
 				implode(', ',$array),
 				$and,
 				implode('',$last)
@@ -2253,11 +2253,19 @@ class RRule implements RRuleInterface
 			$parts['byweekday'] = array();
 			if ($this->byweekday) {
 				$tmp = $this->byweekday;
+				$shorten_weekdays_in_list = !empty($i18n['shorten_weekdays_in_list']) && count($tmp) > 1;
+				if ($shorten_weekdays_in_list) {
+				  $daysnames = $i18n['weekdays_shortened_for_list'];
+        }
+				else {
+          $daysnames = $i18n['weekdays'];
+        }
 				foreach ($tmp as & $value) {
-					$value = $i18n['weekdays'][$value];
+					$value = $daysnames[$value];
 				}
+				$prefix = $shorten_weekdays_in_list ? $i18n['shorten_weekdays_days'] : "";
 				$parts['byweekday'][] = strtr(self::i18nSelect($i18n['byweekday'], count($tmp)), array(
-					'%{weekdays}' =>  self::i18nList($tmp, $i18n['and'])
+          '%{weekdays}' =>  $prefix . self::i18nList($tmp, $i18n['and'])
 				));
 			}
 			if ($this->byweekday_nth) {

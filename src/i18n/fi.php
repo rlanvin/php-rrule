@@ -52,7 +52,7 @@ return array(
 		'1' => ', kerran',
 		'else' => ', %{count} kertaa'
 	),
-	'and' => 'ja',
+	'and' => 'ja ',
 	'x_of_the_y' => array(
 		'yearly' => '%{x} vuodessa', // e.g. the first Monday of the year, or the first day of the year
 		'monthly' => '%{x} kuukaudessa',
