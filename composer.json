@@ -1,5 +1,5 @@
 {
-    "name": "rlanvin/php-rrule",
+    "name": "roikedem/php-rrule",
     "type": "library",
     "description": "Lightweight and fast recurrence rules for PHP (RFC 5545)",
     "keywords": ["rrule","ical","recurrence","recurring","date"],
