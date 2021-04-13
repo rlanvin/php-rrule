@@ -1934,7 +1934,7 @@ class RRule implements RRuleInterface
 		if (count($array) > 1) {
 			$last = array_splice($array, -1);
 			return sprintf(
-				'%s %s %s',
+				'%s %s%s',
 				implode(', ',$array),
 				$and,
 				implode('',$last)

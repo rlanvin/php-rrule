@@ -52,7 +52,7 @@ return array(
 		'1' => ', one time',
 		'else' => ', %{count} times'
 	),
-	'and' => 'and',
+	'and' => 'and ',
 	'x_of_the_y' => array(
 		'yearly' => '%{x} of the year', // e.g. the first Monday of the year, or the first day of the year
 		'monthly' => '%{x} of the month',
