@@ -82,6 +82,17 @@ return array(
     6 => "שבת",
     7 => "יום א'",
 	),
+  'shorten_weekdays_in_list' => true,
+  'shorten_weekdays_days' => 'ימים ',
+  'weekdays_shortened_for_list' => array(
+    1 => "שני",
+    2 => "שלישי",
+    3 => "רביעי",
+    4 => "חמישי",
+    5 => "שישי",
+    6 => "שבת",
+    7 => "ראשון",
+  ),
 	'nth_weekday' => array(
 		'1' => '%{weekday} הראשון', // e.g. the first Monday
 		'2' => '%{weekday} השני',
