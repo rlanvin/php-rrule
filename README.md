@@ -1,4 +1,3 @@
-Roi's fork
 # RRULE for PHP
 
 Lightweight and fast implementation of recurrence rules for PHP (`RRULE` from RFC 5545), to easily calculate recurring/repeating dates and events (such as in a calendar).
