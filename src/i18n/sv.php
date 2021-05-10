@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Translation file for English language.
+ * Translation file for Swedish language.
  *
  * Most strings can be an array, with a value as the key. The system will
  * pick the translation corresponding to the key. The key "else" will be picked
