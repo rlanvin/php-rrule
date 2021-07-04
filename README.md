@@ -59,10 +59,10 @@ Feel free to contribute! Just create a new issue or a new pull request.
 
 The coding style is (mostly) PSR-2, but with tabs.
 
+### Translation
 
-## Translation
-Use ```php src/reviewTranslations <locale>``` to print a list of examples using the
-locale specified. The list is in no way exclusive, so add more examples to make proofing translations easier.
+Use ```./bin/review_translations.php --locale <locale>``` to print a list of examples using the locale specified (default is English).
+Use ```./bin/review_translations.php --rule "<rule>"``` to test a specific rule in all available locales.
 
 ## Note
 

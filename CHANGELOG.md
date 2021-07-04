@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added Swedish translation [#96](https://github.com/rlanvin/php-rrule/pull/96/)
+- Added `bin/review_translations.php` as a helper for translators and contributors
+
 ### Fixed
 
 - Fix Finnish translation [#94](https://github.com/rlanvin/php-rrule/issues/94)
