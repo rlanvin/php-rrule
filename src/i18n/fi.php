@@ -21,7 +21,7 @@ return array(
 	'monthly' => array(
 		'1' => 'joka kuukausi',
 		'2' => 'joka toinen kuukausi',
-		'else' => '%{count} kuukauden välein'
+		'else' => '%{interval} kuukauden välein'
 	),
 	'weekly' => array(
 		'1' => 'joka viikko',
@@ -31,7 +31,7 @@ return array(
 	'daily' => array(
 		'1' => 'joka päivä',
 		'2' => 'joka toinen päivä',
-		'else' => '%{count} päivän välein'
+		'else' => '%{interval} päivän välein'
 	),
 	'hourly' => array(
 		'1' => 'joka tunti',
