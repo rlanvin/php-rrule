@@ -2,7 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
 - Fix Finnish translation [#94](https://github.com/rlanvin/php-rrule/issues/94)
+- Update German translation
 
 ## [2.2.2] - 2021-01-09
 

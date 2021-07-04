@@ -48,7 +48,7 @@ return array(
 	'until' => ', bis zum %{date}',
 	'count' => array(
 		'1' => ', einmalig',
-		'else' => ', %{count} Mal'
+		'else' => ', %{count} Mal insgesamt'
 	),
 	'and' => 'und',
 	'x_of_the_y' => array(
@@ -121,18 +121,18 @@ return array(
 		'else' => 'der %{n}. letzte'
 	),
 	'byhour' => array(
-		'1' => ' um %{hours} Uhr',
-		'else' => ' um %{hours} Uhr'
+		'1' => ' zur %{hours} Stunde',
+		'else' => ' zur %{hours} Stunde'
 	),
 	'nth_hour' => '%{n}',
 	'byminute' => array(
 		'1' => ' und %{minutes} Minute',
-		'else' => ' und %{minutes} Minuten'
+		'else' => ' und %{minutes} Minute'
 	),
 	'nth_minute' => '%{n}',
 	'bysecond' => array(
 		'1' => ' und %{seconds} Sekunde',
-		'else' => ' und %{seconds} Sekunden'
+		'else' => ' und %{seconds} Sekunde'
 	),
 	'nth_second' => '%{n}',
 	'bysetpos' => ', nur %{setpos} Auftreten',
