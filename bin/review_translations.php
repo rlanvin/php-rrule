@@ -44,44 +44,61 @@ if ($args['locale']) {
 			'COUNT' => 6
 		),
 		array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 2,
+			'BYDAY' => 'TU',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		),
+		array(
+			'FREQ' => 'YEARLY',
+			'COUNT' => 2,
+			'BYMONTH' => '1,5,8',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		),
+		array(
+			'FREQ' => 'YEARLY',
+			'BYYEARDAY' => [1,42,-1],
+			'DTSTART' => date_create('1997-09-02 09:00')
+		),
+		array(
+			'FREQ' => 'YEARLY',
+			'BYWEEKNO' => '10,42',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		),
+		array(
+			'FREQ' => 'MONTHLY',
+			'DTSTART' => date_create('1997-09-02 09:00')
+		),
+		array(
 			'FREQ' => 'MONTHLY',
 			'INTERVAL' => 3,
-			'DTSTART' => date_create('1997-01-01')
+			'BYMONTHDAY' => [5,10,-5,-1],
+			'DTSTART' => date_create('1997-01-01'),
+			'UNTIL' => date_create('1997-12-31')
 		),
 		array(
-			'FREQ' => 'YEARLY',
+			'FREQ' => 'MONTHLY',
+			'BYDAY' => '1MO,-1TU',
+		),
+		array(
+			'FREQ' => 'WEEKLY',
 			'COUNT' => 2,
-			'BYDAY' => 'TU',
 			'DTSTART' => date_create('1997-09-02 09:00')
 		),
 		array(
-			'FREQ' => 'YEARLY',
-			'COUNT' => 2,
-			'BYDAY' => 'TU',
-			'DTSTART' => date_create('1997-09-02 09:00')
+			'FREQ' => 'WEEKLY',
+			'INTERVAL' => 2
 		),
 		array(
-			'FREQ' => 'YEARLY',
+			'FREQ' => 'WEEKLY',
+			'INTERVAL' => 3,
+			'BYDAY' => 'MO,TU,FR',
+			'BYSETPOS' => 1
+		),
+		array(
+			'FREQ' => 'DAILY',
 			'COUNT' => 2,
 			'BYDAY' => 'TU,FR',
-			'DTSTART' => date_create('1997-09-02 09:00')
-		),
-		array(
-			'FREQ' => 'YEARLY',
-			'COUNT' => 1,
-			'BYDAY' => 'TU',
-			'DTSTART' => date_create('1997-09-02 09:00')
-		),
-		array(
-			'FREQ' => 'YEARLY',
-			'COUNT' => 1,
-			'BYDAY' => 'TU',
-			'DTSTART' => date_create('1997-09-02 09:00')
-		),
-		array(
-			'FREQ' => 'YEARLY',
-			'COUNT' => 1,
-			'BYDAY' => 'TU',
 			'DTSTART' => date_create('1997-09-02 09:00')
 		),
 		array(
@@ -101,7 +118,7 @@ if ($args['locale']) {
 		array(
 			'FREQ' => 'MINUTELY',
 			'BYHOUR' => 21,
-			'BYMINUTE' => 10,
+			'BYMINUTE' => [0,10,20,30,40,50],
 		),
 		array(
 			'FREQ' => 'SECONDLY',

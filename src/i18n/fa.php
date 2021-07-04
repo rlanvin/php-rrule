@@ -1,11 +1,7 @@
 <?php
 
 /**
- * Translation file for English language.
- *
- * Most strings can be an array, with a value as the key. The system will
- * pick the translation corresponding to the key. The key "else" will be picked
- * if no matching value is found. This is useful for plurals.
+ * Translation file for Persian (Farsi) language.
  *
  * Licensed under the MIT license.
  *
