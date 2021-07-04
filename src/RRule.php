@@ -1929,7 +1929,7 @@ class RRule implements RRuleInterface
 	 *
 	 * @return string
 	 */
-	static protected function i18nList(array $array, $and = 'and')
+	static protected function i18nList(array $array, $and = 'and ')
 	{
 		if (count($array) > 1) {
 			$last = array_splice($array, -1);
@@ -2246,28 +2246,36 @@ class RRule implements RRuleInterface
 				));
 				$parts['bymonthday'][] = $tmp;
 			}
-			$parts['bymonthday'] = implode(' '.$i18n['and'],$parts['bymonthday']);
+			// because the 'on the Xth day' strings start with the space, and the "and" ends with a space
+			// it's necessary to collapse double spaces into one
+			// this behaviour was introduced in https://github.com/rlanvin/php-rrule/pull/95
+			$parts['bymonthday'] = str_replace('  ',' ',implode(' '.$i18n['and'],$parts['bymonthday']));
 		}
 
 		if (not_empty($this->rule['BYDAY'])) {
 			$parts['byweekday'] = array();
 			if ($this->byweekday) {
 				$tmp = $this->byweekday;
-				$shorten_weekdays_in_list = !empty($i18n['shorten_weekdays_in_list']) && count($tmp) > 1;
-				if ($shorten_weekdays_in_list) {
-				  $daysnames = $i18n['weekdays_shortened_for_list'];
-        }
-				else {
-          $daysnames = $i18n['weekdays'];
-        }
-				foreach ($tmp as & $value) {
-					$value = $daysnames[$value];
+
+				$selector = 'weekdays';
+				$days_names = $i18n['weekdays'];
+				$prefix = '';
+				if (!empty($i18n['shorten_weekdays_in_list']) && count($tmp) > 1) {
+					// special case for Hebrew (and possibly other languages)
+					// see https://github.com/rlanvin/php-rrule/pull/95 for the reasoning
+					$selector = 'weekdays_shortened_for_list';
+					$prefix = $i18n['shorten_weekdays_days'];
 				}
-				$prefix = $shorten_weekdays_in_list ? $i18n['shorten_weekdays_days'] : "";
+
+				foreach ($tmp as & $value) {
+					$value = $i18n[$selector][$value];
+				}
+
 				$parts['byweekday'][] = strtr(self::i18nSelect($i18n['byweekday'], count($tmp)), array(
-          '%{weekdays}' =>  $prefix . self::i18nList($tmp, $i18n['and'])
+					'%{weekdays}' =>  $prefix . self::i18nList($tmp, $i18n['and'])
 				));
 			}
+
 			if ($this->byweekday_nth) {
 				$tmp = $this->byweekday_nth;
 				foreach ($tmp as & $value) {

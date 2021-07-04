@@ -1,17 +1,12 @@
 <?php
 
 /**
- * Translation file for English language.
- *
- * Most strings can be an array, with a value as the key. The system will
- * pick the translation corresponding to the key. The key "else" will be picked
- * if no matching value is found. This is useful for plurals.
+ * Translation file for Hebrew language.
  *
  * Licensed under the MIT license.
  *
  * For the full copyright and license information, please view the LICENSE file.
  *
- * @author Rémi Lanvin <remi@cloudconnected.fr>
  * @link https://github.com/rlanvin/php-rrule
  */
 return array(
@@ -74,36 +69,36 @@ return array(
 	),
 	'byweekday' => ' ב%{weekdays}',
 	'weekdays' => array(
-    1 => "יום ב'",
-    2 => "יום ג'",
-    3 => "יום ד'",
-    4 => "יום ה'",
-    5 => "יום ו'",
-    6 => "שבת",
-    7 => "יום א'",
+		1 => "יום ב'",
+		2 => "יום ג'",
+		3 => "יום ד'",
+		4 => "יום ה'",
+		5 => "יום ו'",
+		6 => "שבת",
+		7 => "יום א'",
 	),
-  'shorten_weekdays_in_list' => true,
-  'shorten_weekdays_days' => 'ימים ',
-  'weekdays_shortened_for_list' => array(
-    1 => "שני",
-    2 => "שלישי",
-    3 => "רביעי",
-    4 => "חמישי",
-    5 => "שישי",
-    6 => "שבת",
-    7 => "ראשון",
-  ),
+	'shorten_weekdays_in_list' => true,
+	'shorten_weekdays_days' => 'ימים ',
+	'weekdays_shortened_for_list' => array(
+		1 => "שני",
+		2 => "שלישי",
+		3 => "רביעי",
+		4 => "חמישי",
+		5 => "שישי",
+		6 => "שבת",
+		7 => "ראשון",
+	),
 	'nth_weekday' => array(
 		'1' => '%{weekday} הראשון', // e.g. the first Monday
 		'2' => '%{weekday} השני',
-    '3' => '%{weekday} השלישי',
-    '4' => '%{weekday} הרביעי',
-    '5' => '%{weekday} החמישי',
-    '6' => '%{weekday} השישי',
-    '7' => '%{weekday} השביעי',
-    '8' => '%{weekday} השמיני',
-    '9' => '%{weekday} התשיעי',
-    '10' => '%{weekday} העשירי',
+		'3' => '%{weekday} השלישי',
+		'4' => '%{weekday} הרביעי',
+		'5' => '%{weekday} החמישי',
+		'6' => '%{weekday} השישי',
+		'7' => '%{weekday} השביעי',
+		'8' => '%{weekday} השמיני',
+		'9' => '%{weekday} התשיעי',
+		'10' => '%{weekday} העשירי',
 		'else' => '%{weekday} ה-%{n}'
 	),
 	'-nth_weekday' => array(
@@ -133,13 +128,13 @@ return array(
 		'1' => 'הראשון',
 		'2' => 'השני',
 		'3' => 'השלישי',
-    '4' => 'הרביעי',
-    '5' => 'החמישי',
-    '6' => 'השישי',
-    '7' => 'השביעי',
-    '8' => 'השמיני',
-    '9' => 'התשיעי',
-    '10' => 'העשירי',
+		'4' => 'הרביעי',
+		'5' => 'החמישי',
+		'6' => 'השישי',
+		'7' => 'השביעי',
+		'8' => 'השמיני',
+		'9' => 'התשיעי',
+		'10' => 'העשירי',
 		'else' => 'ה-%{n}'
 	),
 	'-nth_yearday' => array(
@@ -165,22 +160,22 @@ return array(
 	'nth_second' => '%{n}',
 	'bysetpos' => ', אבל רק %{setpos} פעמים בסדרה זו',
 	'nth_setpos' => array(
-    '1' => 'הראשון',
-    '2' => 'השני',
-    '3' => 'השלישי',
-    '4' => 'הרביעי',
-    '5' => 'החמישי',
-    '6' => 'השישי',
-    '7' => 'השביעי',
-    '8' => 'השמיני',
-    '9' => 'התשיעי',
-    '10' => 'העשירי',
-    'else' => 'ה-%{n}'
+		'1' => 'הראשון',
+		'2' => 'השני',
+		'3' => 'השלישי',
+		'4' => 'הרביעי',
+		'5' => 'החמישי',
+		'6' => 'השישי',
+		'7' => 'השביעי',
+		'8' => 'השמיני',
+		'9' => 'התשיעי',
+		'10' => 'העשירי',
+		'else' => 'ה-%{n}'
 	),
 	'-nth_setpos' => array(
-    '-1' => 'האחרון',
-    '-2' => 'לפני האחרון',
-    '-3' => 'שניים לפני האחרון',
-    'else' => 'ה %{n} מהסוף'
+		'-1' => 'האחרון',
+		'-2' => 'לפני האחרון',
+		'-3' => 'שניים לפני האחרון',
+		'else' => 'ה %{n} מהסוף'
 	)
 );

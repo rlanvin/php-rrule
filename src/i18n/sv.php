@@ -57,7 +57,7 @@ return array(
 		'1' => ', ett tillfälle',
 		'else' => ', %{count} tillfällen'
 	),
-	'and' => 'och',
+	'and' => 'och ',
 	'x_of_the_y' => array(
 		'yearly' => '%{x} på året', // ex. den första måndagen på året, eller den första dagen på året,  e.g. the first Monday of the year, or the first day of the year
 		'monthly' => '%{x} i månaden',
