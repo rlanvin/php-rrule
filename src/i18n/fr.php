@@ -130,20 +130,20 @@ return array(
 	'nth_hour' => '%{n}h',
 	'byminute' => array(
 		'1' => ' à la minute %{minutes}',
-		'else' => ' à la minute %{minutes}'
+		'else' => ' aux minutes %{minutes}'
 	),
-	'nth_minute' => '%{n}min',
+	'nth_minute' => '%{n}',
 	'bysecond' => array(
-		'1' => ' à %{seconds}',
-		'else' => ' à %{seconds}'
+		'1' => ' à la seconde %{seconds}',
+		'else' => ' aux secondes %{seconds}'
 	),
-	'nth_second' => '%{n}sec',
+	'nth_second' => '%{n}',
 	'bysetpos' => array(
 		'1' => ', mais seulement %{setpos} occurrence',
 		'else' => ', mais seulement %{setpos} occurrence'
 	),
 	'nth_setpos' => array(
-		'1' => 'la 1re',
+		'1' => 'la première',
 		'else' => 'la %{n}e'
 	),
 	'-nth_setpos' => array(
