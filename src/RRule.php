@@ -917,7 +917,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @internal
 	 */
-	public function offsetExists($offset)
+	public function offsetExists($offset): bool
 	{
 		return is_numeric($offset) && $offset >= 0 && ! is_float($offset) && $offset < count($this);
 	}
@@ -925,6 +925,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 		if (! is_numeric($offset) || $offset < 0 || is_float($offset)) {
@@ -957,7 +958,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @internal
 	 */
-	public function offsetSet($offset, $value)
+	public function offsetSet($offset, $value): void
 	{
 		throw new \LogicException('Setting a Date in a RRule is not supported');
 	}
@@ -965,7 +966,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @internal
 	 */
-	public function offsetUnset($offset)
+	public function offsetUnset($offset): void
 	{
 		throw new \LogicException('Unsetting a Date in a RRule is not supported');
 	}
@@ -980,7 +981,7 @@ class RRule implements RRuleInterface
 	 *
 	 * @return int
 	 */
-	public function count()
+	public function count(): int
 	{
 		if ($this->isInfinite()) {
 			throw new \LogicException('Cannot count an infinite recurrence rule.');
@@ -1324,9 +1325,9 @@ class RRule implements RRuleInterface
 	 * (I don't know yet which one first), and then if that results in a change of
 	 * month, attempt to jump to the next BYMONTH, and so on.
 	 *
-	 * @return \DateTime|null
+	 * @return \iterable
 	 */
-	public function getIterator()
+	public function getIterator(): \iterable
 	{
 		$total = 0;
 		$occurrence = null;
@@ -1725,7 +1726,6 @@ class RRule implements RRuleInterface
 		}
 
 		$this->total = $total; // save total for count cache
-		return; // stop the iterator
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
