@@ -917,6 +917,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 		return is_numeric($offset) && $offset >= 0 && ! is_float($offset) && $offset < count($this);
@@ -925,6 +926,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 		if (! is_numeric($offset) || $offset < 0 || is_float($offset)) {
@@ -957,6 +959,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 		throw new \LogicException('Setting a Date in a RRule is not supported');
@@ -965,6 +968,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 		throw new \LogicException('Unsetting a Date in a RRule is not supported');
@@ -980,6 +984,7 @@ class RRule implements RRuleInterface
 	 *
 	 * @return int
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		if ($this->isInfinite()) {
@@ -1326,6 +1331,7 @@ class RRule implements RRuleInterface
 	 *
 	 * @return \DateTime|null
 	 */
+	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
 		$total = 0;

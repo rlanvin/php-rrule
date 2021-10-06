@@ -489,6 +489,7 @@ class RSet implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 		return is_numeric($offset) && $offset >= 0 && ! is_float($offset) && $offset < count($this);
@@ -497,6 +498,7 @@ class RSet implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 		if (! is_numeric($offset) || $offset < 0 || is_float($offset)) {
@@ -529,6 +531,7 @@ class RSet implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 		throw new \LogicException('Setting a Date in a RSet is not supported (use addDate)');
@@ -537,6 +540,7 @@ class RSet implements RRuleInterface
 	/**
 	 * @internal
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 		throw new \LogicException('Unsetting a Date in a RSet is not supported (use addDate)');
@@ -551,6 +555,7 @@ class RSet implements RRuleInterface
 	 * introduces a performance penality.
 	 * @return int
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		if ($this->isInfinite()) {
@@ -588,6 +593,7 @@ class RSet implements RRuleInterface
 	 * @param $reset (bool) Whether to restart the iteration, or keep going
 	 * @return \DateTime|null
 	 */
+	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
 		$previous_occurrence = null;
