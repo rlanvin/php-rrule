@@ -489,7 +489,8 @@ class RSet implements RRuleInterface
 	/**
 	 * @internal
 	 */
-	public function offsetExists($offset): bool
+	#[\ReturnTypeWillChange]
+	public function offsetExists($offset)
 	{
 		return is_numeric($offset) && $offset >= 0 && ! is_float($offset) && $offset < count($this);
 	}
@@ -530,7 +531,8 @@ class RSet implements RRuleInterface
 	/**
 	 * @internal
 	 */
-	public function offsetSet($offset, $value): void
+	#[\ReturnTypeWillChange]
+	public function offsetSet($offset, $value)
 	{
 		throw new \LogicException('Setting a Date in a RSet is not supported (use addDate)');
 	}
@@ -538,7 +540,8 @@ class RSet implements RRuleInterface
 	/**
 	 * @internal
 	 */
-	public function offsetUnset($offset): void
+	#[\ReturnTypeWillChange]
+	public function offsetUnset($offset)
 	{
 		throw new \LogicException('Unsetting a Date in a RSet is not supported (use addDate)');
 	}
@@ -552,7 +555,8 @@ class RSet implements RRuleInterface
 	 * introduces a performance penality.
 	 * @return int
 	 */
-	public function count(): int
+	#[\ReturnTypeWillChange]
+	public function count()
 	{
 		if ($this->isInfinite()) {
 			throw new \LogicException('Cannot count an infinite recurrence set.');
@@ -587,9 +591,10 @@ class RSet implements RRuleInterface
 	 * This is made slightly more complicated because this method is a generator.
 	 *
 	 * @param $reset (bool) Whether to restart the iteration, or keep going
-	 * @return iterable
+	 * @return \DateTime|null
 	 */
-	public function getIterator(): iterable
+	#[\ReturnTypeWillChange]
+	public function getIterator()
 	{
 		$previous_occurrence = null;
 		$total = 0;
@@ -683,5 +688,6 @@ class RSet implements RRuleInterface
 		}
 
 		$this->total = $total; // save total for count cache
+		return; // stop the iterator
 	}
 }
