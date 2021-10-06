@@ -587,9 +587,9 @@ class RSet implements RRuleInterface
 	 * This is made slightly more complicated because this method is a generator.
 	 *
 	 * @param $reset (bool) Whether to restart the iteration, or keep going
-	 * @return \iterable
+	 * @return iterable
 	 */
-	public function getIterator(): \iterable
+	public function getIterator(): iterable
 	{
 		$previous_occurrence = null;
 		$total = 0;
