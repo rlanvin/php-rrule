@@ -1325,9 +1325,9 @@ class RRule implements RRuleInterface
 	 * (I don't know yet which one first), and then if that results in a change of
 	 * month, attempt to jump to the next BYMONTH, and so on.
 	 *
-	 * @return \iterable
+	 * @return iterable
 	 */
-	public function getIterator(): \iterable
+	public function getIterator(): iterable
 	{
 		$total = 0;
 		$occurrence = null;
