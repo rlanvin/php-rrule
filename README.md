@@ -61,8 +61,8 @@ The coding style is (mostly) PSR-2, but with tabs.
 
 ### Translation
 
-Use ```./bin/review_translations.php --locale <locale>``` to print a list of examples using the locale specified (default is English).
-Use ```./bin/review_translations.php --rule "<rule>"``` to test a specific rule in all available locales.
+Use `./bin/review_translations.php --locale <locale>` to print a list of examples using the locale specified (default is English).
+Use `./bin/review_translations.php --rule "<rule>"` to test a specific rule in all available locales.
 
 ## Note
 
