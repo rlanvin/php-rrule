@@ -204,6 +204,22 @@ trait RRuleTrait
 		else {
 			$date = clone $date; // avoid reference problems
 		}
+
+		// ensure there is no microseconds in the DateTime object even if
+		// the input contained microseconds, to avoid date comparison issues
+		// (see #104)
+		if (version_compare(PHP_VERSION, '7.1.0') < 0) {
+			$date = new \DateTime($date->format('Y-m-d H:i:s'), $date->getTimezone());
+		}
+		else {
+			$date->setTime(
+				$date->format('H'),
+				$date->format('i'),
+				$date->format('s'),
+				0
+			);
+		}
+
 		return $date;
 	}
 }

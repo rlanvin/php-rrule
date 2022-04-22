@@ -1391,7 +1391,7 @@ class RRule implements RRuleInterface
 			$timeset = $this->timeset;
 		}
 		else {
-			// initialize empty if it's not going to occurs on the first iteration
+			// initialize empty if it's not going to occur on the first iteration
 			if (
 				($this->freq >= self::HOURLY && $this->byhour && ! in_array($hour, $this->byhour))
 				|| ($this->freq >= self::MINUTELY && $this->byminute && ! in_array($minute, $this->byminute))
@@ -1563,7 +1563,6 @@ class RRule implements RRuleInterface
 							return;
 						}
 
-						// next($timeset);
 						if ($occurrence >= $dtstart) { // ignore occurrences before DTSTART
 							if ($this->count && $total >= $this->count) {
 								$this->total = $total;

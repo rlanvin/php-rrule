@@ -2827,6 +2827,24 @@ class RRuleTest extends TestCase
 		], $occurrences, 'DateTimeImmutable produces valid results');
 	}
 
+	/**
+	 * Test bug #104
+	 * @see https://github.com/rlanvin/php-rrule/issues/104
+	 */
+	public function testMicrosecondsAreRemovedFromInput()
+	{
+		$dtstart = '2022-04-22 12:00:00.5';
+		$rule = new RRule([
+			'dtstart' => $dtstart,
+			'freq' => 'daily',
+			'interval' => 1,
+			'count' => 1
+		]);
+		$this->assertTrue($rule->occursAt('2022-04-22 12:00:00'));
+		$this->assertTrue($rule->occursAt('2022-04-22 12:00:00.5'));
+		$this->assertEquals(date_create('2022-04-22 12:00:00'), $rule[0]);
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Array access and countable interfaces
 

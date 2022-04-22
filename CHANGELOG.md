@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [2.3.1] - 2022-04-22
+
+### Fixed
+
+- Fix microseconds not always removed from dtstart, causing date comparison issues with specific date input [#104](https://github.com/rlanvin/php-rrule/issues/104)
+
 ## [2.3.0] - 2021-10-25
 
 ### Added
@@ -215,7 +223,9 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/rlanvin/php-rrule/compare/v2.3.0...v2.3.1
+[2.3.0]: https://github.com/rlanvin/php-rrule/compare/v2.2.2...v2.3.0
 [2.2.2]: https://github.com/rlanvin/php-rrule/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/rlanvin/php-rrule/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/rlanvin/php-rrule/compare/v2.1.0...v2.2.0
