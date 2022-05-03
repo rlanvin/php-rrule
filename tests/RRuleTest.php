@@ -2520,6 +2520,13 @@ class RRuleTest extends TestCase
 		$this->assertInstanceOf('\RRule\RSet', $object);
 	}
 
+	public function testCreateFromRfcStringDoesntChangeCase()
+	{
+		$str = "DTSTART;TZID=Europe/Paris:20200929T000000\nRRULE:FREQ=DAILY;BYSECOND=0;BYMINUTE=0;BYHOUR=9";
+		$rule = RRule::createFromRfcString($str);
+		$this->assertEquals($str, $rule->rfcString());
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Timezone
 

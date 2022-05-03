@@ -670,8 +670,8 @@ class RRule implements RRuleInterface
 
 		if (! $force_rset) {
 			// try to detect if we have a RRULE or a set
-			$string = strtoupper($string);
-			$nb_rrule = substr_count($string, 'RRULE');
+			$upper_string = strtoupper($string);
+			$nb_rrule = substr_count($upper_string, 'RRULE');
 			if ($nb_rrule == 0) {
 				$class = '\RRule\RRule';
 			}
@@ -680,7 +680,7 @@ class RRule implements RRuleInterface
 			}
 			else {
 				$class = '\RRule\RRule';
-				if (strpos($string, 'EXDATE') !== false ||  strpos($string, 'RDATE') !== false ||  strpos($string, 'EXRULE') !== false) {
+				if (strpos($upper_string, 'EXDATE') !== false ||  strpos($upper_string, 'RDATE') !== false ||  strpos($upper_string, 'EXRULE') !== false) {
 					$class = '\RRule\RSet';
 				}
 			}
