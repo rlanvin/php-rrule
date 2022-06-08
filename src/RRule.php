@@ -916,6 +916,7 @@ class RRule implements RRuleInterface
 
 	/**
 	 * @internal
+	 * @return bool
 	 */
 	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
@@ -925,6 +926,7 @@ class RRule implements RRuleInterface
 
 	/**
 	 * @internal
+	 * @return mixed
 	 */
 	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
@@ -958,6 +960,7 @@ class RRule implements RRuleInterface
 
 	/**
 	 * @internal
+	 * @return void
 	 */
 	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
@@ -967,6 +970,7 @@ class RRule implements RRuleInterface
 
 	/**
 	 * @internal
+	 * @return void
 	 */
 	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
