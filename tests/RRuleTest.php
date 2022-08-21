@@ -2783,11 +2783,10 @@ class RRuleTest extends TestCase
 			'DTSTART' => '2016-01-01'
 		);
 		$rrule = new RRule($array);
-		$this->assertIsArray($rrule->getRule());
-	
+		$this->assertInternalType('array', $rrule->getRule());
 		$rule = $rrule->getRule();
 		$this->assertEquals('YEARLY', $rule['FREQ']);
-		$this->assertIsString($rule['DTSTART']);
+		$this->assertInternalType('string', $rule['DTSTART']);
 
 		$rrule = new RRule("DTSTART;TZID=America/New_York:19970901T090000\nRRULE:FREQ=HOURLY;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR;BYMONTH=1;BYHOUR=1");
 		$rule = $rrule->getRule();

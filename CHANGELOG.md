@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Exclude files from dist packages [#110](https://github.com/rlanvin/php-rrule/pull/110)
+
+### Added
+
+- Added Portugese translation [#108](https://github.com/rlanvin/php-rrule/pull/108)
+- Added Polish translation [#106](https://github.com/rlanvin/php-rrule/pull/106)
 
 ## [2.3.2] - 2022-05-03
 
