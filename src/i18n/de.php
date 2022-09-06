@@ -70,26 +70,26 @@ return array(
 		11 => 'November',
 		12 => 'Dezember',
 	),
-	'byweekday' => ' %{weekdays}',
+	'byweekday' => ' am %{weekdays}',
 	'weekdays' => array(
-		1 => 'Montags',
-		2 => 'Dienstags',
-		3 => 'Mittwochs',
-		4 => 'Donnerstags',
-		5 => 'Freitags',
-		6 => 'Samstags',
-		7 => 'Sonntags',
+		1 => 'Montag',
+		2 => 'Dienstag',
+		3 => 'Mittwoch',
+		4 => 'Donnerstag',
+		5 => 'Freitag',
+		6 => 'Samstag',
+		7 => 'Sonntag',
 	),
 	'nth_weekday' => array(
-		'1' => 'der erste %{weekday}', // e.g. the first Monday
-		'2' => 'der zweite %{weekday}',
-		'3' => 'der dritte %{weekday}',
-		'else' => 'der %{n}. %{weekday}'
+		'1' => 'ersten %{weekday}', // e.g. the first Monday
+		'2' => 'zweiten %{weekday}',
+		'3' => 'dritten %{weekday}',
+		'else' => '%{n}. %{weekday}'
 	),
 	'-nth_weekday' => array(
-		'-1' => 'der letzte %{weekday}', // e.g. the last Monday
-		'-2' => 'der vorletzte %{weekday}',
-		'else' => 'der %{n}. letzte %{weekday}'
+		'-1' => 'letzten %{weekday}', // e.g. the last Monday
+		'-2' => 'vorletzten %{weekday}',
+		'else' => ' %{n}. letzten %{weekday}'
 	),
 	'byweekno' => array(
 		'1' => ' in Kalenderwoche %{weeks}',
@@ -116,9 +116,9 @@ return array(
 		'else' => '%{n}.'
 	),
 	'-nth_yearday' => array(
-		'-1' => 'der letzte',
-		'-2' => 'der vorletzte',
-		'else' => 'der %{n}. letzte'
+		'-1' => 'letzten',
+		'-2' => 'vorletzten',
+		'else' => '%{n}. letzten'
 	),
 	'byhour' => array(
 		'1' => ' zur %{hours} Stunde',
