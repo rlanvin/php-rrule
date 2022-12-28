@@ -2405,9 +2405,10 @@ class RRule implements RRuleInterface
 		}
 
         if ($opt['include_timeofday']) {
-            // from X
-            $parts['timeofday'] = strtr($i18n['timeofday'], array(
-                '%{timeofday}' => $opt['timeofday_formatter']($this->dtstart)
+            // at X
+            $value = ($this->freq >= self::HOURLY ? 'startingtimeofday' : 'timeofday');
+            $parts['timeofday'] = strtr($i18n[$value], array(
+                '%{timeofday}' => $opt['timeofday_formatter']($this->dtstart),
             ));
         }
 

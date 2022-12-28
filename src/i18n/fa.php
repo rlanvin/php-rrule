@@ -43,6 +43,7 @@ return array(
 	),
     'dtstart' => ', از %{date}',
     'timeofday' => ' از %{timeofday}',
+    'startingtimeofday' => ' از %{timeofday}',
 	'infinite' => ', همیشه',
 	'until' => ', تا %{date}',
 	'count' => array(

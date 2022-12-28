@@ -40,6 +40,7 @@ return array(
 	),
 	'dtstart' => ', empezando desde %{date}',
     'timeofday' => ' a las %{timeofday}',
+    'startingtimeofday' => ' empezando desde %{timeofday}',
 	'infinite' => ', por siempre',
 	'until' => ', hasta %{date}',
 	'count' => array(

@@ -42,6 +42,7 @@ return array(
 	),
 	'dtstart' => ', החל מ%{date}',
     'timeofday' => ' החל מ%{timeofday}',
+    'startingtimeofday' => ' החל מ%{timeofday}',
 	'infinite' => ', לעד',
 	'until' => ', עד %{date}',
 	'count' => array(

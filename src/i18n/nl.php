@@ -47,6 +47,7 @@ return array(
     ),
     'dtstart' => ', wordt gestart vanaf %{date}',
     'timeofday' => ' om %{timeofday}',
+    'startingtimeofday' => ' wordt gestart vanaf %{timeofday}',
     'infinite' => ', oneindig',
     'until' => ', tot en met %{date}',
     'count' => array(
