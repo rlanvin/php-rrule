@@ -2068,11 +2068,11 @@ class RRule implements RRuleInterface
 	 * | `locale`              | string  | The locale to use (autodetect)
 	 * | `fallback`            | string  | Fallback locale if main locale is not found (default en)
 	 * | `date_formatter`      | callable| Function used to format the date (takes date, returns formatted)
-     * | `timeofday_formatter` | callable| Function used to format the timeofday (takes date, returns formatted)
+	 * | `timeofday_formatter` | callable| Function used to format the timeofday (takes date, returns formatted)
 	 * | `explicit_inifite`    | bool    | Mention "forever" if the rule is infinite (true)
 	 * | `dtstart`             | bool    | Mention the start date (true)
 	 * | `include_start`       | bool    |
-       | `include_timeofday`   | bool    |
+	 * | `include_timeofday`   | bool    |
 	 * | `include_until`       | bool    |
 	 * | `custom_path`         | string  |
 	 *
@@ -2090,11 +2090,11 @@ class RRule implements RRuleInterface
 			'use_intl' => self::intlLoaded(),
 			'locale' => null,
 			'date_formatter' => null,
-            'timeofday_formatter' => null,
+			'timeofday_formatter' => null,
 			'fallback' => 'en',
 			'explicit_infinite' => true,
 			'include_start' => true,
-            'include_timeofday' => false,
+			'include_timeofday' => false,
 			'include_until' => true,
 			'custom_path' => null
 		);
@@ -2125,11 +2125,11 @@ class RRule implements RRuleInterface
 			}
 		}
 
-        $opt = array_merge($default_opt, $opt);
-        if ($opt['include_timeofday']) {
-            // timeofday does not mix well with start date, so it should be turned off
-            $opt['include_start'] = false;
-        }
+		$opt = array_merge($default_opt, $opt);
+		if ($opt['include_timeofday']) {
+        	// timeofday does not mix well with start date, so it should be turned off
+			$opt['include_start'] = false;
+		}
 
 		$i18n = self::i18nLoad($opt['locale'], $opt['fallback'], $opt['use_intl'], $opt['custom_path']);
 
@@ -2165,37 +2165,37 @@ class RRule implements RRuleInterface
 			}
 		}
 
-        if ($opt['timeofday_formatter'] && ! is_callable($opt['timeofday_formatter'])) {
-            throw new \InvalidArgumentException('The option timeofday_formatter must callable');
-        }
+		if ($opt['timeofday_formatter'] && ! is_callable($opt['timeofday_formatter'])) {
+			throw new \InvalidArgumentException('The option timeofday_formatter must callable');
+		}
 
-        if (! $opt['timeofday_formatter']) {
-            if ($opt['use_intl']) {
-                $timezone = $this->dtstart->getTimezone()->getName();
-                if ($timezone === 'Z') {
-                    $timezone = 'GMT'; // otherwise IntlDateFormatter::create fails because... reasons.
-                } elseif (preg_match('/[-+]\d{2}/',$timezone)) {
-                    $timezone = 'GMT'.$timezone; // otherwise IntlDateFormatter::create fails because... other reasons.
-                }
-                $formatter = \IntlDateFormatter::create(
-                    $opt['locale'],
-                    \IntlDateFormatter::NONE,
-                    $opt['timeofday_format'],
-                    $timezone
-                );
-                if (! $formatter) {
-                    throw new \RuntimeException('IntlDateFormatter::create() failed. Error Code: '.intl_get_error_code().' "'. intl_get_error_message().'" (this should not happen, please open a bug report!)');
-                }
-                $opt['timeofday_formatter'] = function($date) use ($formatter) {
-                    return $formatter->format($date);
-                };
-            }
-            else {
-                $opt['timeofday_formatter'] = function($date) {
-                    return $date->format('H:i:s');
-                };
-            }
-        }
+		if (! $opt['timeofday_formatter']) {
+			if ($opt['use_intl']) {
+				$timezone = $this->dtstart->getTimezone()->getName();
+				if ($timezone === 'Z') {
+					$timezone = 'GMT'; // otherwise IntlDateFormatter::create fails because... reasons.
+				} elseif (preg_match('/[-+]\d{2}/',$timezone)) {
+					$timezone = 'GMT'.$timezone; // otherwise IntlDateFormatter::create fails because... other reasons.
+				}
+				$formatter = \IntlDateFormatter::create(
+					$opt['locale'],
+					\IntlDateFormatter::NONE,
+					$opt['timeofday_format'],
+					$timezone
+				);
+				if (! $formatter) {
+					throw new \RuntimeException('IntlDateFormatter::create() failed. Error Code: '.intl_get_error_code().' "'. intl_get_error_message().'" (this should not happen, please open a bug report!)');
+				}
+				$opt['timeofday_formatter'] = function($date) use ($formatter) {
+					return $formatter->format($date);
+				};
+			}
+			else {
+				$opt['timeofday_formatter'] = function($date) {
+					return $date->format('H:i:s');
+				};
+			}
+		}
 
         $parts = array(
 			'freq' => '',
@@ -2404,13 +2404,13 @@ class RRule implements RRuleInterface
 			));
 		}
 
-        if ($opt['include_timeofday']) {
-            // at X
-            $value = ($this->freq >= self::HOURLY ? 'startingtimeofday' : 'timeofday');
-            $parts['timeofday'] = strtr($i18n[$value], array(
-                '%{timeofday}' => $opt['timeofday_formatter']($this->dtstart),
-            ));
-        }
+		if ($opt['include_timeofday']) {
+			// at X
+			$value = ($this->freq >= self::HOURLY ? 'startingtimeofday' : 'timeofday');
+			$parts['timeofday'] = strtr($i18n[$value], array(
+				'%{timeofday}' => $opt['timeofday_formatter']($this->dtstart),
+			));
+		}
 
 		// to X, or N times, or indefinitely
 		if ($opt['include_until']) {

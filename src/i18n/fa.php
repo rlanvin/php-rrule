@@ -41,9 +41,9 @@ return array(
 		'1' => 'ثانیه ای',
 		'else' => 'هر %{interval} ثانیه'
 	),
-    'dtstart' => ', از %{date}',
-    'timeofday' => ' از %{timeofday}',
-    'startingtimeofday' => ' از %{timeofday}',
+	'dtstart' => ', از %{date}',
+	'timeofday' => ' از %{timeofday}',
+	'startingtimeofday' => ' از %{timeofday}',
 	'infinite' => ', همیشه',
 	'until' => ', تا %{date}',
 	'count' => array(
