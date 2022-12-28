@@ -2113,21 +2113,21 @@ class RRule implements RRuleInterface
 			$default_opt['date_format'] = \IntlDateFormatter::SHORT;
 			if ($this->freq >= self::SECONDLY || not_empty($this->rule['BYSECOND'])) {
 				$default_opt['time_format'] = \IntlDateFormatter::LONG;
-                $default_opt['timeofday_format'] = \IntlDateFormatter::LONG;
+				$default_opt['timeofday_format'] = \IntlDateFormatter::LONG;
 			}
 			elseif ($this->freq >= self::HOURLY || not_empty($this->rule['BYHOUR']) || not_empty($this->rule['BYMINUTE'])) {
 				$default_opt['time_format'] = \IntlDateFormatter::SHORT;
-                $default_opt['timeofday_format'] = \IntlDateFormatter::SHORT;
+				$default_opt['timeofday_format'] = \IntlDateFormatter::SHORT;
 			}
 			else {
 				$default_opt['time_format'] = \IntlDateFormatter::NONE;
-                $default_opt['timeofday_format'] = \IntlDateFormatter::SHORT;
+				$default_opt['timeofday_format'] = \IntlDateFormatter::SHORT;
 			}
 		}
 
 		$opt = array_merge($default_opt, $opt);
 		if ($opt['include_timeofday']) {
-        	// timeofday does not mix well with start date, so it should be turned off
+			// timeofday does not mix well with start date, so it should be turned off
 			$opt['include_start'] = false;
 		}
 
