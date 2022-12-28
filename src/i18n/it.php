@@ -38,6 +38,7 @@ return array(
 		'else' => 'ogni %{interval} secondi'
 	),
 	'dtstart' => ', a partire dal %{date}',
+    'timeofday' => ' alle %{timeofday}',
 	'infinite' => ', per sempre',
 	'until' => ', fino al %{date}',
 	'count' => array(

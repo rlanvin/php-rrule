@@ -3191,6 +3191,12 @@ class RRuleTest extends TestCase
 				"daily",
 				"daily"
 			),
+            array(
+                "DTSTART=20170202T161500Z;RRULE:FREQ=MONTHLY;BYMONTHDAY=2",
+                array('locale' => "en", 'include_timeofday' => true, 'explicit_infinite' => false),
+                "monthly on the 2nd of the month at 4:15 PM",
+                "monthly on the 2nd of the month at 16:15:00"
+            ),
 			// with custom_path
 			'custom_path' => array(
 				"DTSTART:20170202T000000Z\nRRULE:FREQ=YEARLY;UNTIL=20170205T000000Z",

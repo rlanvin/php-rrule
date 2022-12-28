@@ -44,6 +44,7 @@ return array(
 		'else' => 'Alle %{interval} Sekunden'
 	),
 	'dtstart' => ', ab dem %{date}',
+    'timeofday' => ' um %{timeofday}',
 	'infinite' => ', für immer',
 	'until' => ', bis zum %{date}',
 	'count' => array(

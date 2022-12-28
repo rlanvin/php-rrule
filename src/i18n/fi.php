@@ -46,6 +46,7 @@ return array(
 		'else' => 'joka %{interval} sekunti'
 	),
 	'dtstart' => ', alkaen %{date}',
+    'timeofday' => ' klo %{timeofday}',
 	'infinite' => ', jatkuvasti',
 	'until' => ', %{date} asti',
 	'count' => array(

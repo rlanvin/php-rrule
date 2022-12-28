@@ -51,6 +51,7 @@ return array(
 		'else' => 'var %{interval}:e sekund'
 	),
 	'dtstart' => ', börjar %{date}',
+    'timeofday' => ' kl %{timeofday}',
 	'infinite' => ', tills vidare',
 	'until' => ', t.om %{date}',
 	'count' => array(
