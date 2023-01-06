@@ -2,9 +2,13 @@
 
 ## [Unreleased]
 
+## [2.4.0] - 2023-01-06
+
 ### Fixed
 
 - Exclude files from dist packages [#110](https://github.com/rlanvin/php-rrule/pull/110)
+- Improve German translation [#112](https://github.com/rlanvin/php-rrule/issues/112)
+- Daylight Saving Time issue with PHP 8.1 [#120](https://github.com/rlanvin/php-rrule/issues/120)
 
 ### Added
 
@@ -238,7 +242,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.3.2...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/rlanvin/php-rrule/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/rlanvin/php-rrule/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/rlanvin/php-rrule/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/rlanvin/php-rrule/compare/v2.2.2...v2.3.0
