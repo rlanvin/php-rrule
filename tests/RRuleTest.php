@@ -2660,6 +2660,20 @@ class RRuleTest extends TestCase
 		$this->assertEquals($occurrences, $rrule->getOccurrences(), 'Mismatched timezones makes for strange results');
 	}
 
+	/**
+	 * Tests timezone transition in Daylight Savings Time switch (bug #120)
+	 * @see https://github.com/rlanvin/php-rrule/issues/120
+	 */
+	public function testDST()
+	{
+		$rrule = new RRule([
+			'FREQ' => 'WEEKLY',
+			'DTSTART' => new \DateTime('2022-10-30T01:00', new \DateTimeZone('America/Chicago')),
+			'COUNT' => 2,
+		]);
+		$this->assertSame('2022-11-06T01:00:00-05:00 CDT 1667714400', $rrule[1]->format('c T U'));
+	}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Other tests
 
