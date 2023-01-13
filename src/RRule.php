@@ -1510,8 +1510,8 @@ class RRule implements RRuleInterface
 							$tmp = $year.':'.$yearday.':'.$time[0].':'.$time[1].':'.$time[2];
 							if (! isset($filtered_set[$tmp])) {
 								$occurrence = \DateTime::createFromFormat(
-									'Y z',
-									"$year $yearday",
+									'Y z H:i:s',
+									"$year $yearday 00:00:00",
 									$this->dtstart->getTimezone()
 								);
 								$occurrence->setTime($time[0], $time[1], $time[2]);
@@ -1553,8 +1553,8 @@ class RRule implements RRuleInterface
 				// normal loop, without BYSETPOS
 				foreach ($dayset as $yearday) {
 					$occurrence = \DateTime::createFromFormat(
-						'Y z',
-						"$year $yearday",
+						'Y z H:i:s',
+						"$year $yearday 00:00:00",
 						$this->dtstart->getTimezone()
 					);
 
