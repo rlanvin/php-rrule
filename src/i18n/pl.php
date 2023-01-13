@@ -58,8 +58,8 @@ return array(
 		'else' => 'co %{interval} sekund'
 	),
 	'dtstart' => ', zaczynając od %{date}',
-	'timeofday' => ' o %{timeofday}',
-	'startingtimeofday' => ' zaczynając od %{timeofday}',
+	'timeofday' => ' o %{date}',
+	'startingtimeofday' => ' zaczynając od %{date}',
 	'infinite' => ', zawsze',
 	'until' => ', do daty %{date}',
 	'count' => array(

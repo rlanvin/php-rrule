@@ -41,8 +41,8 @@ return array(
 		'else' => 'כל %{interval} שניות'
 	),
 	'dtstart' => ', החל מ%{date}',
-	'timeofday' => ' החל מ%{timeofday}',
-	'startingtimeofday' => ' החל מ%{timeofday}',
+	'timeofday' => ' החל מ%{date}',
+	'startingtimeofday' => ' החל מ%{date}',
 	'infinite' => ', לעד',
 	'until' => ', עד %{date}',
 	'count' => array(
