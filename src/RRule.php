@@ -115,7 +115,7 @@ class RRule implements RRuleInterface
 		'YEARLY' => self::YEARLY
 	);
 
-	/**
+	/** 
 	 * Weekdays numbered from 1 (ISO-8601 or `date('N')`).
 	 * Used internally but public if a reference list is needed.
 	 */
@@ -266,7 +266,7 @@ class RRule implements RRuleInterface
 					'Failed to parse DTSTART ; it must be a valid date, timestamp or \DateTime object'
 				);
 			}
-		}
+		} 
 		else {
 			$this->dtstart = new \DateTime(); // for PHP 7.1+ this contains microseconds which causes many problems
 			if (version_compare(PHP_VERSION, '7.1.0') >= 0) {
@@ -908,7 +908,7 @@ class RRule implements RRuleInterface
 		}
 
 		// we ended the loop without finding
-		return false;
+		return false; 
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1252,7 +1252,7 @@ class RRule implements RRuleInterface
 	 * - for HOURLY frequencies it builds the minutes and second of the given hour
 	 * - for MINUTELY frequencies it builds the seconds of the given minute
 	 * - for SECONDLY frequencies, it returns an array with one element
-	 *
+	 * 
 	 * This method is called everytime an increment of at least one hour is made.
 	 *
 	 * @param int $hour
@@ -1294,7 +1294,7 @@ class RRule implements RRuleInterface
 	 *
 	 * The main idea is: a brute force loop testing all the dates, made fast by
 	 * not relying on date() functions
-	 *
+	 * 
 	 * There is one big loop that examines every interval of the given frequency
 	 * (so every day, every week, every month or every year), constructs an
 	 * array of all the yeardays of the interval (for daily frequencies, the array
@@ -1318,7 +1318,7 @@ class RRule implements RRuleInterface
 	 * convoluted.
 	 * Moreover, at such frequencies, the brute-force approach starts to really
 	 * suck. For example, a rule like
-	 * "Every minute, every Jan 1st between 10:00 and 10:59, for 10 years"
+	 * "Every minute, every Jan 1st between 10:00 and 10:59, for 10 years" 
 	 * requires a tremendous amount of useless iterations to jump from Jan 1st 10:59
 	 * at year 1 to Jan 1st 10.00 at year 2.
 	 *
@@ -1711,7 +1711,7 @@ class RRule implements RRuleInterface
 							}
 						}
 						if ((! $this->byhour || in_array($hour, $this->byhour))
-							&& (! $this->byminute || in_array($minute, $this->byminute))
+							&& (! $this->byminute || in_array($minute, $this->byminute)) 
 							&& (! $this->bysecond || in_array($second, $this->bysecond))) {
 							$found = true;
 							break;
@@ -1862,7 +1862,7 @@ class RRule implements RRuleInterface
 	/**
 	 * @var array
 	 * Maximum number of cycles after which a calendar repeats itself. This
-	 * is used to detect infinite loop: if no occurrence has been found
+	 * is used to detect infinite loop: if no occurrence has been found 
 	 * after this numbers of cycles, we can abort.
 	 *
 	 * The Gregorian calendar cycle repeat completely every 400 years
@@ -1902,7 +1902,7 @@ class RRule implements RRuleInterface
 	 */
 	static protected $intl_loaded = null;
 
-	/**
+	/** 
 	 * Select a translation in $array based on the value of $n
 	 *
 	 * Used for selecting plural forms.
@@ -1954,7 +1954,7 @@ class RRule implements RRuleInterface
 		}
 	}
 
-	/**
+	/** 
 	 * Test if intl extension is loaded
 	 * @return bool
 	 */
@@ -1981,7 +1981,7 @@ class RRule implements RRuleInterface
 			$use_intl = self::intlLoaded();
 		}
 		$files = array();
-
+		
 		if ($use_intl) {
 			$parsed = \Locale::parseLocale($locale);
 			$files[] = $parsed['language'];
