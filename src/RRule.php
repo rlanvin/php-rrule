@@ -2108,7 +2108,7 @@ class RRule implements RRuleInterface
 		}
 
 		if ($opt['use_intl']) {
-			$default_opt['date_format'] = \IntlDateFormatter::SHORT;
+			$default_opt['date_format'] = isset($opt['start_time_only']) && $opt['start_time_only'] ? \IntlDateFormatter::NONE : \IntlDateFormatter::SHORT;
 			if ($this->freq >= self::SECONDLY || not_empty($this->rule['BYSECOND'])) {
 				$default_opt['time_format'] = \IntlDateFormatter::LONG;
 			}
@@ -2132,9 +2132,6 @@ class RRule implements RRuleInterface
 			if ($opt['use_intl']) {
 				$timezone = $this->dtstart->getTimezone()->getName();
 
-				if ($opt['start_time_only']) {
-					$opt['date_format'] = \IntlDateFormatter::NONE;
-				}
 				if ($timezone === 'Z') {
 					$timezone = 'GMT'; // otherwise IntlDateFormatter::create fails because... reasons.
 				} elseif (preg_match('/[-+]\d{2}/',$timezone)) {
