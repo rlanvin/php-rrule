@@ -3204,6 +3204,24 @@ class RRuleTest extends TestCase
 				"daily",
 				"daily"
 			),
+			array(
+				"RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=+2TU",
+				array('locale' => "en", 'include_start' => false, 'explicit_infinite' => false),
+				"yearly on the second Tuesday of the month in March",
+				"yearly on the second Tuesday of the month in March"
+			),
+			array(
+				"RRULE:FREQ=YEARLY;BYMONTH=3,6,9;BYDAY=+2TU",
+				array('locale' => "en", 'include_start' => false, 'explicit_infinite' => false),
+				"yearly on the second Tuesday of the month in March, June and September",
+				"yearly on the second Tuesday of the month in March, June and September"
+			),
+			array(
+				"RRULE:FREQ=YEARLY;BYDAY=+6WE",
+				array('locale' => "en", 'include_start' => false, 'explicit_infinite' => false),
+				"yearly on the 6th Wednesday of the year",
+				"yearly on the 6th Wednesday of the year"
+			),
 			// with custom_path
 			'custom_path' => array(
 				"DTSTART:20170202T000000Z\nRRULE:FREQ=YEARLY;UNTIL=20170205T000000Z",
