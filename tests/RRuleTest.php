@@ -3238,4 +3238,31 @@ class RRuleTest extends TestCase
 		$expected = extension_loaded('intl') ? $withIntl : $withoutIntl;
 		$this->assertEquals($expected, $rrule->humanReadable($options));
 	}
+
+    /**
+     * @var \DateTimeInterface|string
+     *
+     * @dataProvider dataForTestParseDate
+     */
+    public function testParseDate($dateTime, \DateTimeInterface $expectedDateTime)
+    {
+        $parsed = RRule::parseDate($dateTime);
+
+        $this->assertEquals($expectedDateTime->format('U.u'), $parsed->format('U.u'));
+    }
+
+    /**
+     * @return list<list<\DateTimeInterface|string>>
+     */
+    public function dataForTestParseDate()
+    {
+        $dateTimeImmutableMicroseconds = new \DateTimeImmutable('2023-04-27 12:13:14.567');
+        $dateTimeImmutableNoMicroseconds = new \DateTimeImmutable('2023-04-27 12:13:14');
+        return [
+            ['2023-04-27 12:13:14', new DateTime('2023-04-27 12:13:14')],
+            ['2023-04-27 12:13:14.123', new DateTime('2023-04-27 12:13:14')],
+            [new DateTime('2023-04-27 12:13:14'), new DateTime('2023-04-27 12:13:14')],
+            [$dateTimeImmutableMicroseconds, $dateTimeImmutableNoMicroseconds],
+        ];
+    }
 }

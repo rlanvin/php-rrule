@@ -212,7 +212,7 @@ trait RRuleTrait
 			$date = new \DateTime($date->format('Y-m-d H:i:s'), $date->getTimezone());
 		}
 		else {
-			$date->setTime(
+			$date = $date->setTime(
 				$date->format('H'),
 				$date->format('i'),
 				$date->format('s'),
