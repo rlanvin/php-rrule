@@ -3216,6 +3216,24 @@ class RRuleTest extends TestCase
 				"every 7 hours starting at 6:30 AM",
 				"every 7 hours starting at 06:30:00"
 			),
+			array(
+				"RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=+2TU",
+				array('locale' => "en", 'include_start' => false, 'explicit_infinite' => false),
+				"yearly on the second Tuesday of the month in March",
+				"yearly on the second Tuesday of the month in March"
+			),
+			array(
+				"RRULE:FREQ=YEARLY;BYMONTH=3,6,9;BYDAY=+2TU",
+				array('locale' => "en", 'include_start' => false, 'explicit_infinite' => false),
+				"yearly on the second Tuesday of the month in March, June and September",
+				"yearly on the second Tuesday of the month in March, June and September"
+			),
+			array(
+				"RRULE:FREQ=YEARLY;BYDAY=+6WE",
+				array('locale' => "en", 'include_start' => false, 'explicit_infinite' => false),
+				"yearly on the 6th Wednesday of the year",
+				"yearly on the 6th Wednesday of the year"
+			),
 			// with custom_path
 			'custom_path' => array(
 				"DTSTART:20170202T000000Z\nRRULE:FREQ=YEARLY;UNTIL=20170205T000000Z",
@@ -3250,4 +3268,31 @@ class RRuleTest extends TestCase
 		$expected = extension_loaded('intl') ? $withIntl : $withoutIntl;
 		$this->assertEquals($expected, $rrule->humanReadable($options));
 	}
+
+    /**
+     * @var \DateTimeInterface|string
+     *
+     * @dataProvider dataForTestParseDate
+     */
+    public function testParseDate($dateTime, \DateTimeInterface $expectedDateTime)
+    {
+        $parsed = RRule::parseDate($dateTime);
+
+        $this->assertEquals($expectedDateTime->format('U.u'), $parsed->format('U.u'));
+    }
+
+    /**
+     * @return list<list<\DateTimeInterface|string>>
+     */
+    public function dataForTestParseDate()
+    {
+        $dateTimeImmutableMicroseconds = new \DateTimeImmutable('2023-04-27 12:13:14.567');
+        $dateTimeImmutableNoMicroseconds = new \DateTimeImmutable('2023-04-27 12:13:14');
+        return [
+            ['2023-04-27 12:13:14', new DateTime('2023-04-27 12:13:14')],
+            ['2023-04-27 12:13:14.123', new DateTime('2023-04-27 12:13:14')],
+            [new DateTime('2023-04-27 12:13:14'), new DateTime('2023-04-27 12:13:14')],
+            [$dateTimeImmutableMicroseconds, $dateTimeImmutableNoMicroseconds],
+        ];
+    }
 }
