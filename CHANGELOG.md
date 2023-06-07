@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [2.4.1] - 2023-06-07
+
+### Fixed
+
+- Correctly parse `DateTimeImmutable` [#132](https://github.com/rlanvin/php-rrule/pull/132)
+- Fix namespace on return type [#130](https://github.com/rlanvin/php-rrule/pull/130)
+- Humanreadable gets monthly wrong [#129](https://github.com/rlanvin/php-rrule/pull/129)
+
 ## [2.4.0] - 2023-01-06
 
 ### Fixed
@@ -242,7 +250,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.4.1...HEAD
+[2.4.1]: https://github.com/rlanvin/php-rrule/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/rlanvin/php-rrule/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/rlanvin/php-rrule/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/rlanvin/php-rrule/compare/v2.3.0...v2.3.1
