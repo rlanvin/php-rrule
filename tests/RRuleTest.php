@@ -3205,6 +3205,18 @@ class RRuleTest extends TestCase
 				"daily"
 			),
 			array(
+				"DTSTART:20170202T161500Z\nRRULE:FREQ=MONTHLY;BYMONTHDAY=2",
+				array('locale' => "en", 'start_time_only' => true, 'explicit_infinite' => false),
+				"monthly on the 2nd of the month at 4:15 PM",
+				"monthly on the 2nd of the month at 16:15:00"
+			),
+			array(
+				"DTSTART:20170202T063000Z\nRRULE:FREQ=HOURLY;INTERVAL=7",
+				array('locale' => "en", 'start_time_only' => true, 'explicit_infinite' => false),
+				"every 7 hours starting at 6:30 AM",
+				"every 7 hours starting at 06:30:00"
+			),
+			array(
 				"RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=+2TU",
 				array('locale' => "en", 'include_start' => false, 'explicit_infinite' => false),
 				"yearly on the second Tuesday of the month in March",

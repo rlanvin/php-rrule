@@ -46,6 +46,8 @@ return array(
         'else' => 'elke %{interval} seconden'
     ),
     'dtstart' => ', wordt gestart vanaf %{date}',
+    'timeofday' => ' om %{date}',
+    'startingtimeofday' => ' wordt gestart vanaf %{date}',
     'infinite' => ', oneindig',
     'until' => ', tot en met %{date}',
     'count' => array(

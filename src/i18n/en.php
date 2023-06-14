@@ -46,6 +46,8 @@ return array(
 		'else' => 'every %{interval} seconds'
 	),
 	'dtstart' => ', starting from %{date}',
+	'timeofday' => ' at %{date}',
+	'startingtimeofday' => ' starting at %{date}',
 	'infinite' => ', forever',
 	'until' => ', until %{date}',
 	'count' => array(

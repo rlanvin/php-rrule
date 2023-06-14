@@ -2071,6 +2071,7 @@ class RRule implements RRuleInterface
 	 * | `explicit_inifite`| bool    | Mention "forever" if the rule is infinite (true)
 	 * | `dtstart`         | bool    | Mention the start date (true)
 	 * | `include_start`   | bool    |
+	 * | `start_time_only` | bool    | Mention the time of day only, without the date
 	 * | `include_until`   | bool    |
 	 * | `custom_path`     | string  |
 	 *
@@ -2091,6 +2092,7 @@ class RRule implements RRuleInterface
 			'fallback' => 'en',
 			'explicit_infinite' => true,
 			'include_start' => true,
+			'start_time_only' => false,
 			'include_until' => true,
 			'custom_path' => null
 		);
@@ -2106,7 +2108,7 @@ class RRule implements RRuleInterface
 		}
 
 		if ($opt['use_intl']) {
-			$default_opt['date_format'] = \IntlDateFormatter::SHORT;
+			$default_opt['date_format'] = isset($opt['start_time_only']) && $opt['start_time_only'] ? \IntlDateFormatter::NONE : \IntlDateFormatter::SHORT;
 			if ($this->freq >= self::SECONDLY || not_empty($this->rule['BYSECOND'])) {
 				$default_opt['time_format'] = \IntlDateFormatter::LONG;
 			}
@@ -2114,7 +2116,7 @@ class RRule implements RRuleInterface
 				$default_opt['time_format'] = \IntlDateFormatter::SHORT;
 			}
 			else {
-				$default_opt['time_format'] = \IntlDateFormatter::NONE;
+				$default_opt['time_format'] = isset($opt['start_time_only']) && $opt['start_time_only'] ? \IntlDateFormatter::SHORT : \IntlDateFormatter::NONE;
 			}
 		}
 
@@ -2149,8 +2151,9 @@ class RRule implements RRuleInterface
 				};
 			}
 			else {
-				$opt['date_formatter'] = function($date) {
-					return $date->format('Y-m-d H:i:s');
+				$opt['date_formatter'] = function ($date) use ($opt) {
+					$format = $opt['start_time_only'] ? 'H:i:s' : 'Y-m-d H:i:s';
+					return $date->format($format);
 				};
 			}
 		}
@@ -2362,7 +2365,12 @@ class RRule implements RRuleInterface
 
 		if ($opt['include_start']) {
 			// from X
-			$parts['start'] = strtr($i18n['dtstart'], array(
+			if ($opt['start_time_only']) {
+				$value = $this->freq >= self::HOURLY ? 'startingtimeofday' : 'timeofday';
+			} else {
+				$value = 'dtstart';
+			}
+			$parts['start'] = strtr($i18n[$value], array(
 				'%{date}' => $opt['date_formatter']($this->dtstart)
 			));
 		}
