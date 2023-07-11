@@ -81,7 +81,7 @@ return array(
 	),
 	'byweekday' => ' på %{weekdays}',
 	'weekdays' => array(
-		1 => 'Månday',
+		1 => 'Måndag',
 		2 => 'Tisdag',
 		3 => 'Onsdag',
 		4 => 'Torsdag',
@@ -148,14 +148,14 @@ return array(
 	'nth_second' => '%{n}',
 	'bysetpos' => ', men bara %{setpos} tillfället i serien',
 	'nth_setpos' => array(
-		'1' => 'det första',
-		'2' => 'det andra',
-		'3' => 'det tredje',
-		'else' => 'det %{n}:e'
+		'1' => 'den första',
+		'2' => 'den andra',
+		'3' => 'den tredje',
+		'else' => 'den %{n}:e'
 	),
 	'-nth_setpos' => array(
-		'-1' => 'det sista',
-		'-2' => 'det näst sista',
-		'else' => 'det %{n}:e sista'
+		'-1' => 'den sista',
+		'-2' => 'den näst sista',
+		'else' => 'den %{n}:e sista'
 	)
 );
