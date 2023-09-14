@@ -220,6 +220,12 @@ trait RRuleTrait
 			);
 		}
 
+		// Synchronize date objects to a common time zone for consistent internal processing.
+		// This is particularly important when dealing with time zone changes such as daylight saving time.
+		// Ensuring all dates are in the same time zone guarantees accuracy and consistency in date calculations.
+		if ($date->getTimezone() !== date_default_timezone_get()) {
+			$date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+		}
 		return $date;
 	}
 }
