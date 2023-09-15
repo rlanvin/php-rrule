@@ -221,7 +221,7 @@ class RfcParser
 		foreach ($property['params'] as $name => $value) {
 			switch (strtoupper($name)) {
 				case 'TZID':
-					$tz = new \DateTimeZone($value);
+					$tz = self::parseTimeZone($value);
 				break;
 				case 'VALUE':
 					switch ($value) {
@@ -284,7 +284,7 @@ class RfcParser
 					// Ignore optional words
 					break;
 				case 'TZID':
-					$tz = new \DateTimeZone($value);
+					$tz = self::parseTimeZone($value);
 				break;
 				default:
 					throw new \InvalidArgumentException("Unknown property parameter: $name");
