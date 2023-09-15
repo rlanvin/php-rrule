@@ -79,6 +79,9 @@ class RfcParserTest extends TestCase
 			array('EXDATE;TZID=America/New_York:19970714T083000',
 				array(date_create('19970714T083000',new \DateTimeZone('America/New_York')))
 			),
+			array('EXDATE;TZID=W. Europe Standard Time:20230915T222222',
+				array(date_create('20230915T222222',new \DateTimeZone('Europe/Berlin')))
+			),
 		);
 	}
 
