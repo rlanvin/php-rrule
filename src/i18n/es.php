@@ -18,12 +18,12 @@ return array(
 	),
 	'weekly' => array(
 		'1' => 'semanal',
-		'2' => 'cualquier otra semana',
+		'2' => 'semana por medio',
 		'else' => 'cada %{interval} semanas' // cada 8 semanas
 	),
 	'daily' => array(
 		'1' => 'diario',
-		'2' => 'cualquier otro día',
+		'2' => 'día por medio',
 		'else' => 'cada %{interval} días' // cada 8 días
 	),
 	'hourly' => array(
