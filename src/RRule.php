@@ -239,7 +239,7 @@ class RRule implements RRuleInterface
 			$this->freq = $parts['FREQ'];
 		}
 		else { // string
-			$parts['FREQ'] = strtoupper($parts['FREQ']);
+			$parts['FREQ'] = strtoupper((string) $parts['FREQ']);
 			if (! array_key_exists($parts['FREQ'], self::FREQUENCIES)) {
 				throw new \InvalidArgumentException(
 					'The FREQ rule part must be one of the following: '
