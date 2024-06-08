@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Swedish: Corrects the spelling of monday and the grammar of enumeration partials. [#134](https://github.com/rlanvin/php-rrule/pull/134)
+- Spanish: Improve clarity in daily and weekly recurrence translation [#147](https://github.com/rlanvin/php-rrule/pull/147)
+- Dutch: weekdays and months are written in lowercase [#136](https://github.com/rlanvin/php-rrule/pull/136)
+- Better handle TZ with Exchange / M365 generated iCal files [#143](https://github.com/rlanvin/php-rrule/pull/143)
+
+### Added
+
+- Human readable time of day option [#124](https://github.com/rlanvin/php-rrule/pull/124)
+- Japanese translation [#139](https://github.com/rlanvin/php-rrule/pull/139)
+- Czech translation [#137](https://github.com/rlanvin/php-rrule/pull/137)
+
 ## [2.4.1] - 2023-06-07
 
 ### Fixed

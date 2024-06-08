@@ -2068,7 +2068,7 @@ class RRule implements RRuleInterface
 	 * | `locale`          | string  | The locale to use (autodetect)
 	 * | `fallback`        | string  | Fallback locale if main locale is not found (default en)
 	 * | `date_formatter`  | callable| Function used to format the date (takes date, returns formatted)
-	 * | `explicit_inifite`| bool    | Mention "forever" if the rule is infinite (true)
+	 * | `explicit_infinite`| bool    | Mention "forever" if the rule is infinite (true)
 	 * | `dtstart`         | bool    | Mention the start date (true)
 	 * | `include_start`   | bool    |
 	 * | `start_time_only` | bool    | Mention the time of day only, without the date
