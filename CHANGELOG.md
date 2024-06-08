@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.5.0] - 2024-06-08
+
 ### Fixed
 
 - Swedish: Corrects the spelling of monday and the grammar of enumeration partials. [#134](https://github.com/rlanvin/php-rrule/pull/134)
@@ -263,7 +265,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/rlanvin/php-rrule/compare/v2.4.1...v2.5.0
 [2.4.1]: https://github.com/rlanvin/php-rrule/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/rlanvin/php-rrule/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/rlanvin/php-rrule/compare/v2.3.1...v2.3.2
