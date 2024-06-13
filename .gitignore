@@ -3,3 +3,4 @@ vendor
 test.php
 composer.lock
 .idea
+.phpunit.result.cache
