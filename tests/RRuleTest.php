@@ -2994,7 +2994,7 @@ class RRuleTest extends TestCase
 			array('en_US.utf-8', array('en','en_US'), array('en','en_US')),
             array('en_US_POSIX', array('en','en_US'), array('en','en_US')),
             array('sv_SE', array('sv','sv_SE'), array('sv','sv_SE')),
-            // case insentitive
+            // case insensitive
 			array('en_sg', array('en','en_SG'), array('en','en_SG')),
 			array('sv_se', array('sv','sv_SE'), array('sv','sv_SE')),
 			// with a dash
@@ -3120,7 +3120,7 @@ class RRuleTest extends TestCase
 	/**
 	 * Tests that the RRule::i18nLoad() fails as expected on invalid $fallback settings
 	 */
-	public function testI18nLoadFallbackFailsWitoutIntl()
+	public function testI18nLoadFallbackFailsWithoutIntl()
 	{
 		$this->expectException(\InvalidArgumentException::class);
 		$reflector = new ReflectionClass('RRule\RRule');
