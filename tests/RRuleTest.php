@@ -20,8 +20,12 @@ class RRuleTest extends TestCase
 			array(array()),
 			array(array('FOOBAR' => 'DAILY')),
 
-			array(array('FREQ' => 'foobar')),
+			'invalid string freq' => [['FREQ' => 'foobar']],
 			'Invalid integer frequency' => [['FREQ' => 42]],
+			'Array freq' => [['FREQ' => array()]],
+			'null freq' => [['FREQ' => null]],
+			'object freq' => [['FREQ' => new Stdclass()]],
+
 			array(array('FREQ' => 'DAILY', 'INTERVAL' => -1)),
 			array(array('FREQ' => 'DAILY', 'INTERVAL' => 1.5)),
 			array(array('FREQ' => 'DAILY', 'UNTIL' => 'foobar')),
@@ -87,6 +91,9 @@ class RRuleTest extends TestCase
 			array(array('FREQ' => 'MONTHLY', 'BYSECOND' => 61)),
 
 			'Invalid WKST' => [['FREQ' => 'DAILY', 'WKST' => 'XX']],
+			'Null WKST' => [['FREQ' => 'DAILY', 'WKST' => null]],
+			'Array WKST' => [['FREQ' => 'DAILY', 'WKST' => array()]],
+			'Object WKST' => [['FREQ' => 'DAILY', 'WKST' => new stdClass()]],
 
 			'Invalid DTSTART (invalid date)' => [['FREQ' => 'DAILY', 'DTSTART' => new stdClass()]]
 		);

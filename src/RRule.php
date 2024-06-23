@@ -219,34 +219,38 @@ class RRule implements RRuleInterface
 		$this->rule = $parts; // save original rule
 
 		// WKST
-		$parts['WKST'] = strtoupper($parts['WKST']);
-		if (! array_key_exists($parts['WKST'], self::WEEKDAYS)) {
+		if (is_string($parts['WKST'])) {
+			$parts['WKST'] = strtoupper($parts['WKST']);
+			if (array_key_exists($parts['WKST'], self::WEEKDAYS)) {
+				$this->wkst = self::WEEKDAYS[$parts['WKST']];
+			}
+		}
+
+		if (!$this->wkst) {
 			throw new \InvalidArgumentException(
 				'The WKST rule part must be one of the following: '
 				.implode(', ',array_keys(self::WEEKDAYS))
 			);
 		}
-		$this->wkst = self::WEEKDAYS[$parts['WKST']];
 
 		// FREQ
 		if (is_integer($parts['FREQ'])) {
-			if ($parts['FREQ'] > self::SECONDLY || $parts['FREQ'] < self::YEARLY) {
-				throw new \InvalidArgumentException(
-					'The FREQ rule part must be one of the following: '
-					.implode(', ',array_keys(self::FREQUENCIES))
-				);
+			if ($parts['FREQ'] <= self::SECONDLY && $parts['FREQ'] >= self::YEARLY) {
+				$this->freq = $parts['FREQ'];
 			}
-			$this->freq = $parts['FREQ'];
 		}
-		else { // string
+		elseif (is_string($parts['FREQ'])) {
 			$parts['FREQ'] = strtoupper($parts['FREQ']);
-			if (! array_key_exists($parts['FREQ'], self::FREQUENCIES)) {
-				throw new \InvalidArgumentException(
-					'The FREQ rule part must be one of the following: '
-					.implode(', ',array_keys(self::FREQUENCIES))
-				);
+			if (array_key_exists($parts['FREQ'], self::FREQUENCIES)) {
+				$this->freq = self::FREQUENCIES[$parts['FREQ']];
 			}
-			$this->freq = self::FREQUENCIES[$parts['FREQ']];
+		} 
+
+		if (!$this->freq) {
+			throw new \InvalidArgumentException(
+				'The FREQ rule part must be one of the following: '
+				.implode(', ',array_keys(self::FREQUENCIES))
+			);
 		}
 
 		// INTERVAL
