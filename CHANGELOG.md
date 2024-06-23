@@ -43,7 +43,7 @@
 
 ### Added
 
-- Added Portugese translation [#108](https://github.com/rlanvin/php-rrule/pull/108)
+- Added Portuguese translation [#108](https://github.com/rlanvin/php-rrule/pull/108)
 - Added Polish translation [#106](https://github.com/rlanvin/php-rrule/pull/106)
 
 ## [2.3.2] - 2022-05-03
@@ -114,7 +114,7 @@
 
 ## [2.0.0-rc1] - 2019-01-13
 
-- Rewrite the core algorithm to use a native PHP generator, drop compability with PHP < 5.6 [#43](https://github.com/rlanvin/php-rrule/issues/43)
+- Rewrite the core algorithm to use a native PHP generator, drop compatibility with PHP < 5.6 [#43](https://github.com/rlanvin/php-rrule/issues/43)
 
 ### Added
 
@@ -228,7 +228,7 @@
 
 ### Fixed
 
-- `RRule::parseRfcString()` is strictier and will not accept invalid `DTSTART` and `UNTIL` formats (use the array syntax in the constructor with `DateTime` objects if you need to create rules with complex combinations of timezones). [#13](https://github.com/rlanvin/php-rrule/issues/13)
+- `RRule::parseRfcString()` is stricter and will not accept invalid `DTSTART` and `UNTIL` formats (use the array syntax in the constructor with `DateTime` objects if you need to create rules with complex combinations of timezones). [#13](https://github.com/rlanvin/php-rrule/issues/13)
 
 ## [1.2.0] - 2016-04-09
 

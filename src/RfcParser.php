@@ -64,7 +64,7 @@ class RfcParser
 	/**
 	 * Parse both DTSTART and RRULE (and EXRULE).
 	 *
-	 * It's impossible to accuratly parse a RRULE in isolation (without the DTSTART)
+	 * It's impossible to accurately parse a RRULE in isolation (without the DTSTART)
 	 * as some tests depends on DTSTART (notably the date format for UNTIL).
 	 *
 	 * @param string $string The RFC-like string
@@ -193,7 +193,7 @@ class RfcParser
 							}
 							// this is an invalid rule, however we'll support it since the JS lib is broken
 							// see https://github.com/rlanvin/php-rrule/issues/25
-							trigger_error("This string is not compliant with the RFC (DTSTART cannot be part of RRULE). It is accepted as is for compability reasons only.", E_USER_NOTICE);
+							trigger_error("This string is not compliant with the RFC (DTSTART cannot be part of RRULE). It is accepted as is for compatibility reasons only.", E_USER_NOTICE);
 						}
 						$parts[$key] = $value;
 					}

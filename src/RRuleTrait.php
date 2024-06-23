@@ -52,7 +52,7 @@ trait RRuleTrait
 	}
 
 	/**
-	 * Return all the ocurrences after a date, before a date, or between two dates.
+	 * Return all the occurrences after a date, before a date, or between two dates.
 	 *
 	 * @param mixed $begin Can be null to return all occurrences before $end
 	 * @param mixed $end Can be null to return all occurrences after $begin
