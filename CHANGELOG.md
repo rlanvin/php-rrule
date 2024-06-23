@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [2.5.1] - 2024-06-23
+
+### Fixed
+
+- Fix insufficient type detection for FREQ and WKST leading to deprecation warning in tests with PHP 8.3 [#149](https://github.com/rlanvin/php-rrule/pull/149)
+- Fix failing tests with ICU 72.1 because of NNBSP
+- Fix C.UTF8 locale support when intl isn't installed
+
 ## [2.5.0] - 2024-06-08
 
 ### Fixed
@@ -265,7 +273,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.5.1...HEAD
+[2.5.1]: https://github.com/rlanvin/php-rrule/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/rlanvin/php-rrule/compare/v2.4.1...v2.5.0
 [2.4.1]: https://github.com/rlanvin/php-rrule/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/rlanvin/php-rrule/compare/v2.3.2...v2.4.0
