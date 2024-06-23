@@ -591,13 +591,13 @@ class RSetTest extends TestCase
 			'DTSTART' => date_create('1997-09-02 09:00')
 		));
 
-		$this->assertInternalType('array', $rset->getRRules());
+		$this->assertIsArray($rset->getRRules());
 		$this->assertCount(2, $rset->getRRules());
-		$this->assertInternalType('array', $rset->getExRules());
+		$this->assertIsArray($rset->getExRules());
 		$this->assertCount(1, $rset->getExRules());
-		$this->assertInternalType('array', $rset->getDates());
+		$this->assertIsArray($rset->getDates());
 		$this->assertCount(3, $rset->getDates());
-		$this->assertInternalType('array', $rset->getExDates());
+		$this->assertIsArray($rset->getExDates());
 		$this->assertCount(0, $rset->getExDates());
 	}
 
