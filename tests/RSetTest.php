@@ -858,9 +858,12 @@ class RSetTest extends TestCase
 	 */
 	public function testParseQuirkyRfcStringNotice($string, $occurrences)
 	{
-		$this->expectException(\PHPUnit\Framework\Error\Notice::class);
-
-		$object = new RSet($string);
+		try {
+			$object = new RSet($string);
+			$this->fail("Expected an notice, didn't get one");
+		} catch (\PHPUnit\Framework\Error\Notice $e) {
+			$this->assertStringContainsString("This string is not compliant with the RFC (DTSTART cannot be part of RRULE).", $e->getMessage());
+		}
 	}
 
 	/**

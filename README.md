@@ -32,7 +32,7 @@ Complete documentation and more examples are available in [the wiki](https://git
 
 ## Requirements
 
-- PHP >= 5.6
+- PHP >= 7.3
 - [intl extension](http://php.net/manual/en/book.intl.php) is recommended for `humanReadable()` but not strictly required
 
 ## Installation
