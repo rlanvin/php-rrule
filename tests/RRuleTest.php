@@ -3207,13 +3207,13 @@ class RRuleTest extends TestCase
 			array(
 				"DTSTART:20170202T161500Z\nRRULE:FREQ=MONTHLY;BYMONTHDAY=2",
 				array('locale' => "en", 'start_time_only' => true, 'explicit_infinite' => false),
-				"monthly on the 2nd of the month at 4:15 PM",
+				"monthly on the 2nd of the month at 4:15 PM",
 				"monthly on the 2nd of the month at 16:15:00"
 			),
 			array(
 				"DTSTART:20170202T063000Z\nRRULE:FREQ=HOURLY;INTERVAL=7",
 				array('locale' => "en", 'start_time_only' => true, 'explicit_infinite' => false),
-				"every 7 hours starting at 6:30 AM",
+				"every 7 hours starting at 6:30 AM",
 				"every 7 hours starting at 06:30:00"
 			),
 			array(
@@ -3259,14 +3259,38 @@ class RRuleTest extends TestCase
 	/**
 	 * @dataProvider humanReadableStrings
 	 */
-	public function testHumanReadable($rrule, $options, $withIntl, $withoutIntl, $dtstart = null)
+	public function testHumanReadableWithoutIntl($rrule, $options, $withIntl, $withoutIntl, $dtstart = null)
 	{
 		if ($dtstart) {
 			$dtstart = new DateTime($dtstart);
 		}
 		$rrule = new RRule($rrule, $dtstart);
-		$expected = extension_loaded('intl') ? $withIntl : $withoutIntl;
-		$this->assertEquals($expected, $rrule->humanReadable($options));
+		$options['use_intl'] = false;
+		$this->assertEquals($withoutIntl, $rrule->humanReadable($options));
+	}
+
+	/**
+	 * @dataProvider humanReadableStrings
+	 */
+	public function testHumanReadableWithIntl($rrule, $options, $withIntl, $withoutIntl, $dtstart = null)
+	{
+		if (!extension_loaded('intl')) {
+			$this->markTestSkipped('intl not loaded');
+		}
+
+		if ($dtstart) {
+			$dtstart = new DateTime($dtstart);
+		}
+		$rrule = new RRule($rrule, $dtstart);
+
+		// Narrow No-Break Space (NNBSP) was added in ICU72.1 before the meridian
+		// as a workaround we replace unicode 0x202f char with a regular space for backwards compatibility
+		if (version_compare(INTL_ICU_VERSION, '72.1') < 0) {
+			// if you don't see the difference, use an editor that displays unicode
+			$withIntl = str_replace(' ', ' ', $withIntl);
+		}
+
+		$this->assertEquals($withIntl, $rrule->humanReadable($options));
 	}
 
     /**
