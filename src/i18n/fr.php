@@ -69,7 +69,7 @@ return array(
 		8 => 'août',
 		9 => 'septembre',
 		10 => 'octobre',
-		11 => 'november',
+		11 => 'novembre',
 		12 => 'décembre',
 	),
 	'byweekday' => ' le %{weekdays}',
