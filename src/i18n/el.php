@@ -17,7 +17,7 @@ return array(
         'else' => 'κάθε %{interval} χρόνια'
     ),
     'monthly' => array(
-        '1' => 'μηνιαίος',
+        '1' => 'μηνιαίως',
         'else' => 'κάθε %{interval} μήνες'
     ),
     'weekly' => array(
@@ -26,7 +26,7 @@ return array(
         'else' => 'κάθε %{interval} εβδομάδες'
     ),
     'daily' => array(
-        '1' => 'καθημερινός',
+        '1' => 'καθημερινά',
         '2' => 'κάθε δεύτερη μέρα',
         'else' => 'κάθε %{interval} μέρες'
     ),
