@@ -248,15 +248,15 @@ class RRuleTest extends TestCase
 		$this->assertEquals($occurrences, $rule->getOccurrences());
 		$this->assertEquals($occurrences, $rule->getOccurrences(), 'Cached version');
 		foreach ($occurrences as $date) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r').'in cached version');
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in cached version');
 		}
 		$rule->clearCache();
 		foreach ($occurrences as $date) {
-			$this->assertTrue($rule->occursAt($date), $date->format('r').'in uncached version');
+			$this->assertTrue($rule->occursAt($date), $date->format('r').' in uncached version');
 		}
 		$rule->clearCache();
 		for ($i = 0; $i < count($occurrences); $i++) {
-			$this->assertEquals($rule[$i], $occurrences[$i], 'array access uncached');
+			$this->assertEquals($rule[$i], $occurrences[$i], ' array access uncached');
 		}
 	}
 
@@ -1833,6 +1833,30 @@ class RRuleTest extends TestCase
 			'COUNT' => 2,
 		]);
 		$this->assertSame('2022-11-06T01:00:00-05:00 CDT 1667714400', $rrule[1]->format('c T U'));
+	}
+
+	public function testResumeFromPartiallyFilledCache()
+	{
+		// https://github.com/rlanvin/php-rrule/issues/160
+		$rrule = new \RRule\RRule([
+			'DTSTART' => new DateTime('2023-03-31 23:59:59.000000'),
+			'FREQ' => 'MONTHLY',
+			'INTERVAL' => '12',
+			'WKST' => 'MO',
+			'COUNT' => 3
+		]);
+
+		// Break on first loop during first iterator use.
+		foreach ($rrule as $occurrence) {
+			break;
+		}
+
+		// Print first 3 occurrences (cache used).
+		$this->assertEquals([
+			date_create('2023-03-31 23:59:59'),
+			date_create('2024-03-31 23:59:59'),
+			date_create('2025-03-31 23:59:59')
+		],$rrule->getOccurrences());
 	}
 
 ///////////////////////////////////////////////////////////////////////////////

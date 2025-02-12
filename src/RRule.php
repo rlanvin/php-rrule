@@ -1362,16 +1362,8 @@ class RRule implements RRuleInterface
 
 		if ($occurrence) {
 			$dtstart = clone $occurrence; // since DateTime is not immutable, clone to avoid any problem
-			// so we skip the last occurrence of the cache
-			if ($this->freq === self::SECONDLY) {
-				$dtstart = $dtstart->modify('+'.$this->interval.'second');
-			}
-			else {
-				$dtstart = $dtstart->modify('+1second');
-			}
 		}
-
-		if ($dtstart === null) {
+		elseif ($dtstart === null) {
 			$dtstart = clone $this->dtstart;
 		}
 
@@ -1412,8 +1404,21 @@ class RRule implements RRuleInterface
 			}
 		}
 
+		// if we restarted the calculation from cache, we know that dtstart has already been yielded
+		// so we can skip ahead to the next second to avoid the same date to be yielded again
+		// we need to do that after the correct frame as been set (see https://github.com/rlanvin/php-rrule/issues/160)
+		if ($occurrence) {
+			if ($this->freq === self::SECONDLY) {
+				$dtstart = $dtstart->modify('+'.$this->interval.'second');
+			}
+			else {
+				$dtstart = $dtstart->modify('+1second');
+			}
+		}
+
 		$max_cycles = self::MAX_CYCLES[$this->freq <= self::DAILY ? $this->freq : self::DAILY];
 		for ($i = 0; $i < $max_cycles; $i++) {
+
 			// 1. get an array of all days in the next interval (day, month, week, etc.)
 			// we filter out from this array all days that do not match the BYXXX conditions
 			// to speed things up, we use days of the year (day numbers) instead of date
@@ -1546,6 +1551,7 @@ class RRule implements RRuleInterface
 							$this->total = $total;
 							return;
 						}
+
 						$total += 1;
 						$this->cache[] = clone $occurrence;
 						yield clone $occurrence; // yield
@@ -1576,6 +1582,7 @@ class RRule implements RRuleInterface
 								$this->total = $total;
 								return;
 							}
+
 							$total += 1;
 							$this->cache[] = clone $occurrence;
 							yield clone $occurrence; // yield
