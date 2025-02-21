@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [2.5.2] - 2025-02-21
+
+### Fixed
+
+- Fix "november" typo in french translation [#155](https://github.com/rlanvin/php-rrule/issues/155)
+- Fix incorrect calculation from partially filled cache [#160](https://github.com/rlanvin/php-rrule/issues/160)
+
 ## [2.5.1] - 2024-06-23
 
 ### Fixed
@@ -273,7 +280,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.5.1...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.5.2...HEAD
+[2.5.2]: https://github.com/rlanvin/php-rrule/compare/v2.5.1...v2.5.2
 [2.5.1]: https://github.com/rlanvin/php-rrule/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/rlanvin/php-rrule/compare/v2.4.1...v2.5.0
 [2.4.1]: https://github.com/rlanvin/php-rrule/compare/v2.4.0...v2.4.1
