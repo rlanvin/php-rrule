@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [2.6.0] - 2025-04-25
+
+### Added
+
+- Bengali (bn) localization [#159](https://github.com/rlanvin/php-rrule/pull/159)
+- Danish (da) localization [#161](https://github.com/rlanvin/php-rrule/pull/161)
+- Greek (el) localization [#157](https://github.com/rlanvin/php-rrule/pull/157)
+- Russian (ru) localization [#153](https://github.com/rlanvin/php-rrule/pull/153)
+
 ## [2.5.2] - 2025-02-21
 
 ### Fixed
@@ -280,7 +289,8 @@
 
 - First release, everything before that was unversioned (`dev-master` was used).
 
-[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.5.2...HEAD
+[Unreleased]: https://github.com/rlanvin/php-rrule/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/rlanvin/php-rrule/compare/v2.5.2...v2.6.0
 [2.5.2]: https://github.com/rlanvin/php-rrule/compare/v2.5.1...v2.5.2
 [2.5.1]: https://github.com/rlanvin/php-rrule/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/rlanvin/php-rrule/compare/v2.4.1...v2.5.0
