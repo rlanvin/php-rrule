@@ -2105,7 +2105,8 @@ class RRule implements RRuleInterface
 			'include_start' => true,
 			'start_time_only' => false,
 			'include_until' => true,
-			'custom_path' => null
+			'custom_path' => null,
+			'omit_until_date' => false
 		);
 
 		// attempt to detect default locale
@@ -2393,7 +2394,7 @@ class RRule implements RRuleInterface
 					$parts['end'] = $i18n['infinite'];
 				}
 			}
-			elseif ($this->until) {
+			elseif ($this->until && !$opt['omit_until_date']) {
 				$parts['end'] = strtr($i18n['until'], array(
 					'%{date}' => $opt['date_formatter']($this->until)
 				));
