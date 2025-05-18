@@ -72,6 +72,30 @@ function is_leap_year($year)
 }
 
 /**
+ * Carbon 3 specific workaround - shouldn't be necessary but here we are.
+ * Original bug: https://github.com/briannesbitt/Carbon/issues/3018
+ * Workaround could be removed if the bug is fixed
+ * 
+ * @see https://github.com/rlanvin/php-rrule/issues/164
+ * @return int
+ */
+function date_interval_days(\DateInterval $interval): int
+{
+	if ($interval->days !== false) {
+		return $interval->days;
+	}
+
+	// if days is false, we might be dealing with Carbon.
+	// we try to get it from format() instead, and cast it to int
+	$days = $interval->format('%a');
+	if ($days !== '(unknown)' && is_numeric($days)) {
+		return (int) $days;
+	}
+
+	throw new \RuntimeException("Unable to get days from DateInterval. This shouldn't happen. If you are using a custom date library, trying passing a normal \DateTime.");
+}
+
+/**
  * Implementation of RRULE as defined by RFC 5545 (iCalendar).
  * Heavily based on python-dateutil/rrule
  *
@@ -847,7 +871,7 @@ class RRule implements RRuleInterface
 				// count nb of days and divide by 7 to get number of weeks
 				// we add some days to align dtstart with wkst
 				$diff = $date->diff($this->dtstart);
-				$diff = (int) (($diff->days + pymod($this->dtstart->format('N') - $this->wkst,7)) / 7);
+				$diff = (int) ((date_interval_days($diff) + pymod($this->dtstart->format('N') - $this->wkst,7)) / 7);
 				if ($diff % $this->interval !== 0) {
 					return false;
 				}
@@ -855,21 +879,21 @@ class RRule implements RRuleInterface
 			case self::DAILY:
 				// count nb of days
 				$diff = $date->diff($this->dtstart);
-				if ($diff->days % $this->interval !== 0) {
+				if (date_interval_days($diff) % $this->interval !== 0) {
 					return false;
 				}
 				break;
 			// XXX: I'm not sure the 3 formulas below take the DST into account...
 			case self::HOURLY:
 				$diff = $date->diff($this->dtstart);
-				$diff = $diff->h + $diff->days * 24;
+				$diff = $diff->h + date_interval_days($diff) * 24;
 				if ($diff % $this->interval !== 0) {
 					return false;
 				}
 				break;
 			case self::MINUTELY:
 				$diff = $date->diff($this->dtstart);
-				$diff  = $diff->i + $diff->h * 60 + $diff->days * 1440;
+				$diff  = $diff->i + $diff->h * 60 + date_interval_days($diff) * 1440;
 				if ($diff % $this->interval !== 0) {
 					return false;
 				}
@@ -877,7 +901,7 @@ class RRule implements RRuleInterface
 			case self::SECONDLY:
 				$diff = $date->diff($this->dtstart);
 				// XXX does not account for leap second (should it?)
-				$diff  = $diff->s + $diff->i * 60 + $diff->h * 3600 + $diff->days * 86400;
+				$diff  = $diff->s + $diff->i * 60 + $diff->h * 3600 + date_interval_days($diff) * 86400;
 				if ($diff % $this->interval !== 0) {
 					return false;
 				}

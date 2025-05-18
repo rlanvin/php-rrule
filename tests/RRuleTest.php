@@ -1786,6 +1786,11 @@ class RRuleTest extends TestCase
 				array('freq' => 'secondly', 'dtstart' => '1999-09-02 09:00:00', 'INTERVAL' => 5),
 				array('1999-09-02 09:00:01')
 			),
+			// https://github.com/rlanvin/php-rrule/issues/164
+			'issue164' => [
+				"DTSTART:20250505T000000Z\nRRULE:FREQ=WEEKLY;UNTIL=20250520T000000Z;INTERVAL=2;BYDAY=MO",
+				['2025-05-12']
+			]
 		);
 	}
 
@@ -1797,6 +1802,17 @@ class RRuleTest extends TestCase
 		$rule = new RRule($rule);
 		foreach ($not_occurrences as $date) {
 			$this->assertFalse($rule->occursAt($date), "Rule must not match $date");
+		}
+	}
+
+	/**
+	 * @dataProvider notOccurrences
+	 */
+	public function testNotOccurrencesWithCarbon($rule, $not_occurrences)
+	{
+		$rule = new RRule($rule);
+		foreach ($not_occurrences as $date) {
+			$this->assertFalse($rule->occursAt(new \Carbon\Carbon($date)), "Rule must not match $date");
 		}
 	}
 
@@ -2216,8 +2232,6 @@ class RRuleTest extends TestCase
 			$this->assertEquals($occurrences, $rule->getOccurrences());
 		}
 	}
-
-
 
 	public function testRfcStringParserWithDtStart()
 	{
