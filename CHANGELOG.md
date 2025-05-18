@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [3.0.0] - Unreleased
+
+- Drop support for PHP < 7.3 [#119](https://github.com/rlanvin/php-rrule/issues/119)
+- Add support for PHP 8.4
+
 ## [2.6.0] - 2025-04-25
 
 ### Added
