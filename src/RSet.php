@@ -600,14 +600,15 @@ class RSet implements RRuleInterface
 	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
-		$previous_occurrence = null;
 		$total = 0;
 
+		$occurrence = null;
 		foreach ($this->cache as $occurrence) {
 			yield clone $occurrence; // since DateTime is not immutable, avoid any problem
 
 			$total += 1;
 		}
+		$previous_occurrence = $occurrence;
 
 		if ($this->rlist_heap === null) {
 			// rrules + rdate

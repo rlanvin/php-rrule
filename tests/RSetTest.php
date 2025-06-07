@@ -87,6 +87,36 @@ class RSetTest extends TestCase
 		$this->assertFalse($rset->occursAt('1997-09-03 09:00'));
 	}
 
+	/**
+	 * @see https://github.com/rlanvin/php-rrule/issues/165
+	 */
+	public function testCombineRRuleAndRDateWithDuplicatesArrayAccess()
+	{
+		$rset = new RSet();
+		$rset->addRRule(array(
+			'FREQ' => 'WEEKLY',
+			'BYDAY' => 'TU',
+			'DTSTART' => date_create('2025-06-03 09:00')
+		));
+		$rset->addDate('2025-06-03 09:00');
+		$rset->addDate('2025-06-10 09:00');
+		$rset->addDate('2025-06-11 09:00');
+
+		$occurences = [];
+		for ($i = 0; $i < 5; $i++) {
+			$occurences[] = $rset[$i];
+		}
+		$expected = [
+			date_create('2025-06-03 09:00'),
+			date_create('2025-06-10 09:00'),
+			date_create('2025-06-11 09:00'),
+			date_create('2025-06-17 09:00'),
+			date_create('2025-06-24 09:00')
+		];
+
+		$this->assertEquals($expected, $occurences);
+	}
+
 	public function testRemoveDateFromRSet()
 	{
 		$rset = new RSet();

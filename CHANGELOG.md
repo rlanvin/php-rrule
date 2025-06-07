@@ -10,6 +10,7 @@
 ### Fixed
 
 - Added a workaround for a Carbon 3 bug that makes occursAt fail in some cases [#164](https://github.com/rlanvin/php-rrule/issues/164)
+- Fix RSet not de-duplicating when using array access [#165](https://github.com/rlanvin/php-rrule/issues/165)
 
 ## [2.6.0] - 2025-04-25
 
