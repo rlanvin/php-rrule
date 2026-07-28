@@ -2398,6 +2398,41 @@ class RRuleTest extends TestCase
 		$new_rrule = new RRule($str);
 	}
 
+	/**
+	 * DateTimeImmutable::setTimezone() returns a new object instead of modifying
+	 * the original one, so the conversion has to be assigned back.
+	 */
+	public function testUnsupportedTimezoneConvertedToUtcWithDateTimeImmutable()
+	{
+		$date = new \DateTimeImmutable('2016-07-08 12:00:00', new DateTimeZone('+06:00'));
+		$rrule = new RRule(array(
+			"freq" => "WEEKLY",
+			"dtstart" => $date,
+			"interval" => 1
+		));
+
+		$str = $rrule->rfcString();
+		$this->assertTrue(strpos($str, '20160708T060000Z') !== false);
+		$new_rrule = new RRule($str);
+	}
+
+	/**
+	 * @see testUnsupportedTimezoneConvertedToUtcWithDateTimeImmutable
+	 */
+	public function testRfcStringWithUntilAndDateTimeImmutable()
+	{
+		$rrule = new RRule(array(
+			"freq" => "DAILY",
+			"dtstart" => new \DateTimeImmutable('2016-07-01 10:00:00', new DateTimeZone('Europe/Paris')),
+			"until" => new \DateTimeImmutable('2016-07-10 22:00:00', new DateTimeZone('Europe/Paris'))
+		));
+
+		// UNTIL must be in UTC (Europe/Paris is UTC+2 in July)
+		$this->assertEquals("DTSTART;TZID=Europe/Paris:20160701T100000\nRRULE:FREQ=DAILY;UNTIL=20160710T200000Z", $rrule->rfcString());
+		// without timezone identifier, UNTIL is put on the DTSTART timezone
+		$this->assertEquals("DTSTART:20160701T100000\nRRULE:FREQ=DAILY;UNTIL=20160710T220000", $rrule->rfcString(false));
+	}
+
 	public function rfcStringsWithoutTimezone()
 	{
 		return array(
@@ -2673,6 +2708,27 @@ class RRuleTest extends TestCase
 		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 07:00:00',new DateTimeZone('UTC'))), 'During winter time, Europe/Helsinki is UTC+2 (cached)');
 		$rrule->clearCache();
 		$this->assertTrue($rrule->occursAt(date_create('2015-12-02 07:00:00',new DateTimeZone('UTC'))), 'During winter time, Europe/Helsinki is UTC+2 (uncached)');
+	}
+
+	/**
+	 * @see testUnsupportedTimezoneConvertedToUtcWithDateTimeImmutable
+	 */
+	public function testOccursAtTakeTimezoneIntoAccountWithDateTimeImmutable()
+	{
+		$rrule = new RRule(array(
+			'freq' => 'daily',
+			'count' => 365,
+			'byhour' => array(9),
+			'dtstart' => new \DateTimeImmutable('2015-07-01 09:00:00', new DateTimeZone('Australia/Sydney'))
+		));
+		// 2015-07-01 23:00 UTC is 2015-07-02 09:00 in Australia/Sydney (UTC+10)
+		$this->assertTrue($rrule->occursAt(new \DateTimeImmutable('2015-07-01 23:00:00', new DateTimeZone('UTC'))), 'Timezone is converted for comparison (uncached)');
+		$this->assertTrue($rrule->occursAt(new \DateTimeImmutable('2015-07-01 23:00:00', new DateTimeZone('UTC'))), 'Timezone is converted for comparison (cached)');
+
+		// the argument must not be modified by the conversion
+		$date = new \DateTimeImmutable('2015-07-01 23:00:00', new DateTimeZone('UTC'));
+		$rrule->occursAt($date);
+		$this->assertEquals('UTC', $date->getTimezone()->getName());
 	}
 
 	public function rulesWithMismatchedTimezones()
