@@ -606,7 +606,7 @@ class RRule implements RRuleInterface
 					// handle unsupported timezones like "+02:00"
 					// we convert them to UTC to generate a valid string
 					// note: there is possibly other weird timezones out there that we should catch
-					$dtstart->setTimezone(new \DateTimeZone('UTC'));
+					$dtstart = $dtstart->setTimezone(new \DateTimeZone('UTC'));
 					$timezone_name = 'UTC';
 				}
 				if (in_array($timezone_name, array('UTC','GMT','Z'))) {
@@ -640,13 +640,13 @@ class RRule implements RRuleInterface
 				if (! $include_timezone) {
 					$tmp = clone $this->until;
 					// put until on the same timezone as DTSTART
-					$tmp->setTimeZone($this->dtstart->getTimezone());
+					$tmp = $tmp->setTimeZone($this->dtstart->getTimezone());
 					$parts[] = 'UNTIL='.$tmp->format('Ymd\THis');
 				}
 				else {
 					// according to the RFC, UNTIL must be in UTC
 					$tmp = clone $this->until;
-					$tmp->setTimezone(new \DateTimeZone('UTC'));
+					$tmp = $tmp->setTimezone(new \DateTimeZone('UTC'));
 					$parts[] = 'UNTIL='.$tmp->format('Ymd\THis\Z');
 				}
 				continue;
@@ -770,7 +770,7 @@ class RRule implements RRuleInterface
 	{
 		$date = self::parseDate($date);
 		// convert timezone to dtstart timezone for comparison
-		$date->setTimezone($this->dtstart->getTimezone());
+		$date = $date->setTimezone($this->dtstart->getTimezone());
 
 		if (in_array($date, $this->cache)) {
 			// in the cache (whether cache is complete or not)
