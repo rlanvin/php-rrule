@@ -3257,6 +3257,55 @@ class RRuleTest extends TestCase
 		$this->assertNotEmpty($rrule->humanReadable(array('fallback' => null)), 'C locale is converted to "en"');
 	}
 
+	public function italianWeekdayStrings()
+	{
+		$cases = array(
+			'weekly Monday' => array('FREQ=WEEKLY;BYDAY=MO', 'settimanalmente il Lunedì'),
+			'weekly Sunday' => array('FREQ=WEEKLY;BYDAY=SU', 'settimanalmente la Domenica'),
+			'mixed weekdays' => array('FREQ=WEEKLY;BYDAY=MO,SU', 'settimanalmente il Lunedì e la Domenica'),
+			'weekday list' => array('FREQ=WEEKLY;BYDAY=MO,WE,SU', 'settimanalmente il Lunedì, il Mercoledì e la Domenica'),
+			'first Monday' => array('FREQ=MONTHLY;BYDAY=1MO', 'mensilmente il primo Lunedì del mese'),
+			'first Sunday' => array('FREQ=MONTHLY;BYDAY=1SU', 'mensilmente la prima Domenica del mese'),
+			'second Sunday' => array('FREQ=MONTHLY;BYDAY=2SU', 'mensilmente la seconda Domenica del mese'),
+			'third Sunday' => array('FREQ=MONTHLY;BYDAY=3SU', 'mensilmente la terza Domenica del mese'),
+			'fourth Sunday' => array('FREQ=MONTHLY;BYDAY=4SU', 'mensilmente la 4a Domenica del mese'),
+			'fourth Monday' => array('FREQ=MONTHLY;BYDAY=4MO', 'mensilmente il 4o Lunedì del mese'),
+			'last Monday' => array('FREQ=MONTHLY;BYDAY=-1MO', "mensilmente l'ultimo Lunedì del mese"),
+			'last Sunday' => array('FREQ=MONTHLY;BYDAY=-1SU', "mensilmente l'ultima Domenica del mese"),
+			'penultimate Sunday' => array('FREQ=MONTHLY;BYDAY=-2SU', 'mensilmente la penultima Domenica del mese'),
+			'third last Sunday' => array('FREQ=MONTHLY;BYDAY=-3SU', 'mensilmente la terzultima Domenica del mese'),
+			'negative fallback' => array('FREQ=MONTHLY;BYDAY=-4SU', 'mensilmente la 4a Domenica dalla fine del mese'),
+			'negative masculine fallback' => array('FREQ=MONTHLY;BYDAY=-4MO', 'mensilmente il 4o Lunedì dalla fine del mese'),
+			'mixed ordinals' => array('FREQ=MONTHLY;BYDAY=1MO,-1SU', "mensilmente il primo Lunedì e l'ultima Domenica del mese"),
+			'plain and ordinal' => array('FREQ=MONTHLY;BYDAY=MO,1SU', 'mensilmente il Lunedì e  la prima Domenica del mese'),
+			'yearly Sunday' => array('FREQ=YEARLY;BYDAY=1SU', "annualmente la prima Domenica dell'anno"),
+			'yearly month' => array('FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU', "annualmente l'ultima Domenica del mese in Marzo"),
+		);
+		$result = array();
+		foreach ($cases as $name => $case) {
+			$result[$name.' without intl'] = array($case[0], $case[1], false);
+			$result[$name.' with intl'] = array($case[0], $case[1], true);
+		}
+		return $result;
+	}
+
+	/**
+	 * @dataProvider italianWeekdayStrings
+	 */
+	public function testHumanReadableItalianWeekdays($rule, $expected, $use_intl)
+	{
+		if ($use_intl && !extension_loaded('intl')) {
+			$this->markTestSkipped('intl not loaded');
+		}
+		$rrule = new RRule($rule);
+		$this->assertEquals($expected, $rrule->humanReadable(array(
+			'locale' => 'it',
+			'use_intl' => $use_intl,
+			'include_start' => false,
+			'include_until' => false,
+		)));
+	}
+
 	public function humanReadableStrings()
 	{
 		return array(

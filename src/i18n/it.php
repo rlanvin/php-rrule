@@ -66,7 +66,11 @@ return array(
 		11 => 'Novembre',
 		12 => 'Dicembre',
 	),
-	'byweekday' => ' il %{weekdays}',
+	'byweekday' => ' %{weekdays}',
+	'weekday' => array(
+		7 => 'la %{weekday}',
+		'else' => 'il %{weekday}'
+	),
 	'weekdays' => array(
 		1 => 'Lunedì',
 		2 => 'Martedì',
@@ -77,16 +81,40 @@ return array(
 		7 => 'Domenica',
 	),
 	'nth_weekday' => array(
-		'1' => 'il primo %{weekday}', // e.g. the first Monday
-		'2' => 'il secondo %{weekday}',
-		'3' => 'il terzo %{weekday}',
-		'else' => 'il %{n}o %{weekday}'
+		'1' => array(
+			7 => 'la prima %{weekday}',
+			'else' => 'il primo %{weekday}'
+		),
+		'2' => array(
+			7 => 'la seconda %{weekday}',
+			'else' => 'il secondo %{weekday}'
+		),
+		'3' => array(
+			7 => 'la terza %{weekday}',
+			'else' => 'il terzo %{weekday}'
+		),
+		'else' => array(
+			7 => 'la %{n}a %{weekday}',
+			'else' => 'il %{n}o %{weekday}'
+		)
 	),
 	'-nth_weekday' => array(
-		'-1' => 'l\'ultimo %{weekday}', // e.g. the last Monday
-		'-2' => 'il penultimo %{weekday}',
-		'-3' => 'il secondultimo %{weekday}',
-		'else' => '%{n} %{weekday} prima dell\'ultimo %{weekday}'
+		'-1' => array(
+			7 => 'l\'ultima %{weekday}',
+			'else' => 'l\'ultimo %{weekday}'
+		),
+		'-2' => array(
+			7 => 'la penultima %{weekday}',
+			'else' => 'il penultimo %{weekday}'
+		),
+		'-3' => array(
+			7 => 'la terzultima %{weekday}',
+			'else' => 'il terzultimo %{weekday}'
+		),
+		'else' => array(
+			7 => 'la %{n}a %{weekday} dalla fine',
+			'else' => 'il %{n}o %{weekday} dalla fine'
+		)
 	),
 	'byweekno' => array(
 		'1' => ' nella %{weeks} settimana',

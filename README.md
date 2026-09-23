@@ -64,6 +64,13 @@ The coding style is (mostly) PSR-2, but with tabs.
 Use `./bin/review_translations.php --locale <locale>` to print a list of examples using the locale specified (default is English).
 Use `./bin/review_translations.php --rule "<rule>"` to test a specific rule in all available locales.
 
+The optional `weekday` template formats each weekday before the list is inserted into `byweekday`.
+It defaults to `%{weekday}` and accepts a string or an array indexed by weekday number (1 for Monday, 7 for Sunday).
+Use `else` for the remaining weekdays.
+For example, Italian uses `array(7 => 'la %{weekday}', 'else' => 'il %{weekday}')` to give Sunday its feminine article.
+The values in `nth_weekday` and `-nth_weekday` can also contain arrays indexed by weekday number, after selecting the ordinal.
+Existing string values work as before. See `src/i18n/it.php` for an example with both articles and ordinal endings.
+
 ## Note
 
 I started this library because I wasn't happy with the existing implementations
