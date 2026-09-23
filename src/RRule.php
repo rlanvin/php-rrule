@@ -1945,7 +1945,7 @@ class RRule implements RRuleInterface
 	 * @param mixed $array Array with multiple forms or a string
 	 * @param string $n
 	 *
-	 * @return string
+	 * @return string|array
 	 */
 	static protected function i18nSelect($array, $n)
 	{
@@ -2320,7 +2320,8 @@ class RRule implements RRuleInterface
 				}
 
 				foreach ($tmp as & $value) {
-					$value = $i18n[$selector][$value];
+					$weekday = isset($i18n['weekday']) ? self::i18nSelect($i18n['weekday'], $value) : '%{weekday}';
+					$value = strtr($weekday, array('%{weekday}' => $i18n[$selector][$value]));
 				}
 
 				$parts['byweekday'][] = strtr(self::i18nSelect($i18n['byweekday'], count($tmp)), array(
@@ -2332,7 +2333,8 @@ class RRule implements RRuleInterface
 				$tmp = $this->byweekday_nth;
 				foreach ($tmp as & $value) {
 					list($day, $n) = $value;
-					$value = strtr(self::i18nSelect($i18n[$n>0?'nth_weekday':'-nth_weekday'], $n), array(
+					$weekday = self::i18nSelect($i18n[$n>0?'nth_weekday':'-nth_weekday'], $n);
+					$value = strtr(self::i18nSelect($weekday, $day), array(
 						'%{weekday}' => $i18n['weekdays'][$day],
 						'%{n}' => abs($n)
 					));
