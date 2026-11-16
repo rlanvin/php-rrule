@@ -184,7 +184,7 @@ trait RRuleTrait
 		// DateTimeInterface is only on PHP 5.5+, and includes DateTimeImmutable
 		if (! $date instanceof \DateTime && ! $date instanceof \DateTimeInterface) {
 			try {
-				if (is_integer($date)) {
+				if (is_int($date)) {
 					$date = \DateTime::createFromFormat('U',$date);
 					$date->setTimezone(new \DateTimeZone('UTC')); // default is +00:00 (see issue #15)
 				}

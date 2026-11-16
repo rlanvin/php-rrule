@@ -258,7 +258,7 @@ class RRule implements RRuleInterface
 		}
 
 		// FREQ
-		if (is_integer($parts['FREQ'])) {
+		if (is_int($parts['FREQ'])) {
 			if ($parts['FREQ'] <= self::SECONDLY && $parts['FREQ'] >= self::YEARLY) {
 				$this->freq = $parts['FREQ'];
 			}
