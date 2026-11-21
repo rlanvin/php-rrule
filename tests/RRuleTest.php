@@ -197,6 +197,16 @@ class RRuleTest extends TestCase
 				date_create('1997-12-28'), date_create('1999-01-03'), date_create('2000-01-02'))),
 			array(array('BYWEEKNO' => 53, 'BYDAY' => 'MO'), array(
 				date_create('1998-12-28'), date_create('2004-12-27'), date_create('2009-12-28'))),
+			// WKST later in the week than Jan 1st: week 1 starts in the previous year,
+			// so the year has one more week than "year length minus offset" suggests.
+			'byweekno -1, wkst after the first day of the year' => [
+				['BYWEEKNO' => -1, 'BYDAY' => 'SU', 'WKST' => 'SU', 'DTSTART' => '2024-01-01'],
+				[date_create('2024-12-22'), date_create('2025-12-28'), date_create('2026-12-27')]
+			],
+			'byweekno 53, wkst after the first day of the year' => [
+				['BYWEEKNO' => 53, 'BYDAY' => 'SU', 'WKST' => 'SU', 'DTSTART' => '2024-01-01'],
+				[date_create('2025-12-28'), date_create('2031-12-28'), date_create('2036-12-28')]
+			],
 
 			// todo bysetpos
 
