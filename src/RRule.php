@@ -1176,8 +1176,7 @@ class RRule implements RRuleInterface
 		if($first_wkst >= 4) {
 			$first_wkst_offset = 0;
 			// Number of days in the year, plus the days we got from last year.
-			$nb_days = $masks['year_len'] + $masks['weekday_of_1st_yearday'] - $this->wkst;
-			// $nb_days = $masks['year_len'] + pymod($masks['weekday_of_1st_yearday'] - $this->wkst,7);
+			$nb_days = $masks['year_len'] + pymod($masks['weekday_of_1st_yearday'] - $this->wkst, 7);
 		}
 		else {
 			$first_wkst_offset = $first_wkst;
